@@ -1,0 +1,13 @@
+version: '3.4'
+services:
+  seo-admin-frontend-app:
+    image: seo-admin-frontend
+    ports:
+      - '180:80' # Public HTTP Port
+      - '143:443' # Public HTTPS Port
+      - '5173:5173' # Web Port
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+    restart: unless-stopped
+  
