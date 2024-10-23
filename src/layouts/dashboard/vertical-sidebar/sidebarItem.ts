@@ -61,7 +61,7 @@ const sidebarItemRole = (() => {
           to: '/redirect-domain'
         },
         {
-          title: 'Whiltelist IP',
+          title: 'Clone WP Site',
           icon: FontSizeOutlined,
           to: '/whiltelist-ip'
         },
