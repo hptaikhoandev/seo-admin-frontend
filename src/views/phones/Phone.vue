@@ -172,7 +172,7 @@ export default defineComponent({
 
 </script>
 <template>
-  <!-- <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
+  <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
     :items-length="totalItems" :page.sync="page" @update:page="handlePageChange"
     @update:items-per-page="handleItemsPerPageChange" hover :loading="loading" @update:options="handleSortBy">
     <template v-slot:top>
@@ -250,7 +250,7 @@ export default defineComponent({
       <EditIcon size="24" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
       <TrashIcon size="24" color="red" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
     </template>
-  </v-data-table-server> -->
+  </v-data-table-server>
   <v-container>
     <!-- Title -->
     <v-card-title class="">

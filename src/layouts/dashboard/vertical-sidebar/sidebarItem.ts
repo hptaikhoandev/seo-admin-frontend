@@ -51,11 +51,6 @@ const sidebarItemRole = (() => {
           to: '/them-domains-vao-cf'
         },
         {
-          title: 'Thay đổi Name Server',
-          icon: BgColorsOutlined,
-          to: '/thay-doi-name-server'
-        },
-        {
           title: 'Redirect Domain',
           icon: CrownOutlined,
           to: '/redirect-domain'

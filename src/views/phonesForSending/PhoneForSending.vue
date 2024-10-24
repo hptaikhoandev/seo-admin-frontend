@@ -1,10 +1,13 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
-import { usePhoneStore } from '@/stores/modules/phone/phone';
+import { useDomainStore } from '@/stores/modules/domain/domain';
+import moment from 'moment';
+import { Loader2Icon, ReloadIcon } from 'vue-tabler-icons';
+import { RedoOutlined } from '@ant-design/icons-vue';
 
 
 export default defineComponent({
-  name: 'PhoneForSending',
+  name: 'InputDomain',
   components: {
     //
   },
@@ -15,29 +18,27 @@ export default defineComponent({
       search: ref(''),
       sortBy: ref('vendor'),
       sortDesc: ref(false),
-      selectedRows: ref([]) as Ref<string[]>,
-      selected: ref([]),
       headers: [
-        { title: 'ID', align: 'start', sortable: false, key: 'id',},
-        { title: 'NUMBER', align: 'start', key: 'number' },
-        { title: 'VENDOR', align: 'start', key: 'vendor' },
-        { title: 'USER ID', align: 'start', key: 'userId' },
-        { title: 'CREATED AT', align: 'start', key: 'createdAt' },
-        { title: 'UPDATED AT', align: 'start', key: 'updatedAt' },
+        { title: 'NAME', key: 'name' },
+        { title: 'CREATED AT', key: 'createdAt' },
+        { title: 'UPDATED AT', key: 'updatedAt' },
+        { title: 'ACTIONS', key: 'actions', sortable: false },
       ],
       editedIndex: -1,
       editedItem: {
         id: 0,
-        number: '',
-        vendor: '',
+        name: '',
+        ns: '',
+        status: '',
         userId: 1,
         createdAt: '',
         updatedAt: '',
       },
       defaultItem: {
         id: 0,
-        number: '',
-        vendor: '',
+        name: '',
+        ns: '',
+        status: '',
         userId: 1,
         createdAt: '',
         updatedAt: '',
@@ -49,23 +50,23 @@ export default defineComponent({
       loading: ref(false),
     };
   },
-  
+
   mounted() {
     // this.fetchData();
   },
-  created () {
+  created() {
     this.fetchData()
   },
   computed: {
-    formTitle () {
-      return this.editedIndex === -1 ? 'New Phone' : 'Edit Phone'
+    formTitle() {
+      return this.editedIndex === -1 ? 'New Domain' : 'Edit Domain'
     },
   },
   watch: {
-    dialog (val) {
+    dialog(val) {
       val || this.close()
     },
-    dialogDelete (val) {
+    dialogDelete(val) {
       val || this.closeDelete()
     },
   },
@@ -73,21 +74,29 @@ export default defineComponent({
     async fetchData() {
       this.loading = true;
       try {
-        const phoneStore = usePhoneStore();
-        await phoneStore.fetchPhone({ 
+        const domainStore = useDomainStore();
+        await domainStore.fetchDomain({
           page: this.page,
           limit: this.itemsPerPage,
           search: this.search,
           sortBy: this.sortBy,
           sortDesc: this.sortDesc,
         });
-        this.items = await phoneStore.phone;
-        this.totalItems = await phoneStore.total;
+        this.items = await domainStore.domain;
+        this.totalItems = await domainStore.total;
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         this.loading = false;
       }
+    },
+    submitToCF() {
+      // Xử lý dữ liệu form sau khi submit
+      console.log('>>>>> submitToCF');
+      alert('submitToCF');
+    },
+    reset() {
+      this.items = [];
     },
     editItem(item) {
       this.editedIndex = this.items.indexOf(item)
@@ -108,15 +117,6 @@ export default defineComponent({
       this.page = 1;
       this.fetchData();
     },
-    handleSelectionChange(selectedItems) {
-      const phoneStore = usePhoneStore();
-      phoneStore.selectedPhones = selectedItems;
-    },
-
-    handleRowClick(row) {
-      console.log("Selected Rows: ", this.selected);
-    },
-
     handleSortBy({ page, itemsPerPage, sortBy }) {
       if (sortBy.length === 0) return;
       this.sortBy = sortBy[0].key;
@@ -138,8 +138,8 @@ export default defineComponent({
 
     deleteItemConfirm() {
       this.items.splice(this.editedIndex, 1)
-      const phoneStore = usePhoneStore();
-      phoneStore.deletePhone(this.editedItem.id);
+      // const domainStore = useDomainStore();
+      // domainStore.deleteDomain(this.editedItem.id);
       this.closeDelete()
     },
 
@@ -160,13 +160,19 @@ export default defineComponent({
     },
 
     save() {
-      const phoneStore = usePhoneStore();
+      const domainStore = useDomainStore();
+      const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
+      this.editedItem.createdAt = currentTime;
+      this.editedItem.updatedAt = currentTime;
       if (this.editedIndex > -1) {
         Object.assign(this.items[this.editedIndex], this.editedItem)
-        phoneStore.updatePhone({ id: this.editedItem.id, number: this.editedItem.number, userId: this.editedItem.userId, vendor: this.editedItem.vendor });
+        console.log(">>>>> savexxx", this.items);
+        // domainStore.updateDomain({ id: this.editedItem.id, name: this.editedItem.name });
       } else {
+        console.log(">>>>> saveyyy", this.items);
+
         this.items.push(this.editedItem)
-        phoneStore.createPhone({ number: this.editedItem.number, userId: this.editedItem.userId, vendor: this.editedItem.vendor });
+        // domainStore.createDomain({ name: this.editedItem.name, ns: this.editedItem.ns, status: this.editedItem.status, userId: this.editedItem.userId });
 
       }
       this.close()
@@ -177,54 +183,104 @@ export default defineComponent({
 
 </script>
 <template>
-  <v-data-table-server
-    :headers="headers"
-    :items="items"
-    item-value="number"
-    :items-per-page="itemsPerPage"
-    :items-per-page-options="[5]"
-    :items-length="totalItems"
-    :page.sync="page"
-    @update:page="handlePageChange"
-    @update:items-per-page="handleItemsPerPageChange"
-    hover
-    :loading="loading"
-    @update:options="handleSortBy"
-    show-select
-    v-model="selected"
-    @update:modelValue="handleSelectionChange"
-  >
-  
+  <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
+    :items-length="totalItems" :page.sync="page" @update:page="handlePageChange"
+    @update:items-per-page="handleItemsPerPageChange" hover :loading="loading" @update:options="handleSortBy"
+    class="bold-headers">
     <template v-slot:top>
       <v-toolbar flat>
-        <v-toolbar-title>Step 1: chọn số phone</v-toolbar-title>
-        <v-divider
-          class="mx-4"
-          inset
-          vertical
-        ></v-divider>
-        <v-text-field
-          v-model="search"
-          label="Search"
-          variant="outlined"
-          hide-details
-          single-line
-          clearable
-          @click:clear="handleClearSearch"
-          @input="handleOnSearch"
-        >
-        </v-text-field>
+        <v-toolbar-title>
+          Step 1: input domains
+        </v-toolbar-title>
+        <v-divider class="mx-4" inset vertical></v-divider>
+        <v-dialog v-model="dialog" max-width="500px">
+          <template v-slot:activator="{ props }">
+            <v-btn class="mb-2 ml-2 mr-1" :style="{ backgroundColor: '#FF5252' }" color="white" dark @click="reset">
+              <ReloadIcon size="20" color="white" />
+            </v-btn>
+            <v-btn class="mb-2 ml-2 mr-1" :style="{ backgroundColor: '#6A8DBA' }" color="white" dark v-bind="props">
+              <DownloadIcon size="20" color="white" />
+              Download sample file
+            </v-btn>
+            <v-btn class="mb-2 mx-1" :style="{ backgroundColor: '#CCAA4D' }" color="white" dark v-bind="props">
+              <UploadIcon size="20" color="white" />
+              Import domains
+            </v-btn>
+            <v-btn class="mb-2 ml-1 mr-2" :style="{ backgroundColor: '#7DA77D' }" color="white" dark v-bind="props">
+              <SquarePlusIcon size="20" color="white" />
+              New domain
+            </v-btn>
+          </template>
+          <v-card>
+            <v-card-title>
+              <span class="text-h5">{{ formTitle }}</span>
+            </v-card-title>
+            <v-card-text>
+              <v-container>
+                <v-row>
+                  <!-- Mỗi dòng sẽ là một trường (v-text-field) -->
+                  <v-col cols="12">
+                    <v-text-field v-model="editedItem.name" label="Name" density="comfortable"></v-text-field>
+                  </v-col>
+
+                  <v-col cols="12">
+                    <v-text-field disabled v-model="editedItem.createdAt" label="Created At"
+                      density="comfortable"></v-text-field>
+                  </v-col>
+
+                  <v-col cols="12">
+                    <v-text-field disabled v-model="editedItem.updatedAt" label="Updated At"
+                      density="comfortable"></v-text-field>
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue-darken-1" variant="text" @click="close">
+                Cancel
+              </v-btn>
+              <v-btn color="blue-darken-1" variant="text" @click="save">
+                Save
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+
+        </v-dialog>
+        <v-dialog v-model="dialogDelete" max-width="500px">
+          <v-card>
+            <v-card-title class="text-h5">Are you sure you want to delete this item?</v-card-title>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue-darken-1" variant="text" @click="closeDelete">Cancel</v-btn>
+              <v-btn color="blue-darken-1" variant="text" @click="deleteItemConfirm">OK</v-btn>
+              <v-spacer></v-spacer>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+
         <v-spacer></v-spacer>
+        <v-text-field class="mr-2" v-model="search" label="Search" variant="outlined" hide-details single-line clearable
+          @click:clear="handleClearSearch" @input="handleOnSearch">
+        </v-text-field>
+
       </v-toolbar>
     </template>
+    <template v-slot:item.actions="{ item }">
 
-    
-    
+      <EditIcon size="24" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
+      <TrashIcon size="24" color="red" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
+    </template>
   </v-data-table-server>
 </template>
-
-<style >
+<style>
 .custom-spacing .v-label {
-  margin-bottom: 25px; 
+  margin-bottom: 25px;
+}
+
+.bold-headers .v-table>.v-table__wrapper>table>tbody>tr>th,
+.v-table>.v-table__wrapper>table>thead>tr>th,
+.v-table>.v-table__wrapper>table>tfoot>tr>th {
+  font-weight: bold !important;
 }
 </style>
