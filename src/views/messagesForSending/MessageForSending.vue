@@ -16,9 +16,9 @@ export default defineComponent({
       sortDesc: ref(false),
       selected: ref([]),
       headers: [
-        { title: 'ID', align: 'start', sortable: false, key: 'id',},
-        { title: 'BODY', key: 'body' },
-        { title: 'USER ID', key: 'userId' },
+        { title: 'NAME', key: 'name' },
+        { title: 'NS', key: 'ns' },
+        { title: 'STATUS', key: 'status' },
         { title: 'CREATED AT', key: 'createdAt' },
         { title: 'UPDATED AT', key: 'updatedAt' },
       ],
@@ -44,20 +44,20 @@ export default defineComponent({
       loading: ref(false),
     };
   },
-  
+
   mounted() {
     // this.fetchData();
   },
-  created () {
+  created() {
     this.fetchData()
   },
   computed: {
-    formTitle () {
+    formTitle() {
       return this.editedIndex === -1 ? 'New Message' : 'Edit Message'
     },
   },
   watch: {
-    dialog (val) {
+    dialog(val) {
       val || this.close()
     },
   },
@@ -66,7 +66,7 @@ export default defineComponent({
       this.loading = true;
       try {
         const messageStore = useMessageStore();
-        await messageStore.fetchMessage({ 
+        await messageStore.fetchMessage({
           page: this.page,
           limit: this.itemsPerPage,
           search: this.search,
@@ -139,52 +139,42 @@ export default defineComponent({
 
 </script>
 <template>
-  <v-data-table-server
-    :headers="headers"
-    :items="items"
-    item-value="body"
+  <v-data-table-server 
+    :headers="headers" 
+    :items="items" item-value="body" 
     :items-per-page="itemsPerPage"
-    :items-length="totalItems"
-    :page.sync="page"
+    :items-length="totalItems" 
+    :page.sync="page" 
     @update:page="handlePageChange"
-    @update:items-per-page="handleItemsPerPageChange"
-    @update:options="handleSortBy"
-    hover
+    @update:items-per-page="handleItemsPerPageChange" 
+    @update:options="handleSortBy" 
+    hover 
     :loading="loading"
-    show-select
-    v-model="selected"
     @update:modelValue="handleSelectionChange"
-
   >
     <template v-slot:top>
       <v-toolbar flat>
-        <v-toolbar-title>Step 2: chọn message</v-toolbar-title>
-        <v-divider
-          class="mx-4"
-          inset
-          vertical
-        ></v-divider>
-        <v-text-field
-          v-model="search"
-          label="Search"
-          variant="outlined"
-          hide-details
-          single-line
-          clearable
-          @click:clear="handleClearSearch"
-          @input="handleOnSearch"
-        >
-        </v-text-field>
+        <v-toolbar-title>
+          Step 2: submit to CloudFlare
+          <v-btn class="text-white mx-2" :style="{ backgroundColor: '#6A8DBA' }">
+            Submit
+          </v-btn>
+        </v-toolbar-title>
+
         <v-spacer></v-spacer>
+        <v-text-field class="mr-2" v-model="search" label="Search" variant="outlined" hide-details single-line clearable
+          @click:clear="handleClearSearch" @input="handleOnSearch">
+        </v-text-field>
+
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
-          </template>
+    </template>
   </v-data-table-server>
 </template>
 
-<style >
+<style>
 .custom-spacing .v-label {
-  margin-bottom: 25px; 
+  margin-bottom: 25px;
 }
 </style>

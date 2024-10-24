@@ -19,7 +19,7 @@ const MainRoutes = {
     {
       name: 'Thêm domains vào CF',
       path: '/them-domains-vao-cf',
-      component: () => import('@/views/domains/Domain.vue')
+      component: () => import('@/views/sendPhones/SendPhone.vue')
     },
     {
       name: 'Thay đổi Name Server',

@@ -115,15 +115,19 @@ export default defineComponent({
 <template>
 
   <PhoneForSending />
+ 
+  <v-divider class="my-4" inset vertical></v-divider>
+
   <MessageForSending />
+  <v-divider class="my-4" inset vertical></v-divider>
+
   <v-toolbar flat>
     <v-toolbar-title>
-      Step 3: send sms to phones
-      <v-btn class="bg-success text-white mx-2" @click="sendSMS">
-        SEND
+      Step 3: Export to Excel
+      <v-btn class="text-white mx-2" :style="{ backgroundColor: '#7DA77D' }" @click="sendSMS">
+        Export
       </v-btn>
     </v-toolbar-title>
-    
   </v-toolbar>
 </template>
 

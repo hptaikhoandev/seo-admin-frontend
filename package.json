@@ -30,6 +30,7 @@
     "axios": "^1.7.3",
     "http-server": "^14.1.1",
     "jwt-decode": "^4.0.0",
+    "moment": "^2.30.1",
     "pinia": "2.1.7",
     "vee-validate": "4.12.8",
     "vite-plugin-vuetify": "2.0.3",
