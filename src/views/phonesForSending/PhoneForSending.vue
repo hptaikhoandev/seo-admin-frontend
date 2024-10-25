@@ -158,12 +158,79 @@ export default defineComponent({
         this.editedIndex = -1
       })
     },
+    downloadFile() {
+      const fileUrl = '/src/template/domains.txt'; 
+      const link = document.createElement('a');
+      link.href = fileUrl;
+      link.setAttribute('download', 'domains.txt'); 
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
+    async importDomains(event) {
+      const domainStore = useDomainStore();
 
+      // Access the file uploaded
+      const file = event.target.files[0];
+      if (!file) {
+        return;
+      }
+
+      try {
+        // Read the content of the file
+        const fileContent = await this.readFile(file);
+
+        // Assuming each domain is on a new line in the text file
+        const domainList = fileContent.split('\n').map(domain => domain.trim()).filter(domain => domain);
+
+        const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
+
+        // Loop through the list and add domains to this.items if they don't already exist
+        domainList.forEach(domainName => {
+          const nameExists = this.items.some(item => item.name === domainName);
+
+          if (!nameExists) {
+            const newDomain = {
+              name: domainName,
+              createdAt: currentTime,
+              updatedAt: currentTime,
+              // Add other domain fields as needed
+            };
+
+            // Add the new domain to this.items
+            this.items.push(newDomain);
+
+            // Optionally, update the domain store as well
+            // domainStore.createDomain(newDomain);
+          }
+        });
+
+        console.log('Imported domains:', this.items);
+
+      } catch (error) {
+        console.error('Error reading file:', error);
+      }
+    },
+
+    readFile(file) {
+      // Return a promise to read the file content
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = event => resolve(event.target.result);
+        reader.onerror = error => reject(error);
+        reader.readAsText(file);
+      });
+    },
     save() {
       const domainStore = useDomainStore();
       const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
       this.editedItem.createdAt = currentTime;
       this.editedItem.updatedAt = currentTime;
+      const nameExists = this.items.some(item => item.name === this.editedItem.name);
+      if (nameExists && this.editedIndex === -1) {
+        this.close();
+        return;
+      }
       if (this.editedIndex > -1) {
         Object.assign(this.items[this.editedIndex], this.editedItem)
         console.log(">>>>> savexxx", this.items);
@@ -175,7 +242,7 @@ export default defineComponent({
         // domainStore.createDomain({ name: this.editedItem.name, ns: this.editedItem.ns, status: this.editedItem.status, userId: this.editedItem.userId });
 
       }
-      this.close()
+      this.close();
     },
 
   }
@@ -183,10 +250,20 @@ export default defineComponent({
 
 </script>
 <template>
-  <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
-    :items-length="totalItems" :page.sync="page" @update:page="handlePageChange"
-    @update:items-per-page="handleItemsPerPageChange" hover :loading="loading" @update:options="handleSortBy"
-    class="bold-headers">
+  <v-data-table-server 
+    :headers="headers" 
+    :items="items" item-value="id" 
+    :items-per-page="itemsPerPage"
+    :items-length="totalItems" 
+    :page.sync="page" 
+    @update:page="handlePageChange"
+    @update:items-per-page="handleItemsPerPageChange" 
+    hover 
+    hide-default-footer
+    :loading="loading" 
+    @update:options="handleSortBy"
+    class="bold-headers fixed-height-table"
+  >
     <template v-slot:top>
       <v-toolbar flat>
         <v-toolbar-title>
@@ -198,14 +275,15 @@ export default defineComponent({
             <v-btn class="mb-2 ml-2 mr-1" :style="{ backgroundColor: '#FF5252' }" color="white" dark @click="reset">
               <ReloadIcon size="20" color="white" />
             </v-btn>
-            <v-btn class="mb-2 ml-2 mr-1" :style="{ backgroundColor: '#6A8DBA' }" color="white" dark v-bind="props">
+            <v-btn class="mb-2 ml-2 mr-1" :style="{ backgroundColor: '#6A8DBA' }" color="white" dark @click="downloadFile">
               <DownloadIcon size="20" color="white" />
               Download sample file
             </v-btn>
-            <v-btn class="mb-2 mx-1" :style="{ backgroundColor: '#CCAA4D' }" color="white" dark v-bind="props">
+            <v-btn class="mb-2 mx-1" :style="{ backgroundColor: '#CCAA4D' }" color="white" dark @click="$refs.fileInput.click()">
               <UploadIcon size="20" color="white" />
               Import domains
             </v-btn>
+            <input type="file" ref="fileInput" @change="importDomains" style="display:none;" />
             <v-btn class="mb-2 ml-1 mr-2" :style="{ backgroundColor: '#7DA77D' }" color="white" dark v-bind="props">
               <SquarePlusIcon size="20" color="white" />
               New domain
@@ -267,20 +345,26 @@ export default defineComponent({
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
-
-      <EditIcon size="24" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
-      <TrashIcon size="24" color="red" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
+      <EditIcon size="18" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
+      <TrashIcon size="18" color="#FF5252" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
     </template>
   </v-data-table-server>
 </template>
-<style>
-.custom-spacing .v-label {
+<style scoped>
+.table-container {
+  max-height: 150px;  /* Đặt chiều cao tối đa */
+  overflow-y: auto;   /* Kích hoạt cuộn dọc */
+}
+
+.table-container .v-data-table__wrapper {
+  max-height: 100%; /* Đảm bảo wrapper sử dụng chiều cao của container */
+}.custom-spacing .v-label {
   margin-bottom: 25px;
 }
 
-.bold-headers .v-table>.v-table__wrapper>table>tbody>tr>th,
-.v-table>.v-table__wrapper>table>thead>tr>th,
+/* .bold-headers .v-table>.v-table__wrapper>table>tbody>tr>th,
 .v-table>.v-table__wrapper>table>tfoot>tr>th {
   font-weight: bold !important;
-}
+} */
+
 </style>

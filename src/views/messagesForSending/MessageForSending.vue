@@ -144,7 +144,8 @@ export default defineComponent({
     :items="items" item-value="body" 
     :items-per-page="itemsPerPage"
     :items-length="totalItems" 
-    :page.sync="page" 
+    :page.sync="page"
+    hide-default-footer 
     @update:page="handlePageChange"
     @update:items-per-page="handleItemsPerPageChange" 
     @update:options="handleSortBy" 
