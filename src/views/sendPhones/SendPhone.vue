@@ -14,7 +14,7 @@ export default defineComponent({
   },
   data() {
     return {
-      isVisibleStep2: false,
+      isVisibleStep2: true,
       isVisibleStep3: false,
       dialog: false,
       dialogDelete: false,

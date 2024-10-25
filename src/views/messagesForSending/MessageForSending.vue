@@ -154,18 +154,17 @@ export default defineComponent({
     @update:modelValue="handleSelectionChange"
   >
     <template v-slot:top>
-      <v-toolbar flat>
-        <v-toolbar-title>
+      <v-toolbar :style="{ height: 'auto', alignItems: 'center' }">
+        <v-toolbar-title :style="{ height: 'auto', display: 'flex', alignItems: 'center' }">
           Step 2: submit to CloudFlare
           <v-btn class="text-white mx-2" :style="{ backgroundColor: '#6A8DBA' }">
             Submit
           </v-btn>
         </v-toolbar-title>
 
-        <v-spacer></v-spacer>
-        <v-text-field class="mr-2" v-model="search" label="Search" variant="outlined" hide-details single-line clearable
+        <!-- <v-text-field class="mr-2" v-model="search" label="Search" variant="outlined" hide-details single-line clearable
           @click:clear="handleClearSearch" @input="handleOnSearch">
-        </v-text-field>
+        </v-text-field> -->
 
       </v-toolbar>
     </template>
@@ -175,7 +174,7 @@ export default defineComponent({
 </template>
 
 <style>
-.custom-spacing .v-label {
+/* .custom-spacing .v-label {
   margin-bottom: 25px;
-}
+} */
 </style>
