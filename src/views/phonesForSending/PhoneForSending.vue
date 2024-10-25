@@ -129,7 +129,10 @@ export default defineComponent({
       this.page = 1;
       this.fetchData();
     },
-
+    validateIPAddress(value) {
+      const ipPattern = /^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$/;
+      return ipPattern.test(value) || 'Please enter a valid IP address (e.g., 54.243.100.131)';
+    },
     deleteItem(item) {
       this.editedIndex = this.items.indexOf(item)
       this.editedItem = Object.assign({}, item)
@@ -158,12 +161,79 @@ export default defineComponent({
         this.editedIndex = -1
       })
     },
+    downloadFile() {
+      const fileUrl = '/src/template/domains.txt';
+      const link = document.createElement('a');
+      link.href = fileUrl;
+      link.setAttribute('download', 'domains.txt');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
+    async importDomains(event) {
+      const domainStore = useDomainStore();
 
+      // Access the file uploaded
+      const file = event.target.files[0];
+      if (!file) {
+        return;
+      }
+
+      try {
+        // Read the content of the file
+        const fileContent = await this.readFile(file);
+
+        // Assuming each domain is on a new line in the text file
+        const domainList = fileContent.split('\n').map(domain => domain.trim()).filter(domain => domain);
+
+        const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
+
+        // Loop through the list and add domains to this.items if they don't already exist
+        domainList.forEach(domainName => {
+          const nameExists = this.items.some(item => item.name === domainName);
+
+          if (!nameExists) {
+            const newDomain = {
+              name: domainName,
+              createdAt: currentTime,
+              updatedAt: currentTime,
+              // Add other domain fields as needed
+            };
+
+            // Add the new domain to this.items
+            this.items.push(newDomain);
+
+            // Optionally, update the domain store as well
+            // domainStore.createDomain(newDomain);
+          }
+        });
+
+        console.log('Imported domains:', this.items);
+
+      } catch (error) {
+        console.error('Error reading file:', error);
+      }
+    },
+
+    readFile(file) {
+      // Return a promise to read the file content
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = event => resolve(event.target.result);
+        reader.onerror = error => reject(error);
+        reader.readAsText(file);
+      });
+    },
     save() {
       const domainStore = useDomainStore();
       const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
       this.editedItem.createdAt = currentTime;
       this.editedItem.updatedAt = currentTime;
+      const nameExists = this.items.some(item => item.name === this.editedItem.name);
+      if (nameExists && this.editedIndex === -1) {
+        this.close();
+        return;
+      }
       if (this.editedIndex > -1) {
         Object.assign(this.items[this.editedIndex], this.editedItem)
         console.log(">>>>> savexxx", this.items);
@@ -175,7 +245,7 @@ export default defineComponent({
         // domainStore.createDomain({ name: this.editedItem.name, ns: this.editedItem.ns, status: this.editedItem.status, userId: this.editedItem.userId });
 
       }
-      this.close()
+      this.close();
     },
 
   }
@@ -183,30 +253,43 @@ export default defineComponent({
 
 </script>
 <template>
-  <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
-    :items-length="totalItems" :page.sync="page" @update:page="handlePageChange"
-    @update:items-per-page="handleItemsPerPageChange" hover :loading="loading" @update:options="handleSortBy"
-    class="bold-headers">
-    <template v-slot:top>
-      <v-toolbar flat>
-        <v-toolbar-title>
-          Step 1: input domains
-        </v-toolbar-title>
-        <v-divider class="mx-4" inset vertical></v-divider>
+  <v-container class="px-5" :style="{ backgroundColor: '#EEEEEE', borderRadius: '5px', maxWidth: '100%' }">
+    <v-row class="pb-0">
+      <v-col class="pb-0">
+        <h2>Step 1: input domains</h2>
+      </v-col>
+    </v-row>
+    <v-row class="py-0">
+      <v-col class="py-0">
+        <v-text-field label="Server IP" placeholder="Enter Server IP" class="mt-3" :rules="[validateIPAddress]"/>
+      </v-col>
+      <v-col class="py-0">
+        <v-checkbox label="Set SSL Type" class="mt-5" />
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="auto">
+        <v-btn :style="{ backgroundColor: '#FF5252', color: '#ffff' }" @click="reset">
+          <ReloadIcon size="20" color="white" />
+        </v-btn>
+      </v-col>
+      <v-col cols="auto">
+        <v-btn :style="{ backgroundColor: '#6A8DBA', color: '#ffff' }" @click="downloadFile">
+          <DownloadIcon size="20" color="white" />
+          Download sample file
+        </v-btn>
+      </v-col>
+      <v-col cols="auto">
+        <v-btn :style="{ backgroundColor: '#CCAA4D', color: '#ffff' }" @click="$refs.fileInput.click()">
+          <UploadIcon size="20" color="white" />
+          Import domains
+        </v-btn>
+        <input type="file" ref="fileInput" @change="importDomains" style="display:none;" />
+      </v-col>
+      <v-col>
         <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ props }">
-            <v-btn class="mb-2 ml-2 mr-1" :style="{ backgroundColor: '#FF5252' }" color="white" dark @click="reset">
-              <ReloadIcon size="20" color="white" />
-            </v-btn>
-            <v-btn class="mb-2 ml-2 mr-1" :style="{ backgroundColor: '#6A8DBA' }" color="white" dark v-bind="props">
-              <DownloadIcon size="20" color="white" />
-              Download sample file
-            </v-btn>
-            <v-btn class="mb-2 mx-1" :style="{ backgroundColor: '#CCAA4D' }" color="white" dark v-bind="props">
-              <UploadIcon size="20" color="white" />
-              Import domains
-            </v-btn>
-            <v-btn class="mb-2 ml-1 mr-2" :style="{ backgroundColor: '#7DA77D' }" color="white" dark v-bind="props">
+            <v-btn class="mb-2 ml-1 mr-2" :style="{ backgroundColor: '#7DA77D', color: '#ffff' }" dark v-bind="props">
               <SquarePlusIcon size="20" color="white" />
               New domain
             </v-btn>
@@ -258,29 +341,24 @@ export default defineComponent({
             </v-card-actions>
           </v-card>
         </v-dialog>
+      </v-col>
+    </v-row>
+  </v-container>
 
-        <v-spacer></v-spacer>
-        <v-text-field class="mr-2" v-model="search" label="Search" variant="outlined" hide-details single-line clearable
-          @click:clear="handleClearSearch" @input="handleOnSearch">
-        </v-text-field>
 
-      </v-toolbar>
-    </template>
-    <template v-slot:item.actions="{ item }">
-
-      <EditIcon size="24" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
-      <TrashIcon size="24" color="red" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
+  <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
+    :items-length="totalItems" :page.sync="page" @update:page="handlePageChange"
+    @update:items-per-page="handleItemsPerPageChange" height="300" hover hide-default-footer :loading="loading"
+    @update:options="handleSortBy">
+    <template v-slot:item.actions="{ item }" class="scrollable-table">
+      <EditIcon size="18" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
+      <TrashIcon size="18" color="#FF5252" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
     </template>
   </v-data-table-server>
 </template>
-<style>
-.custom-spacing .v-label {
-  margin-bottom: 25px;
-}
 
-.bold-headers .v-table>.v-table__wrapper>table>tbody>tr>th,
-.v-table>.v-table__wrapper>table>thead>tr>th,
-.v-table>.v-table__wrapper>table>tfoot>tr>th {
-  font-weight: bold !important;
+<style>
+.v-field__input {
+  margin-top: 10px;
 }
 </style>

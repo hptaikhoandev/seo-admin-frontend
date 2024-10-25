@@ -14,6 +14,8 @@ export default defineComponent({
   },
   data() {
     return {
+      isVisibleStep2: true,
+      isVisibleStep3: false,
       dialog: false,
       dialogDelete: false,
       search: ref(''),
@@ -118,12 +120,12 @@ export default defineComponent({
  
   <v-divider class="my-4" inset vertical></v-divider>
 
-  <MessageForSending />
+  <MessageForSending v-if="isVisibleStep2" />
   <v-divider class="my-4" inset vertical></v-divider>
 
-  <v-toolbar flat>
+  <v-toolbar flat v-if="isVisibleStep3">
     <v-toolbar-title>
-      Step 3: Export to Excel
+      Step 3(Final): Export to Excel
       <v-btn class="text-white mx-2" :style="{ backgroundColor: '#7DA77D' }" @click="sendSMS">
         Export
       </v-btn>
