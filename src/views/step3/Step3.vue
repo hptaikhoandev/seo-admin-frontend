@@ -1,14 +1,16 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
 import { useMessageStore } from '@/stores/modules/message/message';
+import { useDomainStore } from '@/stores/modules/domain/domain';
 
 export default defineComponent({
-  name: 'MessageForSending',
+  name: 'Step3',
   components: {
     //
   },
   data() {
     return {
+      domainStore: useDomainStore,
       dialog: false,
       dialogDelete: false,
       search: ref(''),
@@ -81,6 +83,31 @@ export default defineComponent({
         this.loading = false;
       }
     },
+    submitStep3() {
+      const dataExport = this.domainStore.domainExport;
+
+      // Create CSV content from dataExport
+      const csvHeaders = "Domain,Name Servers\n"; // Header row
+      const csvContent = dataExport.map(item => `${item.domain},"${item.ns}"`).join("\n");
+      const csvData = csvHeaders + csvContent;
+
+      // Create a Blob from the CSV data
+      const blob = new Blob([csvData], { type: "text/csv" });
+
+      // Create a download link for the Blob
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "domains_list.csv";
+      
+      // Trigger the download
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up the URL object and the link element
+      URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    },
     editItem(item) {
       this.editedIndex = this.items.indexOf(item)
       this.editedItem = Object.assign({}, item)
@@ -139,38 +166,14 @@ export default defineComponent({
 
 </script>
 <template>
-  <v-data-table-server 
-    :headers="headers" 
-    :items="items" item-value="body" 
-    :items-per-page="itemsPerPage"
-    :items-length="totalItems" 
-    :page.sync="page"
-    hide-default-footer 
-    @update:page="handlePageChange"
-    @update:items-per-page="handleItemsPerPageChange" 
-    @update:options="handleSortBy" 
-    hover 
-    :loading="loading"
-    @update:modelValue="handleSelectionChange"
-  >
-    <template v-slot:top>
-      <v-toolbar :style="{ height: 'auto', alignItems: 'center' }">
-        <v-toolbar-title :style="{ height: 'auto', display: 'flex', alignItems: 'center' }">
-          Step 2: submit to CloudFlare
-          <v-btn class="text-white mx-2" :style="{ backgroundColor: '#6A8DBA' }">
-            Submit
-          </v-btn>
-        </v-toolbar-title>
-
-        <!-- <v-text-field class="mr-2" v-model="search" label="Search" variant="outlined" hide-details single-line clearable
-          @click:clear="handleClearSearch" @input="handleOnSearch">
-        </v-text-field> -->
-
-      </v-toolbar>
-    </template>
-    <template v-slot:item.actions="{ item }">
-    </template>
-  </v-data-table-server>
+  <v-toolbar flat>
+    <v-toolbar-title>
+      Step 3(Final): Export to Excel
+      <v-btn class="text-white mx-2" :style="{ backgroundColor: '#7DA77D' }" @click="submitStep3">
+        Export
+      </v-btn>
+    </v-toolbar-title>
+  </v-toolbar>
 </template>
 
 <style>
