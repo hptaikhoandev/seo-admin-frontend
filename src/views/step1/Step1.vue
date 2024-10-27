@@ -65,6 +65,10 @@ export default defineComponent({
     },
     isNameValid() {
       return this.validateDomain(this.editedItem.name) === true;
+    },
+    items(): Array<Record<string, any>> {
+      const store = useDomainStore();
+      return store.domain;
     }
   },
   watch: {

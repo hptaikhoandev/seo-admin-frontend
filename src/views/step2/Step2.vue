@@ -58,6 +58,16 @@ export default defineComponent({
     formTitle() {
       return this.editedIndex === -1 ? 'New Message' : 'Edit Message'
     },
+    showStept2(): boolean {
+      const store = useDomainStore();
+      return store.domain.length > 0;
+    },
+
+    items(newItems) {
+      this.domainStore.domainNS = newItems
+    },
+
+
   },
   watch: {
     items(newItems) {
@@ -188,6 +198,7 @@ export default defineComponent({
 </script>
 <template>
   <v-data-table-server
+    v-if="showStept2"
     :headers="headers" 
     :items="items" 
     item-value="body" 

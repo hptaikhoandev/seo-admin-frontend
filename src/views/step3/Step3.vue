@@ -57,6 +57,12 @@ export default defineComponent({
     formTitle() {
       return this.editedIndex === -1 ? 'New Message' : 'Edit Message'
     },
+    showStept3(): boolean {
+      const store = useDomainStore();
+      return store.domain.length > 0 && store.domainNS.length > 0;
+    },
+
+
   },
   watch: {
     dialog(val) {
@@ -166,7 +172,7 @@ export default defineComponent({
 
 </script>
 <template>
-  <v-toolbar flat>
+  <v-toolbar flat v-if="showStept3">
     <v-toolbar-title>
       Step 3(Final): Export to Excel
       <v-btn class="text-white mx-2" :style="{ backgroundColor: '#7DA77D' }" @click="submitStep3">

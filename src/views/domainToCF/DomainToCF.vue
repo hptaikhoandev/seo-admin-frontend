@@ -71,10 +71,6 @@ export default defineComponent({
     formTitle() {
       return this.editedIndex === -1 ? 'New Phone' : 'Edit Phone'
     },
-    isVisibleStep2x() {
-      console.log("isVisibleStep2x", this.domainStore.isSSL);
-      return this.domainStore.isSSL;
-    },
   },
   watch: {
     //
@@ -128,7 +124,7 @@ export default defineComponent({
  
   <v-divider class="my-4" inset vertical></v-divider>
 
-  <Step2 v-if="isVisibleStep2x" />
+  <Step2 v-if="isVisibleStep2" />
   <v-divider class="my-4" inset vertical></v-divider>
 
   <Step3 v-if="isVisibleStep3" />
