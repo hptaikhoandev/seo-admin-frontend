@@ -60,7 +60,11 @@ export default defineComponent({
     },
     showStept2(): boolean {
       const store = useDomainStore();
-      return store.domain.length > 0;
+      if (store.domain.length == 0) {
+        this.items.splice(0, this.items.length);
+        store.domainNS.splice(0, store.domainNS.length);
+      }
+      return (store.domain.length > 0);
     },
 
     items(newItems) {
@@ -98,13 +102,12 @@ export default defineComponent({
       }
     },
     async submitStep2() {
-      
-
+      this.close();
       this.loading = true;
       try {
         const serverIP = this.domainStore.serverIP;
-        const isSSL = this.domainStore.isSSL ? "flexible" : "none"; // Thiết lập "flexible" nếu isSSL là true, "none" nếu là false
-        const domainList = this.domainStore.domain?.map(domain => domain.name); // Lấy danh sách tên miền từ các đối tượng trong `domain`
+        const isSSL = this.domainStore.isSSL !== undefined ? this.domainStore.isSSL : 'flexible'; 
+        const domainList = this.domainStore.domain?.map(domain => domain.name); 
 
         const requestData = {
           team: "seo-3",
@@ -116,11 +119,6 @@ export default defineComponent({
         const domainStore = useDomainStore();
         await domainStore.addListDomainsToCloudflare(requestData);
         let dataResult = await domainStore.domainNS;
-
-
-        await console.log("=== data===>", domainStore.domainNS);
-
-
         const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
         dataResult = await dataResult.map(item => ({
           ...item,
@@ -190,13 +188,15 @@ export default defineComponent({
         this.items.push(this.editedItem)
         messageStore.createMessage({ userId: this.editedItem.userId, body: this.editedItem.body });
       }
-      this.close()
+      this.close();
     },
   }
 });
 
 </script>
 <template>
+  <!-- <p>{{ domainStore.isValidServerIP !== undefined ? domainStore.isValidServerIP : false }}</p> -->
+
   <v-data-table-server
     v-if="showStept2"
     :headers="headers" 
@@ -218,9 +218,38 @@ export default defineComponent({
       <v-toolbar :style="{ height: 'auto', alignItems: 'center' }">
         <v-toolbar-title :style="{ height: 'auto', display: 'flex', alignItems: 'center' }">
           Step 2: Submit to CloudFlare
-          <v-btn class="text-white mx-2" :style="{ backgroundColor: '#6A8DBA' }" @click="submitStep2">
-            Submit
-          </v-btn>
+          <v-dialog v-model="dialog" max-width="500px">
+          <template v-slot:activator="{ props }">
+              <v-btn class="text-white mx-2" :style="{ backgroundColor: '#6A8DBA' }" v-bind="props">
+                Submit
+            </v-btn>
+          </template>
+          <v-card>
+            <v-card-title class="text-h5 text-center">Xác nhận</v-card-title>
+            <v-card-text>
+              <v-container>
+                <v-row>
+                  <v-col cols="12">
+                    <span>Số lượng domain:   {{ domainStore.domain?.length }}</span>
+                  </v-col>
+
+                  <v-col cols="12">
+                    <span>Server IP:   {{ domainStore.serverIP ? domainStore.serverIP : 'Vui lòng nhập domain hợp lệ' }}</span>
+                  </v-col>
+                  <v-col cols="12">
+                    <span>SSL Type: {{ domainStore.isSSL !== undefined ? domainStore.isSSL : 'flexible' }}</span>
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue-darken-1" variant="text" @click="close">Cancel</v-btn>
+              <v-btn :disabled="!domainStore.serverIP" color="blue-darken-1" variant="text" @click="submitStep2">OK</v-btn>
+              <v-spacer></v-spacer>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
         </v-toolbar-title>
       </v-toolbar>
     </template>

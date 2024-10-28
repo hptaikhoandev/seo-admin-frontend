@@ -11,7 +11,8 @@ export const useDomainStore = defineStore({
   id: 'domain',
   state: () => ({
     serverIP: '',
-    isSSL: false,
+    isSSL: 'flexible',
+    isValidServerIP: false,
     domain: [] as Array<Record<string, any>>,
     domainNS: [] as Array<Record<string, any>>,
     domainExport: [] as Array<Record<string, any>>,
@@ -52,7 +53,7 @@ export const useDomainStore = defineStore({
         const response = await axios.post(`${baseUrlScript}/add-list-domains-to-cloudflare`, params,{ 
           headers: {
             Authorization: bearerToken,
-            KeepAlive: 'timeout=1800',
+            KeepAlive: 'timeout=7200',
           },
          });
         

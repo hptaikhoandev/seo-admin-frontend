@@ -14,7 +14,7 @@ export default defineComponent({
     return {
       domainStore: useDomainStore,
       serverIP:'',
-      isSSL: false,
+      isSSL: 'flexible',
       dialog: false,
       dialogDelete: false,
       search: ref(''),
@@ -30,18 +30,12 @@ export default defineComponent({
       editedItem: {
         id: 0,
         name: '',
-        ns: '',
-        status: '',
-        userId: 1,
         createdAt: '',
         updatedAt: '',
       },
       defaultItem: {
         id: 0,
         name: '',
-        ns: '',
-        status: '',
-        userId: 1,
         createdAt: '',
         updatedAt: '',
       },
@@ -73,13 +67,19 @@ export default defineComponent({
   },
   watch: {
     serverIP(newIP) {
-      this.domainStore.serverIP = newIP
+      this.domainStore.serverIP = newIP;
+      this.domainStore.isValidServerIP = this.validateIPAddress(newIP) === true;
+
     },
-    isSSL(newIsSSL) {
-      this.domainStore.isSSL = newIsSSL
+    isSSL(newValue, oldValue) {
+      this.domainStore.isSSL = newValue;
+      // Additional actions on change can be added here
     },
-    items(newItems) {
-      this.domainStore.domain = newItems
+    items: {
+      handler(newItems) {
+        this.domainStore.domain = newItems;
+      },
+      deep: true, 
     },
     dialog(val) {
       val || this.close()
@@ -114,7 +114,8 @@ export default defineComponent({
       alert('submitToCF');
     },
     reset() {
-      this.items = [];
+      console.log('>>>>> reset', this.editedItem);
+      this.items.splice(0, this.items.length);
     },
     editItem(item) {
       this.editedIndex = this.items.indexOf(item)
@@ -138,7 +139,6 @@ export default defineComponent({
       if (sortBy.length === 0) return;
       this.sortBy = sortBy[0].key;
       this.sortDesc = (sortBy[0].order === 'desc') ? true : false;
-      console.log(">>>>updateSortBy", this.sortBy);
       this.page = 1;
       this.fetchData();
     },
@@ -190,39 +190,32 @@ export default defineComponent({
       document.body.removeChild(link);
     },
     async importDomains(event) {
-      let itemCurrent = this.items;
-      this.items = [];
       // Access the file uploaded
       const file = event.target.files[0];
       if (!file) {
         return;
       }
-
       try {
-        // Read the content of the file
         const fileContent = await this.readFile(file);
-        // Assuming each domain is on a new line in the text file
         const domainList = fileContent.split('\n').map(domain => domain.trim()).filter(domain => domain);
         const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
-        // Loop through the list and add domains to this.items if they don't already exist
         domainList.forEach(domainName => {
           const nameExists = this.items.some(item => item.name === domainName);
-
           if (!nameExists) {
-            const newDomain = {
+            this.editedItem = {
+              id: 0,
               name: domainName,
-              createdAt: currentTime,
-              updatedAt: currentTime,
+              createdAt: currentTime.toString(),
+              updatedAt: currentTime.toString(),
             };
-            this.items.push(newDomain);
+            this.items.unshift(this.editedItem);
           }
         });
-        this.items.unshift(...itemCurrent);
+        event.target.value = null;
       } catch (error) {
         console.error('Error reading file:', error);
       }
     },
-
     readFile(file) {
       // Return a promise to read the file content
       return new Promise((resolve, reject) => {
@@ -233,7 +226,6 @@ export default defineComponent({
       });
     },
     save() {
-
       const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
       this.editedItem.createdAt = currentTime;
       this.editedItem.updatedAt = currentTime;
@@ -245,7 +237,7 @@ export default defineComponent({
       if (this.editedIndex > -1) {
         Object.assign(this.items[this.editedIndex], this.editedItem)
       } else {
-        this.items.push(this.editedItem)
+        this.items.unshift(this.editedItem)
       }
       this.close();
     },
@@ -262,7 +254,7 @@ export default defineComponent({
       </v-col>
     </v-row>
     <v-row class="py-0">
-      <v-col class="py-0">
+      <v-col cols="3" class="py-0">
         <v-text-field 
           v-model="serverIP" 
           label="Server IP" 
@@ -271,11 +263,12 @@ export default defineComponent({
           :rules="[validateIPAddress]"
         />
       </v-col>
-      <v-col class="py-0">
-        <v-checkbox 
+      <v-col cols="2" class="py-0">
+        <v-select
           v-model="isSSL"
-          label="SSL Type" 
-          class="mt-5"   
+          label="SSL Type"
+          class="mt-3" 
+          :items="['flexible', 'full', 'full (strict)']"
         />
       </v-col>
     </v-row>
@@ -313,7 +306,6 @@ export default defineComponent({
             <v-card-text>
               <v-container>
                 <v-row>
-                  <!-- Mỗi dòng sẽ là một trường (v-text-field) -->
                   <v-col cols="12">
                     <v-text-field v-model="editedItem.name" label="Name" density="comfortable" :rules="[validateDomain]"></v-text-field>
                   </v-col>

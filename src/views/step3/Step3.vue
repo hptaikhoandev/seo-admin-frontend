@@ -59,9 +59,9 @@ export default defineComponent({
     },
     showStept3(): boolean {
       const store = useDomainStore();
-      return store.domain.length > 0 && store.domainNS.length > 0;
+      // if (store.domainNS.length == 0) return false;
+      return store.domainNS.length > 0;
     },
-
 
   },
   watch: {
@@ -91,25 +91,20 @@ export default defineComponent({
     },
     submitStep3() {
       const dataExport = this.domainStore.domainExport;
-
       // Create CSV content from dataExport
       const csvHeaders = "Domain,Name Servers\n"; // Header row
       const csvContent = dataExport.map(item => `${item.domain},"${item.ns}"`).join("\n");
       const csvData = csvHeaders + csvContent;
-
       // Create a Blob from the CSV data
       const blob = new Blob([csvData], { type: "text/csv" });
-
       // Create a download link for the Blob
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
       link.download = "domains_list.csv";
-      
       // Trigger the download
       document.body.appendChild(link);
       link.click();
-
       // Clean up the URL object and the link element
       URL.revokeObjectURL(url);
       document.body.removeChild(link);
@@ -179,6 +174,9 @@ export default defineComponent({
         Export
       </v-btn>
     </v-toolbar-title>
+    <!-- <v-toolbar-title>
+      {{ domainStore.domainExport?.length }}/{{ domainStore.domain?.length }} Domains Finished
+    </v-toolbar-title> -->
   </v-toolbar>
 </template>
 
