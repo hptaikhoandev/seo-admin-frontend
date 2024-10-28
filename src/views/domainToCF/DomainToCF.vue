@@ -1,21 +1,26 @@
 <script lang="ts">
-import { defineComponent, ref, type Ref } from 'vue';
+import { defineComponent, ref, type Ref, computed } from 'vue';
 import { usePhoneStore } from '@/stores/modules/phone/phone';
 import { useMessageStore } from '@/stores/modules/message/message';
-import PhoneForSending from './../phonesForSending/PhoneForSending.vue';
-import MessageForSending from '../messagesForSending/MessageForSending.vue';
+import { useDomainStore } from '@/stores/modules/domain/domain';
+import Step1 from './../step1/Step1.vue';
+import Step2 from './../step2/Step2.vue';
+import Step3 from '../step3/Step3.vue';
 
 
 export default defineComponent({
-  name: 'SendPhone',
+  name: 'DomainToCF',
   components: {
-    PhoneForSending,
-    MessageForSending,
+    Step1,
+    Step2,
+    Step3,
   },
   data() {
     return {
+      domainStore: useDomainStore,
+      isSSL: false,
       isVisibleStep2: true,
-      isVisibleStep3: false,
+      isVisibleStep3: true,
       dialog: false,
       dialogDelete: false,
       search: ref(''),
@@ -57,11 +62,10 @@ export default defineComponent({
 
   mounted() {
     // this.fetchData();
-    const phoneStore = usePhoneStore();
-    console.log("==>001", phoneStore.selectedPhones);
   },
   created() {
-    this.fetchData()
+    this.fetchData();
+
   },
   computed: {
     formTitle() {
@@ -116,21 +120,14 @@ export default defineComponent({
 </script>
 <template>
 
-  <PhoneForSending />
+  <Step1 />
  
   <v-divider class="my-4" inset vertical></v-divider>
 
-  <MessageForSending v-if="isVisibleStep2" />
+  <Step2 v-if="isVisibleStep2" />
   <v-divider class="my-4" inset vertical></v-divider>
 
-  <v-toolbar flat v-if="isVisibleStep3">
-    <v-toolbar-title>
-      Step 3(Final): Export to Excel
-      <v-btn class="text-white mx-2" :style="{ backgroundColor: '#7DA77D' }" @click="sendSMS">
-        Export
-      </v-btn>
-    </v-toolbar-title>
-  </v-toolbar>
+  <Step3 v-if="isVisibleStep3" />
 </template>
 
 <style>

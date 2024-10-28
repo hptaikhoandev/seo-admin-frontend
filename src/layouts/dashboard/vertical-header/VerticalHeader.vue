@@ -1,14 +1,22 @@
 <script setup lang="ts">
 import { useCustomizerStore } from '../../../stores/customizer';
-// icons
 import { MenuFoldOutlined, SearchOutlined, GithubOutlined } from '@ant-design/icons-vue';
-
-// dropdown imports
 import NotificationDD from './NotificationDD.vue';
 import Searchbar from './SearchBarPanel.vue';
 import ProfileDD from './ProfileDD.vue';
+import {jwtDecode} from 'jwt-decode';
+import { ref } from 'vue';
 
 const customizer = useCustomizerStore();
+const user = ref(null);
+
+const storedUser = localStorage.getItem('user');
+if (storedUser) {
+  const parsedUser = JSON.parse(storedUser);
+  if (parsedUser && parsedUser.user && parsedUser.user.token) {
+    user.value = jwtDecode(parsedUser.user.token);
+  }
+}
 </script>
 
 <template>
@@ -90,7 +98,7 @@ const customizer = useCustomizerStore();
             <v-avatar class="mr-sm-2 mr-0 py-2">
               <img src="@/assets/images/users/avatar-1.png" alt="Julia" />
             </v-avatar>
-            <h6 class="text-subtitle-1 mb-0 d-sm-block d-none">Okebaybi</h6>
+            <h6 class="text-subtitle-1 mb-0 d-sm-block d-none">{{ user.name }}</h6>
           </div>
         </v-btn>
       </template>

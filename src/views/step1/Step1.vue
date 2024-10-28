@@ -5,14 +5,16 @@ import moment from 'moment';
 import { Loader2Icon, ReloadIcon } from 'vue-tabler-icons';
 import { RedoOutlined } from '@ant-design/icons-vue';
 
-
 export default defineComponent({
-  name: 'InputDomain',
+  name: 'Step1',
   components: {
     //
   },
   data() {
     return {
+      domainStore: useDomainStore,
+      serverIP:'',
+      isSSL: 'flexible',
       dialog: false,
       dialogDelete: false,
       search: ref(''),
@@ -28,18 +30,12 @@ export default defineComponent({
       editedItem: {
         id: 0,
         name: '',
-        ns: '',
-        status: '',
-        userId: 1,
         createdAt: '',
         updatedAt: '',
       },
       defaultItem: {
         id: 0,
         name: '',
-        ns: '',
-        status: '',
-        userId: 1,
         createdAt: '',
         updatedAt: '',
       },
@@ -61,8 +57,30 @@ export default defineComponent({
     formTitle() {
       return this.editedIndex === -1 ? 'New Domain' : 'Edit Domain'
     },
+    isNameValid() {
+      return this.validateDomain(this.editedItem.name) === true;
+    },
+    items(): Array<Record<string, any>> {
+      const store = useDomainStore();
+      return store.domain;
+    }
   },
   watch: {
+    serverIP(newIP) {
+      this.domainStore.serverIP = newIP;
+      this.domainStore.isValidServerIP = this.validateIPAddress(newIP) === true;
+
+    },
+    isSSL(newValue, oldValue) {
+      this.domainStore.isSSL = newValue;
+      // Additional actions on change can be added here
+    },
+    items: {
+      handler(newItems) {
+        this.domainStore.domain = newItems;
+      },
+      deep: true, 
+    },
     dialog(val) {
       val || this.close()
     },
@@ -96,7 +114,8 @@ export default defineComponent({
       alert('submitToCF');
     },
     reset() {
-      this.items = [];
+      console.log('>>>>> reset', this.editedItem);
+      this.items.splice(0, this.items.length);
     },
     editItem(item) {
       this.editedIndex = this.items.indexOf(item)
@@ -113,7 +132,6 @@ export default defineComponent({
       this.fetchData();
     },
     handleOnSearch() {
-      console.log(">>>>onSearch", this.search);
       this.page = 1;
       this.fetchData();
     },
@@ -121,7 +139,6 @@ export default defineComponent({
       if (sortBy.length === 0) return;
       this.sortBy = sortBy[0].key;
       this.sortDesc = (sortBy[0].order === 'desc') ? true : false;
-      console.log(">>>>updateSortBy", this.sortBy);
       this.page = 1;
       this.fetchData();
     },
@@ -133,6 +150,10 @@ export default defineComponent({
       const ipPattern = /^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$/;
       return ipPattern.test(value) || 'Please enter a valid IP address (e.g., 54.243.100.131)';
     },
+    validateDomain(value) {
+      const domainRegex = /^(?!:\/\/)([a-zA-Z0-9-_]*\.)?[a-zA-Z0-9][a-zA-Z0-9-_]*\.[a-zA-Z]{2,11}?$/;
+      return domainRegex.test(value) || 'Please enter a valid domain name';
+    },
     deleteItem(item) {
       this.editedIndex = this.items.indexOf(item)
       this.editedItem = Object.assign({}, item)
@@ -141,8 +162,6 @@ export default defineComponent({
 
     deleteItemConfirm() {
       this.items.splice(this.editedIndex, 1)
-      // const domainStore = useDomainStore();
-      // domainStore.deleteDomain(this.editedItem.id);
       this.closeDelete()
     },
 
@@ -171,50 +190,32 @@ export default defineComponent({
       document.body.removeChild(link);
     },
     async importDomains(event) {
-      const domainStore = useDomainStore();
-
       // Access the file uploaded
       const file = event.target.files[0];
       if (!file) {
         return;
       }
-
       try {
-        // Read the content of the file
         const fileContent = await this.readFile(file);
-
-        // Assuming each domain is on a new line in the text file
         const domainList = fileContent.split('\n').map(domain => domain.trim()).filter(domain => domain);
-
         const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
-
-        // Loop through the list and add domains to this.items if they don't already exist
         domainList.forEach(domainName => {
           const nameExists = this.items.some(item => item.name === domainName);
-
           if (!nameExists) {
-            const newDomain = {
+            this.editedItem = {
+              id: 0,
               name: domainName,
-              createdAt: currentTime,
-              updatedAt: currentTime,
-              // Add other domain fields as needed
+              createdAt: currentTime.toString(),
+              updatedAt: currentTime.toString(),
             };
-
-            // Add the new domain to this.items
-            this.items.push(newDomain);
-
-            // Optionally, update the domain store as well
-            // domainStore.createDomain(newDomain);
+            this.items.unshift(this.editedItem);
           }
         });
-
-        console.log('Imported domains:', this.items);
-
+        event.target.value = null;
       } catch (error) {
         console.error('Error reading file:', error);
       }
     },
-
     readFile(file) {
       // Return a promise to read the file content
       return new Promise((resolve, reject) => {
@@ -225,7 +226,6 @@ export default defineComponent({
       });
     },
     save() {
-      const domainStore = useDomainStore();
       const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
       this.editedItem.createdAt = currentTime;
       this.editedItem.updatedAt = currentTime;
@@ -236,14 +236,8 @@ export default defineComponent({
       }
       if (this.editedIndex > -1) {
         Object.assign(this.items[this.editedIndex], this.editedItem)
-        console.log(">>>>> savexxx", this.items);
-        // domainStore.updateDomain({ id: this.editedItem.id, name: this.editedItem.name });
       } else {
-        console.log(">>>>> saveyyy", this.items);
-
-        this.items.push(this.editedItem)
-        // domainStore.createDomain({ name: this.editedItem.name, ns: this.editedItem.ns, status: this.editedItem.status, userId: this.editedItem.userId });
-
+        this.items.unshift(this.editedItem)
       }
       this.close();
     },
@@ -255,16 +249,27 @@ export default defineComponent({
 <template>
   <v-container class="px-5" :style="{ backgroundColor: '#EEEEEE', borderRadius: '5px', maxWidth: '100%' }">
     <v-row class="pb-0">
-      <v-col class="pb-0">
-        <h2>Step 1: input domains</h2>
+      <v-col class="pb-2" :style="{fontSize: '20px'}">
+        Step 1: Input domains
       </v-col>
     </v-row>
     <v-row class="py-0">
-      <v-col class="py-0">
-        <v-text-field label="Server IP" placeholder="Enter Server IP" class="mt-3" :rules="[validateIPAddress]"/>
+      <v-col cols="3" class="py-0">
+        <v-text-field 
+          v-model="serverIP" 
+          label="Server IP" 
+          placeholder="Enter Server IP" 
+          class="mt-3" 
+          :rules="[validateIPAddress]"
+        />
       </v-col>
-      <v-col class="py-0">
-        <v-checkbox label="Set SSL Type" class="mt-5" />
+      <v-col cols="2" class="py-0">
+        <v-select
+          v-model="isSSL"
+          label="SSL Type"
+          class="mt-3" 
+          :items="['flexible', 'full', 'full (strict)']"
+        />
       </v-col>
     </v-row>
     <v-row>
@@ -301,9 +306,8 @@ export default defineComponent({
             <v-card-text>
               <v-container>
                 <v-row>
-                  <!-- Mỗi dòng sẽ là một trường (v-text-field) -->
                   <v-col cols="12">
-                    <v-text-field v-model="editedItem.name" label="Name" density="comfortable"></v-text-field>
+                    <v-text-field v-model="editedItem.name" label="Name" density="comfortable" :rules="[validateDomain]"></v-text-field>
                   </v-col>
 
                   <v-col cols="12">
@@ -323,7 +327,7 @@ export default defineComponent({
               <v-btn color="blue-darken-1" variant="text" @click="close">
                 Cancel
               </v-btn>
-              <v-btn color="blue-darken-1" variant="text" @click="save">
+              <v-btn :disabled="!isNameValid" color="blue-darken-1" variant="text" @click="save">
                 Save
               </v-btn>
             </v-card-actions>
@@ -346,10 +350,21 @@ export default defineComponent({
   </v-container>
 
 
-  <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
-    :items-length="totalItems" :page.sync="page" @update:page="handlePageChange"
-    @update:items-per-page="handleItemsPerPageChange" height="300" hover hide-default-footer :loading="loading"
-    @update:options="handleSortBy">
+  <v-data-table-server 
+    :headers="headers" 
+    :items="items" 
+    item-value="id" 
+    :items-per-page="itemsPerPage"
+    :items-length="totalItems" 
+    :page.sync="page" 
+    @update:page="handlePageChange"
+    @update:items-per-page="handleItemsPerPageChange" 
+    height="200" 
+    hover 
+    hide-default-footer 
+    :loading="loading"
+    @update:options="handleSortBy"
+  >
     <template v-slot:item.actions="{ item }" class="scrollable-table">
       <EditIcon size="18" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
       <TrashIcon size="18" color="#FF5252" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />

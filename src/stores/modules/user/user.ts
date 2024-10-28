@@ -47,9 +47,9 @@ export const useUserStore = defineStore({
         this.loading = false
       }
     },
-    async createUser({name, email, password}) {
+    async createUser({name, email, password, roleId}) {
       this.loading = true
-      const params = { name, email, password }
+      const params = { name, email, password, roleId }
       try {
         const response = await axios.post(`${baseUrl}/users`, params, { 
           headers: {
@@ -64,9 +64,9 @@ export const useUserStore = defineStore({
         this.loading = false
       }
     },
-    async updateUser({id, name, email, password }) {
+    async updateUser({id, name, email, password, roleId }) {
       this.loading = true
-      const params = { id, name, email, password }
+      const params = { id, name, email, password, roleId }
       try {
         const response = await axios.put(`${baseUrl}/users/` + params.id, params, { 
           headers: {

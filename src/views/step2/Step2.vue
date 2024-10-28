@@ -1,14 +1,18 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
 import { useMessageStore } from '@/stores/modules/message/message';
+import { useDomainStore } from '@/stores/modules/domain/domain';
+import moment from 'moment';
+import {jwtDecode} from 'jwt-decode';
 
 export default defineComponent({
-  name: 'MessageForSending',
+  name: 'Step2',
   components: {
     //
   },
   data() {
     return {
+      domainStore: useDomainStore,
       dialog: false,
       dialogDelete: false,
       search: ref(''),
@@ -16,7 +20,7 @@ export default defineComponent({
       sortDesc: ref(false),
       selected: ref([]),
       headers: [
-        { title: 'NAME', key: 'name' },
+        { title: 'DOMAIN', key: 'domain' },
         { title: 'NS', key: 'ns' },
         { title: 'STATUS', key: 'status' },
         { title: 'CREATED AT', key: 'createdAt' },
@@ -55,8 +59,25 @@ export default defineComponent({
     formTitle() {
       return this.editedIndex === -1 ? 'New Message' : 'Edit Message'
     },
+    showStept2(): boolean {
+      const store = useDomainStore();
+      if (store.domain.length == 0) {
+        this.items.splice(0, this.items.length);
+        store.domainNS.splice(0, store.domainNS.length);
+      }
+      return (store.domain.length > 0);
+    },
+
+    items(newItems) {
+      this.domainStore.domainNS = newItems
+    },
+
+
   },
   watch: {
+    items(newItems) {
+      this.domainStore.domainExport = newItems
+    },
     dialog(val) {
       val || this.close()
     },
@@ -80,6 +101,48 @@ export default defineComponent({
       } finally {
         this.loading = false;
       }
+    },
+    async submitStep2() {
+      this.close();
+      this.loading = true;
+      try {
+        const serverIP = this.domainStore.serverIP;
+        const isSSL = this.domainStore.isSSL !== undefined ? this.domainStore.isSSL : 'flexible'; 
+        const domainList = this.domainStore.domain?.map(domain => domain.name); 
+        const user = ref(null);
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          if (parsedUser && parsedUser.user && parsedUser.user.token) {
+            user.value = jwtDecode(parsedUser.user.token);
+          }
+        }
+        const requestData = {
+          team: user.value.roleId,
+          server_ip: serverIP,
+          ssl_type: isSSL,
+          domains: domainList
+        };
+
+        const domainStore = useDomainStore();
+        await domainStore.addListDomainsToCloudflare(requestData);
+        let dataResult = await domainStore.domainNS;
+        const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
+        dataResult = await dataResult.map(item => ({
+          ...item,
+          createdAt: currentTime,
+          updatedAt: currentTime,
+          status: 'Pending Nameserver Updates'
+        }));
+
+        this.items = await dataResult;
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        this.loading = false;
+      }
+
+
     },
     editItem(item) {
       this.editedIndex = this.items.indexOf(item)
@@ -132,16 +195,20 @@ export default defineComponent({
         this.items.push(this.editedItem)
         messageStore.createMessage({ userId: this.editedItem.userId, body: this.editedItem.body });
       }
-      this.close()
+      this.close();
     },
   }
 });
 
 </script>
 <template>
-  <v-data-table-server 
+  <!-- <p>{{ domainStore.isValidServerIP !== undefined ? domainStore.isValidServerIP : false }}</p> -->
+
+  <v-data-table-server
+    v-if="showStept2"
     :headers="headers" 
-    :items="items" item-value="body" 
+    :items="items" 
+    item-value="body" 
     :items-per-page="itemsPerPage"
     :items-length="totalItems" 
     :page.sync="page"
@@ -150,29 +217,53 @@ export default defineComponent({
     @update:items-per-page="handleItemsPerPageChange" 
     @update:options="handleSortBy" 
     hover 
+    height="200"
     :loading="loading"
     @update:modelValue="handleSelectionChange"
   >
     <template v-slot:top>
       <v-toolbar :style="{ height: 'auto', alignItems: 'center' }">
         <v-toolbar-title :style="{ height: 'auto', display: 'flex', alignItems: 'center' }">
-          Step 2: submit to CloudFlare
-          <v-btn class="text-white mx-2" :style="{ backgroundColor: '#6A8DBA' }">
-            Submit
-          </v-btn>
+          Step 2: Submit to CloudFlare
+          <v-dialog v-model="dialog" max-width="500px">
+          <template v-slot:activator="{ props }">
+              <v-btn class="text-white mx-2" :style="{ backgroundColor: '#6A8DBA' }" v-bind="props">
+                Submit
+            </v-btn>
+          </template>
+          <v-card>
+            <v-card-title class="text-h5 text-center">Xác nhận</v-card-title>
+            <v-card-text>
+              <v-container>
+                <v-row>
+                  <v-col cols="12">
+                    <span>Số lượng domain:   {{ domainStore.domain?.length }}</span>
+                  </v-col>
+
+                  <v-col cols="12">
+                    <span>Server IP:   {{ domainStore.serverIP ? domainStore.serverIP : 'Vui lòng nhập domain hợp lệ' }}</span>
+                  </v-col>
+                  <v-col cols="12">
+                    <span>SSL Type: {{ domainStore.isSSL !== undefined ? domainStore.isSSL : 'flexible' }}</span>
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue-darken-1" variant="text" @click="close">Cancel</v-btn>
+              <v-btn :disabled="!domainStore.serverIP" color="blue-darken-1" variant="text" @click="submitStep2">OK</v-btn>
+              <v-spacer></v-spacer>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
         </v-toolbar-title>
-
-        <!-- <v-text-field class="mr-2" v-model="search" label="Search" variant="outlined" hide-details single-line clearable
-          @click:clear="handleClearSearch" @input="handleOnSearch">
-        </v-text-field> -->
-
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
     </template>
   </v-data-table-server>
 </template>
-
 <style>
 /* .custom-spacing .v-label {
   margin-bottom: 25px;

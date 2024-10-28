@@ -3,13 +3,19 @@ import { router } from '@/router';
 import axios from 'axios'
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
+const baseUrlScript = `${import.meta.env.VITE_API_URL_SCRIPT}`;
 const user = localStorage.getItem('user');
 const userObj = user ? JSON.parse(user) : null;
 const bearerToken = 'Bearer ' + userObj.user.token;
 export const useDomainStore = defineStore({
   id: 'domain',
   state: () => ({
-    domain: [],
+    serverIP: '',
+    isSSL: 'flexible',
+    isValidServerIP: false,
+    domain: [] as Array<Record<string, any>>,
+    domainNS: [] as Array<Record<string, any>>,
+    domainExport: [] as Array<Record<string, any>>,
     total: 0,
     loading: false,
     error: null,
@@ -28,6 +34,30 @@ export const useDomainStore = defineStore({
          })
         this.domain = response.data.data
         this.total = response.data.total
+      } catch (error: any) {
+        this.error = error.message
+      } finally {
+        this.loading = false
+      }
+    },
+    async addListDomainsToCloudflare(requestData: any) {
+      this.loading = true
+      let params = { 
+        team: requestData.team,
+        server_ip: requestData.server_ip,
+        ssl_type: requestData.ssl_type,
+        domains: requestData.domains
+
+       }
+      try {
+        const response = await axios.post(`${baseUrlScript}/add-list-domains-to-cloudflare`, params,{ 
+          headers: {
+            Authorization: bearerToken,
+            KeepAlive: 'timeout=7200',
+          },
+         });
+        
+        this.domainNS = response.data.results
       } catch (error: any) {
         this.error = error.message
       } finally {
