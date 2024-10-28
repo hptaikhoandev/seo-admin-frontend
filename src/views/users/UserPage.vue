@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
 import { useUserStore } from '@/stores/modules/user/user';
-
+import moment from 'moment';
 
 export default defineComponent({
   name: 'UserPage',
@@ -16,9 +16,10 @@ export default defineComponent({
       sortBy: ref('name'),
       sortDesc: ref(false),
       headers: [
-        { title: 'ID', align: 'start', sortable: false, key: 'id',},
+        { title: 'ID', align: 'start', sortable: false, key: 'id', },
         { title: 'NAME', key: 'name' },
         { title: 'EMAIL', key: 'email' },
+        { title: 'ROLE ID', key: 'roleId' },
         { title: 'CREATED AT', key: 'createdAt' },
         { title: 'UPDATED AT', key: 'updatedAt' },
         { title: 'ACTIONS', key: 'actions', sortable: false },
@@ -29,6 +30,7 @@ export default defineComponent({
         name: '',
         email: '',
         password: '',
+        roleId: '',
         createdAt: '',
         updatedAt: '',
       },
@@ -37,6 +39,7 @@ export default defineComponent({
         name: '',
         email: '',
         password: '',
+        roleId: '',
         createdAt: '',
         updatedAt: '',
       },
@@ -47,23 +50,23 @@ export default defineComponent({
       loading: ref(false),
     };
   },
-  
+
   mounted() {
     // this.fetchData();
   },
-  created () {
+  created() {
     this.fetchData()
   },
   computed: {
-    formTitle () {
+    formTitle() {
       return this.editedIndex === -1 ? 'New User' : 'Edit User'
     },
   },
   watch: {
-    dialog (val) {
+    dialog(val) {
       val || this.close()
     },
-    dialogDelete (val) {
+    dialogDelete(val) {
       val || this.closeDelete()
     },
   },
@@ -72,7 +75,7 @@ export default defineComponent({
       this.loading = true;
       try {
         const userStore = useUserStore();
-        await userStore.fetchUser({ 
+        await userStore.fetchUser({
           page: this.page,
           limit: this.itemsPerPage,
           search: this.search,
@@ -91,7 +94,7 @@ export default defineComponent({
       // Xử lý dữ liệu form sau khi submit
       console.log('>>>>> submitForm');
       alert('submitForm');
-    },    
+    },
     editItem(item) {
       this.editedIndex = this.items.indexOf(item)
       this.editedItem = Object.assign({}, item)
@@ -153,12 +156,15 @@ export default defineComponent({
 
     save() {
       const userStore = useUserStore();
+      const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
+      this.editedItem.createdAt = currentTime;
+      this.editedItem.updatedAt = currentTime;
       if (this.editedIndex > -1) {
         Object.assign(this.items[this.editedIndex], this.editedItem)
-        userStore.updateUser({ id: this.editedItem.id, name: this.editedItem.name, email: this.editedItem.email, password: this.editedItem.password });
+        userStore.updateUser({ id: this.editedItem.id, name: this.editedItem.name, email: this.editedItem.email, password: this.editedItem.password, roleId: this.editedItem.roleId });
       } else {
         this.items.push(this.editedItem)
-        userStore.createUser({ name: this.editedItem.name, email: this.editedItem.email, password: this.editedItem.password });
+        userStore.createUser({ name: this.editedItem.name, email: this.editedItem.email, password: this.editedItem.password, roleId: this.editedItem.roleId });
 
       }
       this.close()
@@ -169,51 +175,21 @@ export default defineComponent({
 
 </script>
 <template>
-  <!-- <v-data-table-server
-    :headers="headers"
-    :items="items"
-    item-value="id"
-    :items-per-page="itemsPerPage"
-    :items-length="totalItems"
-    :page.sync="page"
-    @update:page="handlePageChange"
-    @update:items-per-page="handleItemsPerPageChange"
-    hover
-    :loading="loading"
-    @update:options="handleSortBy"
-  >
+  <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
+    :items-length="totalItems" :page.sync="page" @update:page="handlePageChange"
+    @update:items-per-page="handleItemsPerPageChange" hover :loading="loading" @update:options="handleSortBy">
     <template v-slot:top>
       <v-toolbar flat>
         <v-toolbar-title>USER</v-toolbar-title>
-        <v-divider
-          class="mx-4"
-          inset
-          vertical
-        ></v-divider>
-        <v-text-field
-          v-model="search"
-          label="Search"
-          variant="outlined"
-          hide-details
-          single-line
-          clearable
-          @click:clear="handleClearSearch"
-          @input="handleOnSearch"
-        >
+        <v-divider class="mx-4" inset vertical></v-divider>
+        <v-text-field v-model="search" label="Search" variant="outlined" hide-details single-line clearable
+          @click:clear="handleClearSearch" @input="handleOnSearch">
         </v-text-field>
         <v-spacer></v-spacer>
-        <v-dialog
-          v-model="dialog"
-          max-width="500px"
-        >
+        <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ props }">
-            <v-btn
-              class="mb-2"
-              color="success"
-              dark
-              v-bind="props"
-            >
-            <SquarePlusIcon size="24" color="green" />
+            <v-btn class="mb-2" color="success" dark v-bind="props">
+              <SquarePlusIcon size="24" color="green" />
               <b>New User</b>
             </v-btn>
           </template>
@@ -224,41 +200,60 @@ export default defineComponent({
             <v-card-text>
               <v-container>
                 <v-row>
-                  <v-col cols="12" md="4" sm="6">
+                  <v-col cols="12">
                     <v-text-field disabled v-model="editedItem.id" label="ID" density="comfortable"></v-text-field>
                   </v-col>
-                  <v-col cols="12" md="4" sm="6">
+                </v-row>
+
+                <v-row>
+                  <v-col cols="12">
                     <v-text-field v-model="editedItem.name" label="Name" density="comfortable"></v-text-field>
                   </v-col>
-                  <v-col cols="12" md="4" sm="6">
+                </v-row>
+
+                <v-row>
+                  <v-col cols="12">
                     <v-text-field v-model="editedItem.email" label="Email" density="comfortable"></v-text-field>
                   </v-col>
-                  <v-col cols="12" md="4" sm="6">
-                    <v-text-field type="password" v-model="editedItem.password" label="Password" density="comfortable"></v-text-field>
+                </v-row>
+                <v-row>
+                  <v-col cols="12">
+                      <v-select
+                          v-model="editedItem.roleId"
+                          :items="['admin', 'seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6']"
+                          label="Role Id"
+                          density="comfortable"
+                      ></v-select>
                   </v-col>
-                  <v-col cols="12" md="4" sm="6">
-                    <v-text-field disabled v-model="editedItem.createdAt" label="Created At" density="comfortable"></v-text-field>
+                </v-row>
+                <v-row>
+                  <v-col cols="12">
+                    <v-text-field type="password" v-model="editedItem.password" label="Password"
+                      density="comfortable"></v-text-field>
                   </v-col>
-                  <v-col cols="12" md="4" sm="6">
-                    <v-text-field disabled v-model="editedItem.updatedAt" label="Updated At" density="comfortable"></v-text-field>
+                </v-row>
+
+                <v-row>
+                  <v-col cols="12">
+                    <v-text-field disabled v-model="editedItem.createdAt" label="Created At"
+                      density="comfortable"></v-text-field>
+                  </v-col>
+                </v-row>
+
+                <v-row>
+                  <v-col cols="12">
+                    <v-text-field disabled v-model="editedItem.updatedAt" label="Updated At"
+                      density="comfortable"></v-text-field>
                   </v-col>
                 </v-row>
               </v-container>
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn
-                color="blue-darken-1"
-                variant="text"
-                @click="close"
-              >
+              <v-btn color="blue-darken-1" variant="text" @click="close">
                 Cancel
               </v-btn>
-              <v-btn
-                color="blue-darken-1"
-                variant="text"
-                @click="save"
-              >
+              <v-btn color="blue-darken-1" variant="text" @click="save">
                 Save
               </v-btn>
             </v-card-actions>
@@ -278,37 +273,15 @@ export default defineComponent({
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
-      
+
       <EditIcon size="24" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
       <TrashIcon size="24" color="red" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
     </template>
-  </v-data-table-server> -->
-  <v-container>
-    <!-- Title -->
-    <v-card-title class="">
-      Redirect domain
-    </v-card-title>
-
-    <v-form @submit.prevent="submitForm" class="mt-4">
-      <!-- Input Name -->
-      <v-text-field label="xxx" outlined required></v-text-field>
-
-      <!-- Input Age -->
-      <v-text-field label="yyy" outlined type="number" required></v-text-field>
-
-      <!-- Input Address -->
-      <v-text-field label="zzz" outlined required></v-text-field>
-
-      <!-- Submit Button -->
-      <v-btn class="mt-4 bg-success text-white mx-auto d-block" @click="submitForm">
-        Submit
-      </v-btn>
-    </v-form>
-  </v-container>
+  </v-data-table-server>
 </template>
 
-<style >
+<style>
 .custom-spacing .v-label {
-  margin-bottom: 25px; 
+  margin-bottom: 25px;
 }
 </style>

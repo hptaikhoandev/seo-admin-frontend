@@ -17,6 +17,11 @@ const MainRoutes = {
       component: () => import('@/views/dashboard/DefaultDashboard.vue')
     },
     {
+      name: 'User Management',
+      path: '/user-management',
+      component: () => import('@/views/users/UserPage.vue')
+    },
+    {
       name: 'Thêm domains vào CF',
       path: '/them-domains-vao-cf',
       component: () => import('@/views/domainToCF/DomainToCF.vue')

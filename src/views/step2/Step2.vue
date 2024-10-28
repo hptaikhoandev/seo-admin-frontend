@@ -3,6 +3,7 @@ import { defineComponent, ref, type Ref } from 'vue';
 import { useMessageStore } from '@/stores/modules/message/message';
 import { useDomainStore } from '@/stores/modules/domain/domain';
 import moment from 'moment';
+import {jwtDecode} from 'jwt-decode';
 
 export default defineComponent({
   name: 'Step2',
@@ -108,9 +109,16 @@ export default defineComponent({
         const serverIP = this.domainStore.serverIP;
         const isSSL = this.domainStore.isSSL !== undefined ? this.domainStore.isSSL : 'flexible'; 
         const domainList = this.domainStore.domain?.map(domain => domain.name); 
-
+        const user = ref(null);
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          if (parsedUser && parsedUser.user && parsedUser.user.token) {
+            user.value = jwtDecode(parsedUser.user.token);
+          }
+        }
         const requestData = {
-          team: "seo-3",
+          team: user.value.roleId,
           server_ip: serverIP,
           ssl_type: isSSL,
           domains: domainList
@@ -126,7 +134,6 @@ export default defineComponent({
           updatedAt: currentTime,
           status: 'Pending Nameserver Updates'
         }));
-
 
         this.items = await dataResult;
       } catch (error) {
