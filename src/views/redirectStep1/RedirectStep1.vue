@@ -1,19 +1,20 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
-import { useDomainStore } from '@/stores/modules/domain/domain';
+import { useRedirectStore } from '@/stores/modules/redirect/redirect';
 import moment from 'moment';
 import { Loader2Icon, ReloadIcon } from 'vue-tabler-icons';
 import { RedoOutlined } from '@ant-design/icons-vue';
 
 export default defineComponent({
-  name: 'Step1',
+  name: 'RedirectStep1',
   components: {
     //
   },
   data() {
     return {
-      domainStore: useDomainStore,
-      serverIP: '',
+      redirectStore: useRedirectStore,
+      is301: true,
+      serverIP:'',
       isSSL: 'flexible',
       dialog: false,
       dialogDelete: false,
@@ -61,25 +62,25 @@ export default defineComponent({
       return this.validateDomain(this.editedItem.name) === true;
     },
     items(): Array<Record<string, any>> {
-      const store = useDomainStore();
+      const store = useRedirectStore();
       return store.domain;
     }
   },
   watch: {
     serverIP(newIP) {
-      this.domainStore.serverIP = newIP;
-      this.domainStore.isValidServerIP = this.validateIPAddress(newIP) === true;
+      this.redirectStore.serverIP = newIP;
+      this.redirectStore.isValidServerIP = this.validateIPAddress(newIP) === true;
 
     },
     isSSL(newValue, oldValue) {
-      this.domainStore.isSSL = newValue;
+      this.redirectStore.isSSL = newValue;
       // Additional actions on change can be added here
     },
     items: {
       handler(newItems) {
-        this.domainStore.domain = newItems;
+        this.redirectStore.domain = newItems;
       },
-      deep: true,
+      deep: true, 
     },
     dialog(val) {
       val || this.close()
@@ -92,16 +93,16 @@ export default defineComponent({
     async fetchData() {
       this.loading = true;
       try {
-        const domainStore = useDomainStore();
-        await domainStore.fetchDomain({
+        const redirectStore = useRedirectStore();
+        await redirectStore.fetchDomain({
           page: this.page,
           limit: this.itemsPerPage,
           search: this.search,
           sortBy: this.sortBy,
           sortDesc: this.sortDesc,
         });
-        this.items = await domainStore.domain;
-        this.totalItems = await domainStore.total;
+        this.items = await redirectStore.domain;
+        this.totalItems = await redirectStore.total;
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -147,22 +148,8 @@ export default defineComponent({
       this.fetchData();
     },
     validateIPAddress(value) {
-      const ipPattern = /^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})(\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})){3}$/;
-      const invalidIPs = [
-        "0.0.0.0", "1.1.1.1", "127.0.0.1", "169.254.0.0", "192.0.2.0",
-        "198.51.100.0", "203.0.113.0", "224.0.0.0", "255.255.255.255",
-        "100.64.0.0", "240.0.0.0"
-      ];
-
-      if (!ipPattern.test(value)) {
-        return 'Please enter a valid IP address (e.g., 54.243.100.131)';
-      }
-
-      if (invalidIPs.includes(value)) {
-        return 'This IP address cannot be used.';
-      }
-
-      return true;
+      const ipPattern = /^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$/;
+      return ipPattern.test(value) || 'Please enter a valid IP address (e.g., 54.243.100.131)';
     },
     validateDomain(value) {
       const domainRegex = /^(?!:\/\/)([a-zA-Z0-9-_]*\.)?[a-zA-Z0-9][a-zA-Z0-9-_]*\.[a-zA-Z]{2,11}?$/;
@@ -263,107 +250,40 @@ export default defineComponent({
 <template>
   <v-container class="px-5" :style="{ backgroundColor: '#EEEEEE', borderRadius: '5px', maxWidth: '100%' }">
     <v-row class="pb-0">
-      <v-col class="pb-2" :style="{ fontSize: '20px' }">
-        Step 1: Input domains
+      <v-col class="pb-2" :style="{fontSize: '20px'}">
+        Step 1: Choice redirect type
       </v-col>
     </v-row>
     <v-row class="py-0">
       <v-col cols="3" class="py-0">
-        <v-text-field v-model="serverIP" label="Server IP" placeholder="Enter Server IP" class="mt-3"
-          :rules="[validateIPAddress]" />
+        <v-select
+          v-model="isSSL"
+          label="Redirect Type"
+          class="mt-3" 
+          :items="['Wildcard Redirect', 'Dynamic Segment Redirect', 'Domains to domains Redirect']"
+        />
       </v-col>
-      <v-col cols="2" class="py-0">
-        <v-select v-model="isSSL" label="SSL Type" class="mt-3" :items="['flexible', 'full', 'full_strict']" />
+      <v-col cols="1" class="py-1">
+        <v-checkbox
+          v-model="is301"
+          label="301"
+          class="mt-3"
+          disabled
+        />
       </v-col>
-    </v-row>
-    <v-row>
-      <v-col cols="auto">
-        <v-btn :style="{ backgroundColor: '#FF5252', color: '#ffff' }" @click="reset">
-          <ReloadIcon size="20" color="white" />
-        </v-btn>
-      </v-col>
-      <v-col cols="auto">
-        <v-btn :style="{ backgroundColor: '#6A8DBA', color: '#ffff' }" @click="downloadFile">
-          <DownloadIcon size="20" color="white" />
-          Download sample file
-        </v-btn>
-      </v-col>
-      <v-col cols="auto">
-        <v-btn :style="{ backgroundColor: '#CCAA4D', color: '#ffff' }" @click="$refs.fileInput.click()">
-          <UploadIcon size="20" color="white" />
-          Import domains
-        </v-btn>
-        <input type="file" ref="fileInput" @change="importDomains" style="display:none;" />
-      </v-col>
-      <v-col>
-        <v-dialog v-model="dialog" max-width="500px">
-          <template v-slot:activator="{ props }">
-            <v-btn class="mb-2 ml-1 mr-2" :style="{ backgroundColor: '#7DA77D', color: '#ffff' }" dark v-bind="props">
-              <SquarePlusIcon size="20" color="white" />
-              New domain
-            </v-btn>
-          </template>
-          <v-card>
-            <v-card-title>
-              <span class="text-h5">{{ formTitle }}</span>
-            </v-card-title>
-            <v-card-text>
-              <v-container>
-                <v-row>
-                  <v-col cols="12">
-                    <v-text-field v-model="editedItem.name" label="Name" density="comfortable"
-                      :rules="[validateDomain]"></v-text-field>
-                  </v-col>
-
-                  <v-col cols="12">
-                    <v-text-field disabled v-model="editedItem.createdAt" label="Created At"
-                      density="comfortable"></v-text-field>
-                  </v-col>
-
-                  <v-col cols="12">
-                    <v-text-field disabled v-model="editedItem.updatedAt" label="Updated At"
-                      density="comfortable"></v-text-field>
-                  </v-col>
-                </v-row>
-              </v-container>
-            </v-card-text>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="blue-darken-1" variant="text" @click="close">
-                Cancel
-              </v-btn>
-              <v-btn :disabled="!isNameValid" color="blue-darken-1" variant="text" @click="save">
-                Save
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-
-        </v-dialog>
-        <v-dialog v-model="dialogDelete" max-width="500px">
-          <v-card>
-            <v-card-title class="text-h5">Are you sure you want to delete this item?</v-card-title>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="blue-darken-1" variant="text" @click="closeDelete">Cancel</v-btn>
-              <v-btn color="blue-darken-1" variant="text" @click="deleteItemConfirm">OK</v-btn>
-              <v-spacer></v-spacer>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
+      <v-col cols="3" class="py-0">
+        <v-text-field 
+          v-model="serverIP" 
+          label="Domain redirect From" 
+          placeholder="Enter redirect domain" 
+          class="mt-3" 
+          :rules="[validateDomain]"
+        />
       </v-col>
     </v-row>
   </v-container>
 
 
-  <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
-    :items-length="totalItems" :page.sync="page" @update:page="handlePageChange"
-    @update:items-per-page="handleItemsPerPageChange" height="200" hover hide-default-footer :loading="loading"
-    @update:options="handleSortBy">
-    <template v-slot:item.actions="{ item }" class="scrollable-table">
-      <EditIcon size="18" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
-      <TrashIcon size="18" color="#FF5252" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
-    </template>
-  </v-data-table-server>
 </template>
 
 <style>

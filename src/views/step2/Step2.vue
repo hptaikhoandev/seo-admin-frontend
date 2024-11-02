@@ -124,6 +124,7 @@ export default defineComponent({
           domains: domainList
         };
 
+        console.log('===>requestData', requestData);
         const domainStore = useDomainStore();
         await domainStore.addListDomainsToCloudflare(requestData);
         let dataResult = await domainStore.domainNS;

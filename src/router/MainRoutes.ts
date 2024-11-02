@@ -34,7 +34,7 @@ const MainRoutes = {
     {
       name: 'Redirect Domain',
       path: '/redirect-domain',
-      component: () => import('@/views/users/UserPage.vue')
+      component: () => import('@/views/redirectToCF/RedirectToCF.vue')
     },
     {
       name: 'Whiltelist IP',
