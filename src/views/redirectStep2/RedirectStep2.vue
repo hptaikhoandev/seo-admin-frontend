@@ -2,6 +2,7 @@
 import { defineComponent, ref, type Ref } from 'vue';
 import { useDomainFromStore } from '@/stores/modules/domainFrom/domainFrom';
 import { useDomainToStore } from '@/stores/modules/domainTo/domainTo';
+import { useRedirectStore } from '@/stores/modules/redirect/redirect';
 
 export default defineComponent({
   name: 'RedirectStep2',
@@ -59,8 +60,8 @@ export default defineComponent({
     showStept2(): boolean {
       const storeFrom = useDomainFromStore();
       const storeTo = useDomainToStore();
-      console.log('===>storeFrom.domain.length', storeFrom.domain);
-      return storeFrom.domain.length > 0 && storeTo.domain.length > 0;
+      const storeRedirect = useRedirectStore();
+      return (storeFrom.domain.length > 0 && storeTo.domain.length > 0) || (storeRedirect.redirectType !== 'Domains to domains Redirect' && storeRedirect.isValidDomainRedirectFrom && storeRedirect.isValidDomainRedirectTo);
     },
 
   },
