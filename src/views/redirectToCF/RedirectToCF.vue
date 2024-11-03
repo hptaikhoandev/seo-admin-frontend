@@ -4,16 +4,16 @@ import { usePhoneStore } from '@/stores/modules/phone/phone';
 import { useMessageStore } from '@/stores/modules/message/message';
 import { useDomainStore } from '@/stores/modules/domain/domain';
 import RedirectStep1 from './../redirectStep1/RedirectStep1.vue';
-import RedirectStep2 from './../redirectStep2/RedirectStep2.vue';
-import RedirectStep3 from '../redirectStep3/RedirectStep3.vue';
+import RedirectStep1DomainsToDomains from './../redirectStep1DomainsToDomains/RedirectStep1DomainsToDomains.vue';
+import RedirectStep2 from '../redirectStep2/RedirectStep2.vue';
 
 
 export default defineComponent({
   name: 'RedirectToCF',
   components: {
     RedirectStep1,
+    RedirectStep1DomainsToDomains,
     RedirectStep2,
-    RedirectStep3,
   },
   data() {
     return {
@@ -124,10 +124,10 @@ export default defineComponent({
  
   <v-divider class="my-4" inset vertical></v-divider>
 
-  <RedirectStep2 />
+  <RedirectStep1DomainsToDomains />
   <v-divider class="my-4" inset vertical></v-divider>
 
-  <RedirectStep3 />
+  <RedirectStep2 />
 </template>
 
 <style>

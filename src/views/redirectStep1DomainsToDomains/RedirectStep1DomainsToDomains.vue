@@ -1,21 +1,26 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
 import { useRedirectStore } from '@/stores/modules/redirect/redirect';
+import { useDomainFromStore } from '@/stores/modules/domainFrom/domainFrom';
+import { useDomainToStore } from '@/stores/modules/domainTo/domainTo';
 import moment from 'moment';
 import { Loader2Icon, ReloadIcon } from 'vue-tabler-icons';
 import { RedoOutlined } from '@ant-design/icons-vue';
+import RedirectStep1DomainsToDomainsFrom from './../redirectStep1DomainsToDomainsFrom/RedirectStep1DomainsToDomainsFrom.vue';
+import RedirectStep1DomainsToDomainsTo from './../redirectStep1DomainsToDomainsTo/RedirectStep1DomainsToDomainsTo.vue';
+
 
 export default defineComponent({
-  name: 'RedirectStep1',
+  name: 'RedirectStep1DomainsToDomains',
   components: {
-    //
+    RedirectStep1DomainsToDomainsFrom,
+    RedirectStep1DomainsToDomainsTo,
   },
   data() {
     return {
-      is301: true,
-      domainRedirectFrom:'',
-      domainRedirectTo:'',
-      redirectType: 'Wildcard Redirect',
+      redirectStore: useRedirectStore,
+      serverIP: '',
+      isSSL: 'flexible',
       dialog: false,
       dialogDelete: false,
       search: ref(''),
@@ -52,7 +57,7 @@ export default defineComponent({
     // this.fetchData();
   },
   created() {
-    //
+    this.fetchData()
   },
   computed: {
     formTitle() {
@@ -61,24 +66,31 @@ export default defineComponent({
     isNameValid() {
       return this.validateDomain(this.editedItem.name) === true;
     },
-    showDomainRedirect(): boolean {
-      return this.redirectType !== 'Domains to domains Redirect';
+    items(): Array<Record<string, any>> {
+      const store = useRedirectStore();
+      return store.domain;
     },
+    showOptionDomainsToDomains(): boolean {
+      const store = useRedirectStore();
+      return store.redirectType === 'Domains to domains Redirect';
+    },
+
   },
   watch: {
-    domainRedirectFrom(newDomainRedirectFrom) {
-      const store = useRedirectStore();
-      store.domainRedirectFrom = newDomainRedirectFrom;
-      store.isValidDomainRedirectFrom = this.validateDomain(newDomainRedirectFrom) === true;
+    serverIP(newIP) {
+      this.redirectStore.serverIP = newIP;
+      this.redirectStore.isValidServerIP = this.validateIPAddress(newIP) === true;
+
     },
-    domainRedirectTo(newDomainRedirectTo) {
-      const store = useRedirectStore();
-      store.domainRedirectTo = newDomainRedirectTo;
-      store.isValidDomainRedirectTo = this.validateDomain(newDomainRedirectTo) === true;
+    isSSL(newValue, oldValue) {
+      this.redirectStore.isSSL = newValue;
+      // Additional actions on change can be added here
     },
-    redirectType(newValue, oldValue) {
-      const store = useRedirectStore();
-      store.redirectType = newValue;
+    items: {
+      handler(newItems) {
+        this.redirectStore.domain = newItems;
+      },
+      deep: true,
     },
     dialog(val) {
       val || this.close()
@@ -88,14 +100,56 @@ export default defineComponent({
     },
   },
   methods: {
+    async fetchData() {
+      this.loading = true;
+      try {
+        const redirectStore = useRedirectStore();
+        await redirectStore.fetchDomain({
+          page: this.page,
+          limit: this.itemsPerPage,
+          search: this.search,
+          sortBy: this.sortBy,
+          sortDesc: this.sortDesc,
+        });
+        this.items = await redirectStore.domain;
+        this.totalItems = await redirectStore.total;
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        this.loading = false;
+      }
+    },
     reset() {
-      console.log('>>>>> reset', this.editedItem);
       this.items.splice(0, this.items.length);
     },
     editItem(item) {
       this.editedIndex = this.items.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialog = true
+    },
+    handlePageChange(newPage) {
+      this.page = newPage;
+      this.fetchData();
+    },
+    handleItemsPerPageChange(newItemsPerPage) {
+      this.itemsPerPage = newItemsPerPage;
+      this.page = 1;
+      this.fetchData();
+    },
+    handleOnSearch() {
+      this.page = 1;
+      this.fetchData();
+    },
+    handleSortBy({ page, itemsPerPage, sortBy }) {
+      if (sortBy.length === 0) return;
+      this.sortBy = sortBy[0].key;
+      this.sortDesc = (sortBy[0].order === 'desc') ? true : false;
+      this.page = 1;
+      this.fetchData();
+    },
+    handleClearSearch() {
+      this.page = 1;
+      this.fetchData();
     },
     validateIPAddress(value) {
       const ipPattern = /^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$/;
@@ -198,57 +252,22 @@ export default defineComponent({
 
 </script>
 <template>
-  <v-container class="px-5" :style="{ backgroundColor: '#EEEEEE', borderRadius: '5px', maxWidth: '100%' }">
-    <v-row class="pb-0">
-      <v-col class="pb-2" :style="{fontSize: '20px'}">
-        Step 1: Choice redirect type
-      </v-col>
-    </v-row>
-    <v-row class="py-0">
-      <v-col cols="3" class="py-0">
-        <v-select
-          v-model="redirectType"
-          label="Redirect Type"
-          class="mt-3" 
-          :items="['Wildcard Redirect', 'Dynamic Segment Redirect', 'Domains to domains Redirect']"
-        />
-      </v-col>
-      <v-col cols="3" class="py-0">
-        <v-text-field 
-          v-if="showDomainRedirect"
-          v-model="domainRedirectFrom" 
-          label="Domain redirect From" 
-          placeholder="Enter redirect domain from" 
-          class="mt-3" 
-          :rules="[validateDomain]"
-        />
-      </v-col>
-      <v-col cols="1" class="py-1">
-        <v-checkbox
-          v-model="is301"
-          label="301"
-          class="mt-3"
-          disabled
-        />
-      </v-col>
-      <v-col cols="3" class="py-0">
-        <v-text-field 
-          v-if="showDomainRedirect"
-          v-model="domainRedirectTo" 
-          label="Domain redirect To" 
-          placeholder="Enter redirect domai to" 
-          class="mt-3" 
-          :rules="[validateDomain]"
-        />
-      </v-col>
-    </v-row>
+  <v-container fluid class="px-0">
+  <v-row>
+    <v-col cols="6" class="pr-0">
+      <RedirectStep1DomainsToDomainsFrom v-if="showOptionDomainsToDomains" />
+    </v-col>
+
+    <v-col cols="6" class="pl-0">
+      <RedirectStep1DomainsToDomainsTo v-if="showOptionDomainsToDomains" />
+    </v-col>
+  </v-row>
   </v-container>
-
-
 </template>
 
 <style>
 .v-field__input {
   margin-top: 10px;
 }
+
 </style>

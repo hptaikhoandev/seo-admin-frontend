@@ -7,18 +7,14 @@ const baseUrlScript = `${import.meta.env.VITE_API_URL_SCRIPT}`;
 const user = localStorage.getItem('user');
 const userObj = user ? JSON.parse(user) : null;
 const bearerToken = 'Bearer ' + userObj.user.token;
-export const useRedirectStore = defineStore({
-  id: 'redirect',
+export const useDomainToStore = defineStore({
+  id: 'domainTo',
   state: () => ({
     serverIP: '',
     isSSL: 'flexible',
-    domainRedirectFrom: '',
-    domainRedirectTo: '',
-    redirectType: 'Wildcard Redirect',
-    isValidDomainRedirectFrom: false,
-    isValidDomainRedirectTo: false,
     isValidServerIP: false,
     domain: [] as Array<Record<string, any>>,
+    domainTo: [] as Array<Record<string, any>>,
     domainNS: [] as Array<Record<string, any>>,
     domainExport: [] as Array<Record<string, any>>,
     total: 0,

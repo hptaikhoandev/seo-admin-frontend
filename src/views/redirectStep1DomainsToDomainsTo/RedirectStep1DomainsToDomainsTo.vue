@@ -1,18 +1,18 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
-import { useDomainStore } from '@/stores/modules/domain/domain';
+import { useDomainToStore } from '@/stores/modules/domainTo/domainTo';
 import moment from 'moment';
 import { Loader2Icon, ReloadIcon } from 'vue-tabler-icons';
 import { RedoOutlined } from '@ant-design/icons-vue';
 
 export default defineComponent({
-  name: 'RedirectStep2To',
+  name: 'RedirectStep1DomainsToDomainsTo',
   components: {
     //
   },
   data() {
     return {
-      domainStore: useDomainStore,
+      domainToStore: useDomainToStore,
       serverIP: '',
       isSSL: 'flexible',
       dialog: false,
@@ -50,7 +50,7 @@ export default defineComponent({
     // this.fetchData();
   },
   created() {
-    this.fetchData()
+    //
   },
   computed: {
     formTitle() {
@@ -59,26 +59,24 @@ export default defineComponent({
     isNameValid() {
       return this.validateDomain(this.editedItem.name) === true;
     },
-    items(): Array<Record<string, any>> {
-      const store = useDomainStore();
-      return store.domain;
-    }
   },
   watch: {
     serverIP(newIP) {
-      this.domainStore.serverIP = newIP;
-      this.domainStore.isValidServerIP = this.validateIPAddress(newIP) === true;
+      this.domainToStore.serverIP = newIP;
+      this.domainToStore.isValidServerIP = this.validateIPAddress(newIP) === true;
 
     },
     isSSL(newValue, oldValue) {
-      this.domainStore.isSSL = newValue;
+      this.domainToStore.isSSL = newValue;
       // Additional actions on change can be added here
     },
     items: {
       handler(newItems) {
-        this.domainStore.domain = newItems;
+        console.log('===>newItems', newItems);
+        const store = useDomainToStore();
+        store.domain = newItems;
       },
-      deep: true,
+      deep: true
     },
     dialog(val) {
       val || this.close()
@@ -88,32 +86,7 @@ export default defineComponent({
     },
   },
   methods: {
-    async fetchData() {
-      this.loading = true;
-      try {
-        const domainStore = useDomainStore();
-        await domainStore.fetchDomain({
-          page: this.page,
-          limit: this.itemsPerPage,
-          search: this.search,
-          sortBy: this.sortBy,
-          sortDesc: this.sortDesc,
-        });
-        this.items = await domainStore.domain;
-        this.totalItems = await domainStore.total;
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        this.loading = false;
-      }
-    },
-    submitToCF() {
-      // Xử lý dữ liệu form sau khi submit
-      console.log('>>>>> submitToCF');
-      alert('submitToCF');
-    },
     reset() {
-      console.log('>>>>> reset', this.editedItem);
       this.items.splice(0, this.items.length);
     },
     editItem(item) {
@@ -121,36 +94,12 @@ export default defineComponent({
       this.editedItem = Object.assign({}, item)
       this.dialog = true
     },
-    handlePageChange(newPage) {
-      this.page = newPage;
-      this.fetchData();
-    },
-    handleItemsPerPageChange(newItemsPerPage) {
-      this.itemsPerPage = newItemsPerPage;
-      this.page = 1;
-      this.fetchData();
-    },
-    handleOnSearch() {
-      this.page = 1;
-      this.fetchData();
-    },
-    handleSortBy({ page, itemsPerPage, sortBy }) {
-      if (sortBy.length === 0) return;
-      this.sortBy = sortBy[0].key;
-      this.sortDesc = (sortBy[0].order === 'desc') ? true : false;
-      this.page = 1;
-      this.fetchData();
-    },
-    handleClearSearch() {
-      this.page = 1;
-      this.fetchData();
-    },
     validateIPAddress(value) {
       const ipPattern = /^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$/;
       return ipPattern.test(value) || 'Please enter a valid IP address (e.g., 54.243.100.131)';
     },
     validateDomain(value) {
-      const domainRegex = /^(?!:\/\/)([a-zA-Z0-9-_]*\.)?[a-zA-Z0-9][a-zA-Z0-9-_]*\.[a-zA-Z]{2,11}?$/;
+      const domainRegex = /^(?!:\/\/)(?!.*--)(?!.*\.\-)(?!^-)(?!.*-$)([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,11}$/;
       return domainRegex.test(value) || 'Please enter a valid domain name';
     },
     deleteItem(item) {
@@ -326,9 +275,9 @@ export default defineComponent({
       </v-col>
     </v-row>
     <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
-    :items-length="totalItems" :page.sync="page" @update:page="handlePageChange"
-    @update:items-per-page="handleItemsPerPageChange" height="200" hover hide-default-footer :loading="loading"
-    @update:options="handleSortBy">
+    :items-length="totalItems" :page.sync="page"
+    height="200" hover hide-default-footer :loading="loading"
+    >
     <template v-slot:item.actions="{ item }" class="scrollable-table">
       <EditIcon size="18" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
       <TrashIcon size="18" color="#FF5252" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />

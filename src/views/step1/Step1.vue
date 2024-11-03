@@ -108,13 +108,7 @@ export default defineComponent({
         this.loading = false;
       }
     },
-    submitToCF() {
-      // Xử lý dữ liệu form sau khi submit
-      console.log('>>>>> submitToCF');
-      alert('submitToCF');
-    },
     reset() {
-      console.log('>>>>> reset', this.editedItem);
       this.items.splice(0, this.items.length);
     },
     editItem(item) {
@@ -165,7 +159,7 @@ export default defineComponent({
       return true;
     },
     validateDomain(value) {
-      const domainRegex = /^(?!:\/\/)([a-zA-Z0-9-_]*\.)?[a-zA-Z0-9][a-zA-Z0-9-_]*\.[a-zA-Z]{2,11}?$/;
+      const domainRegex = /^(?!:\/\/)(?!.*--)(?!.*\.\-)(?!^-)(?!.*-$)([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,11}$/;
       return domainRegex.test(value) || 'Please enter a valid domain name';
     },
     deleteItem(item) {
@@ -273,7 +267,7 @@ export default defineComponent({
           :rules="[validateIPAddress]" />
       </v-col>
       <v-col cols="2" class="py-0">
-        <v-select v-model="isSSL" label="SSL Type" class="mt-3" :items="['flexible', 'full', 'full_strict']" />
+        <v-select v-model="isSSL" label="SSL Type" class="mt-3" :items="['flexible', 'full', 'strict']" />
       </v-col>
     </v-row>
     <v-row>
