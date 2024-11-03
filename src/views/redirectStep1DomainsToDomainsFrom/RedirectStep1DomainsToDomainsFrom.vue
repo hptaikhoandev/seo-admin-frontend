@@ -1,18 +1,16 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
-import { useDomainStore } from '@/stores/modules/domain/domain';
+import { useDomainFromStore } from '@/stores/modules/domainFrom/domainFrom';
 import moment from 'moment';
-import { Loader2Icon, ReloadIcon } from 'vue-tabler-icons';
-import { RedoOutlined } from '@ant-design/icons-vue';
 
 export default defineComponent({
-  name: 'Step1',
+  name: 'RedirectStep1DomainsToDomainsFrom',
   components: {
     //
   },
   data() {
     return {
-      domainStore: useDomainStore,
+      domainFromStore: useDomainFromStore,
       serverIP: '',
       isSSL: 'flexible',
       dialog: false,
@@ -23,7 +21,6 @@ export default defineComponent({
       headers: [
         { title: 'NAME', key: 'name' },
         { title: 'CREATED AT', key: 'createdAt' },
-        { title: 'UPDATED AT', key: 'updatedAt' },
         { title: 'ACTIONS', key: 'actions', sortable: false },
       ],
       editedIndex: -1,
@@ -51,7 +48,7 @@ export default defineComponent({
     // this.fetchData();
   },
   created() {
-    this.fetchData()
+    //
   },
   computed: {
     formTitle() {
@@ -60,26 +57,24 @@ export default defineComponent({
     isNameValid() {
       return this.validateDomain(this.editedItem.name) === true;
     },
-    items(): Array<Record<string, any>> {
-      const store = useDomainStore();
-      return store.domain;
-    }
   },
   watch: {
     serverIP(newIP) {
-      this.domainStore.serverIP = newIP;
-      this.domainStore.isValidServerIP = this.validateIPAddress(newIP) === true;
+      this.domainFromStore.serverIP = newIP;
+      this.domainFromStore.isValidServerIP = this.validateIPAddress(newIP) === true;
 
     },
     isSSL(newValue, oldValue) {
-      this.domainStore.isSSL = newValue;
+      this.domainFromStore.isSSL = newValue;
       // Additional actions on change can be added here
     },
     items: {
       handler(newItems) {
-        this.domainStore.domain = newItems;
+        console.log('===>newItemsXXX', newItems);
+        const store = useDomainFromStore();
+        store.domain = newItems;
       },
-      deep: true,
+      deep: true
     },
     dialog(val) {
       val || this.close()
@@ -89,25 +84,6 @@ export default defineComponent({
     },
   },
   methods: {
-    async fetchData() {
-      this.loading = true;
-      try {
-        const domainStore = useDomainStore();
-        await domainStore.fetchDomain({
-          page: this.page,
-          limit: this.itemsPerPage,
-          search: this.search,
-          sortBy: this.sortBy,
-          sortDesc: this.sortDesc,
-        });
-        this.items = await domainStore.domain;
-        this.totalItems = await domainStore.total;
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        this.loading = false;
-      }
-    },
     reset() {
       this.items.splice(0, this.items.length);
     },
@@ -116,47 +92,9 @@ export default defineComponent({
       this.editedItem = Object.assign({}, item)
       this.dialog = true
     },
-    handlePageChange(newPage) {
-      this.page = newPage;
-      this.fetchData();
-    },
-    handleItemsPerPageChange(newItemsPerPage) {
-      this.itemsPerPage = newItemsPerPage;
-      this.page = 1;
-      this.fetchData();
-    },
-    handleOnSearch() {
-      this.page = 1;
-      this.fetchData();
-    },
-    handleSortBy({ page, itemsPerPage, sortBy }) {
-      if (sortBy.length === 0) return;
-      this.sortBy = sortBy[0].key;
-      this.sortDesc = (sortBy[0].order === 'desc') ? true : false;
-      this.page = 1;
-      this.fetchData();
-    },
-    handleClearSearch() {
-      this.page = 1;
-      this.fetchData();
-    },
     validateIPAddress(value) {
-      const ipPattern = /^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})(\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})){3}$/;
-      const invalidIPs = [
-        "0.0.0.0", "1.1.1.1", "127.0.0.1", "169.254.0.0", "192.0.2.0",
-        "198.51.100.0", "203.0.113.0", "224.0.0.0", "255.255.255.255",
-        "100.64.0.0", "240.0.0.0"
-      ];
-
-      if (!ipPattern.test(value)) {
-        return 'Please enter a valid IP address (e.g., 54.243.100.131)';
-      }
-
-      if (invalidIPs.includes(value)) {
-        return 'This IP address cannot be used.';
-      }
-
-      return true;
+      const ipPattern = /^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$/;
+      return ipPattern.test(value) || 'Please enter a valid IP address (e.g., 54.243.100.131)';
     },
     validateDomain(value) {
       const domainRegex = /^(?!:\/\/)(?!.*--)(?!.*\.\-)(?!^-)(?!.*-$)([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,11}$/;
@@ -255,36 +193,27 @@ export default defineComponent({
 
 </script>
 <template>
-  <v-container class="px-5" :style="{ backgroundColor: '#EEEEEE', borderRadius: '5px', maxWidth: '100%' }">
-    <v-row class="pb-0">
-      <v-col class="pb-2" :style="{ fontSize: '20px' }">
-        Step 1: Input domains
-      </v-col>
-    </v-row>
-    <v-row class="py-0">
-      <v-col cols="3" class="py-0">
-        <v-text-field v-model="serverIP" label="Server IP" placeholder="Enter Server IP" class="mt-3"
-          :rules="[validateIPAddress]" />
-      </v-col>
-      <v-col cols="2" class="py-0">
-        <v-select v-model="isSSL" label="SSL Type" class="mt-3" :items="['flexible', 'full', 'strict']" />
+  <v-container class="px-2 pb-1 pt-0 no-min-height" :style="{ backgroundColor: '#EEEEEE', borderRadius: '5px', maxWidth: '100%' }">
+    <v-row class="px-3">
+      <v-col col="12" class="pb-2" :style="{ fontSize: '16px' }">
+        From
       </v-col>
     </v-row>
     <v-row>
       <v-col cols="auto">
-        <v-btn :style="{ backgroundColor: '#FF5252', color: '#ffff' }" @click="reset">
-          <ReloadIcon size="20" color="white" />
+        <v-btn size="small" :style="{ backgroundColor: '#FF5252', color: '#ffff' }" @click="reset">
+          <ReloadIcon size="15" color="white" />
         </v-btn>
       </v-col>
       <v-col cols="auto">
-        <v-btn :style="{ backgroundColor: '#6A8DBA', color: '#ffff' }" @click="downloadFile">
-          <DownloadIcon size="20" color="white" />
+        <v-btn size="small" :style="{ backgroundColor: '#6A8DBA', color: '#ffff' }" @click="downloadFile">
+          <DownloadIcon size="15" color="white" />
           Download sample file
         </v-btn>
       </v-col>
       <v-col cols="auto">
-        <v-btn :style="{ backgroundColor: '#CCAA4D', color: '#ffff' }" @click="$refs.fileInput.click()">
-          <UploadIcon size="20" color="white" />
+        <v-btn size="small" :style="{ backgroundColor: '#CCAA4D', color: '#ffff' }" @click="$refs.fileInput.click()">
+          <UploadIcon size="15" color="white" />
           Import domains
         </v-btn>
         <input type="file" ref="fileInput" @change="importDomains" style="display:none;" />
@@ -292,8 +221,9 @@ export default defineComponent({
       <v-col>
         <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ props }">
-            <v-btn class="mb-2 ml-1 mr-2" :style="{ backgroundColor: '#7DA77D', color: '#ffff' }" dark v-bind="props">
-              <SquarePlusIcon size="20" color="white" />
+            <v-btn size="small" class="mb-2 ml-1 mr-2" :style="{ backgroundColor: '#7DA77D', color: '#ffff' }" dark
+              v-bind="props">
+              <SquarePlusIcon size="15" color="white" />
               New domain
             </v-btn>
           </template>
@@ -314,10 +244,6 @@ export default defineComponent({
                       density="comfortable"></v-text-field>
                   </v-col>
 
-                  <v-col cols="12">
-                    <v-text-field disabled v-model="editedItem.updatedAt" label="Updated At"
-                      density="comfortable"></v-text-field>
-                  </v-col>
                 </v-row>
               </v-container>
             </v-card-text>
@@ -346,22 +272,23 @@ export default defineComponent({
         </v-dialog>
       </v-col>
     </v-row>
-  </v-container>
-
-
-  <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
-    :items-length="totalItems" :page.sync="page" @update:page="handlePageChange"
-    @update:items-per-page="handleItemsPerPageChange" height="200" hover hide-default-footer :loading="loading"
-    @update:options="handleSortBy">
+    <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
+    :items-length="totalItems" :page.sync="page"
+    height="200" hover hide-default-footer :loading="loading">
     <template v-slot:item.actions="{ item }" class="scrollable-table">
       <EditIcon size="18" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
       <TrashIcon size="18" color="#FF5252" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
     </template>
   </v-data-table-server>
+  </v-container>
+  
 </template>
 
 <style>
 .v-field__input {
   margin-top: 10px;
+}
+.no-min-height {
+  min-height: 100% !important;
 }
 </style>

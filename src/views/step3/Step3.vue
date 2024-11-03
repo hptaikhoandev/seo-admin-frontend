@@ -59,7 +59,6 @@ export default defineComponent({
     },
     showStept3(): boolean {
       const store = useDomainStore();
-      // if (store.domainNS.length == 0) return false;
       return store.domainNS.length > 0;
     },
 

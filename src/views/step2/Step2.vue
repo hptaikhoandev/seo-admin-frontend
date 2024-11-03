@@ -67,16 +67,15 @@ export default defineComponent({
       }
       return (store.domain.length > 0);
     },
-
-    items(newItems) {
-      this.domainStore.domainNS = newItems
-    },
-
-
   },
   watch: {
-    items(newItems) {
-      this.domainStore.domainExport = newItems
+    items: {
+      handler(newItems) {
+        const store = useDomainStore();
+        store.domainExport = newItems;
+        store.domainNS = newItems;
+      },
+      deep: true
     },
     dialog(val) {
       val || this.close()
@@ -124,6 +123,7 @@ export default defineComponent({
           domains: domainList
         };
 
+        console.log('===>requestData', requestData);
         const domainStore = useDomainStore();
         await domainStore.addListDomainsToCloudflare(requestData);
         let dataResult = await domainStore.domainNS;
