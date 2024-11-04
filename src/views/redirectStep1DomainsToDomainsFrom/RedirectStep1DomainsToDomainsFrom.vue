@@ -70,7 +70,6 @@ export default defineComponent({
     },
     items: {
       handler(newItems) {
-        console.log('===>newItemsXXX', newItems);
         const store = useDomainFromStore();
         store.domain = newItems;
       },

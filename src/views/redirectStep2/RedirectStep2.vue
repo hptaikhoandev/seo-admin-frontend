@@ -1,5 +1,7 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
+import moment from 'moment';
+import {jwtDecode} from 'jwt-decode';
 import { useDomainFromStore } from '@/stores/modules/domainFrom/domainFrom';
 import { useDomainToStore } from '@/stores/modules/domainTo/domainTo';
 import { useRedirectStore } from '@/stores/modules/redirect/redirect';
@@ -11,6 +13,9 @@ export default defineComponent({
   },
   data() {
     return {
+      domainFromStore: useDomainFromStore(),
+      domainToStore: useDomainToStore(),
+      redirectStore: useRedirectStore(),
       dialog: false,
       dialogDelete: false,
       search: ref(''),
@@ -72,8 +77,53 @@ export default defineComponent({
     },
   },
   methods: {
-    submitStep2() {
-      console.log('===>submitStep2');
+    async submitStep2() {
+      this.close();
+      this.loading = true;
+      try {
+        const redirectType = this.redirectStore.redirectType;
+        const domainRedirectFrom = this.redirectStore.domainRedirectFrom;
+        const domainRedirectTo = this.redirectStore.domainRedirectTo;
+        const domainFrom = this.domainFromStore.domain;
+        const domainTo = this.domainToStore.domain;
+
+        const user = ref(null);
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          if (parsedUser && parsedUser.user && parsedUser.user.token) {
+            user.value = jwtDecode(parsedUser.user.token);
+          }
+        }
+        let requestData = {};
+        if (['Wildcard Redirect', 'Dynamic Segment Redirect'].includes(redirectType)) {
+          requestData = {
+            team: user.value.roleId,
+            redirect_type: redirectType,
+            domain_from: [domainRedirectFrom] as Array<string>,
+            domain_to: [domainRedirectTo] as Array<string>,
+          };
+        }
+        if (['Domains to domains Redirect'].includes(redirectType)) {
+          requestData = {
+            team: user.value.roleId,
+            redirect_type: redirectType,
+            domain_from: domainFrom,
+            domain_to: domainTo,
+          };
+        }
+
+        console.log('===>requestData', requestData);
+        await this.redirectStore.addListDomainsToCloudflare(requestData);
+        let dataResult = await this.redirectStore.domain;
+        this.items = await dataResult;
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        this.loading = false;
+      }
+
+
     },
     editItem(item) {
       this.editedIndex = this.items.indexOf(item)

@@ -241,7 +241,7 @@ export default defineComponent({
                   </v-col>
 
                   <v-col cols="12">
-                    <span>Server IP:   {{ domainStore.serverIP ? domainStore.serverIP : 'Vui lòng nhập domain hợp lệ' }}</span>
+                    <span>Server IP:   {{ domainStore.serverIP ? domainStore.serverIP : 'Vui lòng nhập server IP hợp lệ' }}</span>
                   </v-col>
                   <v-col cols="12">
                     <span>SSL Type: {{ domainStore.isSSL !== undefined ? domainStore.isSSL : 'flexible' }}</span>

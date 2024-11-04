@@ -210,7 +210,7 @@ export default defineComponent({
           v-model="redirectType"
           label="Redirect Type"
           class="mt-3" 
-          :items="['Wildcard Redirect', 'Dynamic Segment Redirect', 'Domains to domains Redirect']"
+          :items="['Forwarding URL Redirect', 'Homepage Redirect']"
         />
       </v-col>
       <v-col cols="3" class="py-0">
