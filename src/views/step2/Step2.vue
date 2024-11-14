@@ -19,6 +19,11 @@ export default defineComponent({
       sortBy: ref('body'),
       sortDesc: ref(false),
       selected: ref([]),
+      showResult: false,
+      resultMessage: {
+        success: 0,
+        fail: 0,
+      },
       headers: [
         { title: 'DOMAIN', key: 'domain' },
         { title: 'NS', key: 'ns' },
@@ -104,6 +109,7 @@ export default defineComponent({
     async submitStep2() {
       this.close();
       this.loading = true;
+      this.showResult = false;
       try {
         const serverIP = this.domainStore.serverIP;
         const isSSL = this.domainStore.isSSL !== undefined ? this.domainStore.isSSL : 'flexible'; 
@@ -122,10 +128,10 @@ export default defineComponent({
           ssl_type: isSSL,
           domains: domainList
         };
-
-        console.log('===>requestData', requestData);
         const domainStore = useDomainStore();
-        await domainStore.addListDomainsToCloudflare(requestData);
+        const ketqua = await domainStore.addListDomainsToCloudflare(requestData);
+        this.resultMessage = ketqua.resultMessage;
+
         let dataResult = await domainStore.domainNS;
         const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
         dataResult = await dataResult.map(item => ({
@@ -140,6 +146,7 @@ export default defineComponent({
         console.error("Error fetching data:", error);
       } finally {
         this.loading = false;
+        this.showResult = true;
       }
 
 
@@ -227,7 +234,15 @@ export default defineComponent({
           Step 2: Submit to CloudFlare
           <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ props }">
-              <v-btn class="text-white mx-2" :style="{ backgroundColor: '#6A8DBA' }" v-bind="props">
+              <v-btn class="text-white mx-2" :style="{ backgroundColor: '#6A8DBA' }" v-bind="props" :disabled="loading">
+                <v-progress-circular
+                  v-if="loading"
+                  indeterminate
+                  color="white"
+                  size="20"
+                  class="mr-2"
+                >
+                </v-progress-circular>
                 Submit
             </v-btn>
           </template>
@@ -241,7 +256,7 @@ export default defineComponent({
                   </v-col>
 
                   <v-col cols="12">
-                    <span>Server IP:   {{ domainStore.serverIP ? domainStore.serverIP : 'Vui lòng nhập domain hợp lệ' }}</span>
+                    <span>Server IP:   {{ domainStore.serverIP ? domainStore.serverIP : 'Vui lòng nhập server IP hợp lệ' }}</span>
                   </v-col>
                   <v-col cols="12">
                     <span>SSL Type: {{ domainStore.isSSL !== undefined ? domainStore.isSSL : 'flexible' }}</span>
@@ -263,6 +278,11 @@ export default defineComponent({
     <template v-slot:item.actions="{ item }">
     </template>
   </v-data-table-server>
+    <!-- Hiển thị kết quả chỉ sau khi gọi API xong (khi loading là false) -->
+    <v-text v-if="showResult">
+    <span class="text-success font-bold">Success: {{ resultMessage.success }}</span>
+    <span v-if="resultMessage.fail !== 0" class="text-error font-bold">, Fail: {{ resultMessage.fail }}</span>
+  </v-text>
 </template>
 <style>
 /* .custom-spacing .v-label {

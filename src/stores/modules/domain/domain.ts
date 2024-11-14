@@ -58,6 +58,7 @@ export const useDomainStore = defineStore({
          });
         
         this.domainNS = response.data.results
+        return response.data;
       } catch (error: any) {
         this.error = error.message
       } finally {

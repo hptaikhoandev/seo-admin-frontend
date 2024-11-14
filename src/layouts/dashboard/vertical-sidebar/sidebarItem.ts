@@ -34,7 +34,6 @@ const sidebarItemRole = (() => {
   const parsedUser = JSON.parse(storedUser);
   if (!(parsedUser && parsedUser.user && parsedUser.user.token)) return [];
   const user = jwtDecode(parsedUser.user.token);
-  console.log('===>xxx', user);
   if (!(user && user.roleId)) return [];
 
   switch (user.roleId) {

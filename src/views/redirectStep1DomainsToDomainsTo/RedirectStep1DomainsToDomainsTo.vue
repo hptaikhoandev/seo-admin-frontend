@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
-import { useDomainToStore } from '@/stores/modules/domainTo/domainTo';
+import { useRedirectStore } from '@/stores/modules/redirect/redirect';
 import moment from 'moment';
 import { Loader2Icon, ReloadIcon } from 'vue-tabler-icons';
 import { RedoOutlined } from '@ant-design/icons-vue';
@@ -12,7 +12,7 @@ export default defineComponent({
   },
   data() {
     return {
-      domainToStore: useDomainToStore,
+      redirectStore: useRedirectStore,
       serverIP: '',
       isSSL: 'flexible',
       dialog: false,
@@ -61,20 +61,10 @@ export default defineComponent({
     },
   },
   watch: {
-    serverIP(newIP) {
-      this.domainToStore.serverIP = newIP;
-      this.domainToStore.isValidServerIP = this.validateIPAddress(newIP) === true;
-
-    },
-    isSSL(newValue, oldValue) {
-      this.domainToStore.isSSL = newValue;
-      // Additional actions on change can be added here
-    },
     items: {
       handler(newItems) {
-        console.log('===>newItems', newItems);
-        const store = useDomainToStore();
-        store.domain = newItems;
+        const store = useRedirectStore();
+        store.domainRedirectTo = newItems;
       },
       deep: true
     },
@@ -129,10 +119,10 @@ export default defineComponent({
       })
     },
     downloadFile() {
-      const fileUrl = '/src/template/domains.txt';
+      const fileUrl = '/src/template/target_domains.txt';
       const link = document.createElement('a');
       link.href = fileUrl;
-      link.setAttribute('download', 'domains.txt');
+      link.setAttribute('download', 'target_domains.txt');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -198,7 +188,7 @@ export default defineComponent({
   <v-container class="px-2 pb-1 pt-0 no-min-height" :style="{ backgroundColor: '#EEEEEE', borderRadius: '5px', maxWidth: '100%' }">
     <v-row class="px-3">
       <v-col col="12" class="pb-2" :style="{ fontSize: '16px' }">
-        To
+        Target Domains
       </v-col>
     </v-row>
 

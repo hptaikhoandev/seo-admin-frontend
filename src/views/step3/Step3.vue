@@ -10,7 +10,6 @@ export default defineComponent({
   },
   data() {
     return {
-      domainStore: useDomainStore,
       dialog: false,
       dialogDelete: false,
       search: ref(''),
@@ -48,10 +47,10 @@ export default defineComponent({
   },
 
   mounted() {
-    // this.fetchData();
+    // 
   },
   created() {
-    this.fetchData()
+    //
   },
   computed: {
     formTitle() {
@@ -69,30 +68,14 @@ export default defineComponent({
     },
   },
   methods: {
-    async fetchData() {
-      this.loading = true;
-      try {
-        const messageStore = useMessageStore();
-        await messageStore.fetchMessage({
-          page: this.page,
-          limit: this.itemsPerPage,
-          search: this.search,
-          sortBy: this.sortBy,
-          sortDesc: this.sortDesc,
-        });
-        this.items = await messageStore.message;
-        this.totalItems = await messageStore.total;
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        this.loading = false;
-      }
-    },
     submitStep3() {
-      const dataExport = this.domainStore.domainExport;
+      const store = useDomainStore();
+      const dataExport = store.domainExport;
+      console.log('===>newItemsyyy', dataExport);
+
       // Create CSV content from dataExport
       const csvHeaders = "Domain,Name Servers\n"; // Header row
-      const csvContent = dataExport.map(item => `${item.domain},"${item.ns}"`).join("\n");
+      const csvContent = dataExport?.map(item => `${item.domain},"${item.ns}"`).join("\n");
       const csvData = csvHeaders + csvContent;
       // Create a Blob from the CSV data
       const blob = new Blob([csvData], { type: "text/csv" });
@@ -113,35 +96,6 @@ export default defineComponent({
       this.editedItem = Object.assign({}, item)
       this.dialog = true
     },
-    handleSelectionChange(selectedItems) {
-      const messageStore = useMessageStore();
-      messageStore.selectedMessages = selectedItems;
-    },
-    handlePageChange(newPage) {
-      this.page = newPage;
-      this.fetchData();
-    },
-    handleItemsPerPageChange(newItemsPerPage) {
-      this.itemsPerPage = newItemsPerPage;
-      this.page = 1;
-      this.fetchData();
-    },
-    handleOnSearch() {
-      this.page = 1;
-      this.fetchData();
-    },
-    handleSortBy({ page, itemsPerPage, sortBy }) {
-      if (sortBy.length === 0) return;
-      this.sortBy = sortBy[0].key;
-      this.sortDesc = (sortBy[0].order === 'desc') ? true : false;
-      this.page = 1;
-      this.fetchData();
-    },
-    handleClearSearch() {
-      this.page = 1;
-      this.fetchData();
-    },
-
     close() {
       this.dialog = false
       this.$nextTick(() => {
@@ -173,9 +127,6 @@ export default defineComponent({
         Export
       </v-btn>
     </v-toolbar-title>
-    <!-- <v-toolbar-title>
-      {{ domainStore.domainExport?.length }}/{{ domainStore.domain?.length }} Domains Finished
-    </v-toolbar-title> -->
   </v-toolbar>
 </template>
 
