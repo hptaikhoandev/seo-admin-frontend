@@ -122,8 +122,6 @@ export default defineComponent({
           ssl_type: isSSL,
           domains: domainList
         };
-
-        console.log('===>requestData', requestData);
         const domainStore = useDomainStore();
         await domainStore.addListDomainsToCloudflare(requestData);
         let dataResult = await domainStore.domainNS;
@@ -227,7 +225,15 @@ export default defineComponent({
           Step 2: Submit to CloudFlare
           <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ props }">
-              <v-btn class="text-white mx-2" :style="{ backgroundColor: '#6A8DBA' }" v-bind="props">
+              <v-btn class="text-white mx-2" :style="{ backgroundColor: '#6A8DBA' }" v-bind="props" :disabled="loading">
+                <v-progress-circular
+                  v-if="loading"
+                  indeterminate
+                  color="white"
+                  size="20"
+                  class="mr-2"
+                >
+                </v-progress-circular>
                 Submit
             </v-btn>
           </template>

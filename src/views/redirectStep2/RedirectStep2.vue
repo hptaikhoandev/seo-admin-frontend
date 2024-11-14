@@ -2,8 +2,6 @@
 import { defineComponent, ref, type Ref } from 'vue';
 import moment from 'moment';
 import {jwtDecode} from 'jwt-decode';
-import { useDomainFromStore } from '@/stores/modules/domainFrom/domainFrom';
-import { useDomainToStore } from '@/stores/modules/domainTo/domainTo';
 import { useRedirectStore } from '@/stores/modules/redirect/redirect';
 
 export default defineComponent({
@@ -13,8 +11,6 @@ export default defineComponent({
   },
   data() {
     return {
-      domainFromStore: useDomainFromStore(),
-      domainToStore: useDomainToStore(),
       redirectStore: useRedirectStore(),
       dialog: false,
       dialogDelete: false,
@@ -22,6 +18,11 @@ export default defineComponent({
       sortBy: ref('body'),
       sortDesc: ref(false),
       selected: ref([]),
+      showResult: false,
+      resultMessage: {
+        success: 0,
+        fail: 0,
+      },
       headers: [
         { title: 'NAME', key: 'name' },
         { title: 'NS', key: 'ns' },
@@ -63,10 +64,9 @@ export default defineComponent({
       return this.editedIndex === -1 ? 'New Message' : 'Edit Message'
     },
     showStept2(): boolean {
-      const storeFrom = useDomainFromStore();
-      const storeTo = useDomainToStore();
+      const store = useRedirectStore();
       const storeRedirect = useRedirectStore();
-      return (storeFrom.domain.length > 0 && storeTo.domain.length > 0) || (storeRedirect.redirectType !== 'Domains to domains Redirect' && storeRedirect.isValidDomainRedirectFrom && storeRedirect.isValidDomainRedirectTo);
+      return (store.domainRedirectFrom.length > 0 && store.domainRedirectTo.length > 0 && store.domainRedirectFrom.length === store.domainRedirectTo.length);
     },
 
   },
@@ -80,12 +80,12 @@ export default defineComponent({
     async submitStep2() {
       this.close();
       this.loading = true;
+      this.showResult = false;
       try {
         const redirectType = this.redirectStore.redirectType;
-        const domainRedirectFrom = this.redirectStore.domainRedirectFrom;
-        const domainRedirectTo = this.redirectStore.domainRedirectTo;
-        const domainFrom = this.domainFromStore.domain;
-        const domainTo = this.domainToStore.domain;
+        const domainRedirectFrom = this.redirectStore.domainRedirectFrom.map(domain => domain.name);
+        const domainRedirectTo = this.redirectStore.domainRedirectTo.map(domain => domain.name);
+
 
         const user = ref(null);
         const storedUser = localStorage.getItem('user');
@@ -95,34 +95,21 @@ export default defineComponent({
             user.value = jwtDecode(parsedUser.user.token);
           }
         }
-        let requestData = {};
-        if (['Wildcard Redirect', 'Dynamic Segment Redirect'].includes(redirectType)) {
-          requestData = {
-            team: user.value.roleId,
-            redirect_type: redirectType,
-            domain_from: [domainRedirectFrom] as Array<string>,
-            domain_to: [domainRedirectTo] as Array<string>,
-          };
-        }
-        if (['Domains to domains Redirect'].includes(redirectType)) {
-          requestData = {
-            team: user.value.roleId,
-            redirect_type: redirectType,
-            domain_from: domainFrom,
-            domain_to: domainTo,
-          };
-        }
+        const requestData = {
+          team: user.value.roleId,
+          redirect_type: redirectType,
+          source_domains: domainRedirectFrom,
+          target_domains: domainRedirectTo,
+        };
 
-        console.log('===>requestData', requestData);
-        await this.redirectStore.addListDomainsToCloudflare(requestData);
-        let dataResult = await this.redirectStore.domain;
-        this.items = await dataResult;
+        const ketqua = await this.redirectStore.redirectListDomainsToCloudflare(requestData);
+        this.resultMessage = ketqua.result;
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         this.loading = false;
+        this.showResult = true;
       }
-
 
     },
     editItem(item) {
@@ -146,11 +133,24 @@ export default defineComponent({
   <v-toolbar flat v-if="showStept2">
     <v-toolbar-title>
       Step 2: Submit to CloudFlare
-      <v-btn class="text-white mx-2" :style="{ backgroundColor: '#6A8DBA' }" @click="submitStep2">
+      <v-btn class="text-white mx-2" :style="{ backgroundColor: '#6A8DBA' }" @click="submitStep2" :disabled="loading">
+        <v-progress-circular
+          v-if="loading"
+          indeterminate
+          color="white"
+          size="20"
+          class="mr-2"
+        >
+        </v-progress-circular>
         Submit
       </v-btn>
     </v-toolbar-title>
   </v-toolbar>
+  <!-- Hiển thị kết quả chỉ sau khi gọi API xong (khi loading là false) -->
+  <v-text v-if="showResult">
+    <span class="text-success font-bold">Success: {{ resultMessage.success }}</span>
+    <span v-if="resultMessage.fail !== 0" class="text-error font-bold">, Fail: {{ resultMessage.fail }}</span>
+  </v-text>
 </template>
 
 <style>

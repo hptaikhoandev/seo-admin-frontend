@@ -205,40 +205,20 @@ export default defineComponent({
       </v-col>
     </v-row>
     <v-row class="py-0">
-      <v-col cols="3" class="py-0">
+      <v-col cols="4" class="py-0">
         <v-select
           v-model="redirectType"
           label="Redirect Type"
           class="mt-3" 
-          :items="['Forwarding URL Redirect', 'Homepage Redirect']"
+          :items="['Wildcard Redirect', 'Homepage Redirect']"
         />
       </v-col>
-      <v-col cols="3" class="py-0">
-        <v-text-field 
-          v-if="showDomainRedirect"
-          v-model="domainRedirectFrom" 
-          label="Domain redirect From" 
-          placeholder="Enter redirect domain from" 
-          class="mt-3" 
-          :rules="[validateDomain]"
-        />
-      </v-col>
-      <v-col cols="1" class="py-1">
+      <v-col cols="2" class="py-1">
         <v-checkbox
           v-model="is301"
           label="301"
           class="mt-3"
           disabled
-        />
-      </v-col>
-      <v-col cols="3" class="py-0">
-        <v-text-field 
-          v-if="showDomainRedirect"
-          v-model="domainRedirectTo" 
-          label="Domain redirect To" 
-          placeholder="Enter redirect domai to" 
-          class="mt-3" 
-          :rules="[validateDomain]"
         />
       </v-col>
     </v-row>

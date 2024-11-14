@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
-import { useDomainFromStore } from '@/stores/modules/domainFrom/domainFrom';
+import { useRedirectStore } from '@/stores/modules/redirect/redirect';
 import moment from 'moment';
 
 export default defineComponent({
@@ -10,7 +10,7 @@ export default defineComponent({
   },
   data() {
     return {
-      domainFromStore: useDomainFromStore,
+      redirectStore: useRedirectStore,
       serverIP: '',
       isSSL: 'flexible',
       dialog: false,
@@ -59,19 +59,10 @@ export default defineComponent({
     },
   },
   watch: {
-    serverIP(newIP) {
-      this.domainFromStore.serverIP = newIP;
-      this.domainFromStore.isValidServerIP = this.validateIPAddress(newIP) === true;
-
-    },
-    isSSL(newValue, oldValue) {
-      this.domainFromStore.isSSL = newValue;
-      // Additional actions on change can be added here
-    },
     items: {
       handler(newItems) {
-        const store = useDomainFromStore();
-        store.domain = newItems;
+        const store = useRedirectStore();
+        store.domainRedirectFrom = newItems;
       },
       deep: true
     },
@@ -126,10 +117,10 @@ export default defineComponent({
       })
     },
     downloadFile() {
-      const fileUrl = '/src/template/domains.txt';
+      const fileUrl = '/src/template/source_domains.txt';
       const link = document.createElement('a');
       link.href = fileUrl;
-      link.setAttribute('download', 'domains.txt');
+      link.setAttribute('download', 'source_domains.txt');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -195,7 +186,7 @@ export default defineComponent({
   <v-container class="px-2 pb-1 pt-0 no-min-height" :style="{ backgroundColor: '#EEEEEE', borderRadius: '5px', maxWidth: '100%' }">
     <v-row class="px-3">
       <v-col col="12" class="pb-2" :style="{ fontSize: '16px' }">
-        From
+        Source Domains
       </v-col>
     </v-row>
     <v-row>

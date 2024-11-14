@@ -57,7 +57,7 @@ export default defineComponent({
     // this.fetchData();
   },
   created() {
-    this.fetchData()
+    //
   },
   computed: {
     formTitle() {
@@ -66,10 +66,6 @@ export default defineComponent({
     isNameValid() {
       return this.validateDomain(this.editedItem.name) === true;
     },
-    items(): Array<Record<string, any>> {
-      const store = useRedirectStore();
-      return store.domain;
-    },
     showOptionDomainsToDomains(): boolean {
       const store = useRedirectStore();
       return store.redirectType === 'Domains to domains Redirect';
@@ -77,21 +73,6 @@ export default defineComponent({
 
   },
   watch: {
-    serverIP(newIP) {
-      this.redirectStore.serverIP = newIP;
-      this.redirectStore.isValidServerIP = this.validateIPAddress(newIP) === true;
-
-    },
-    isSSL(newValue, oldValue) {
-      this.redirectStore.isSSL = newValue;
-      // Additional actions on change can be added here
-    },
-    items: {
-      handler(newItems) {
-        this.redirectStore.domain = newItems;
-      },
-      deep: true,
-    },
     dialog(val) {
       val || this.close()
     },
@@ -100,25 +81,7 @@ export default defineComponent({
     },
   },
   methods: {
-    async fetchData() {
-      this.loading = true;
-      try {
-        const redirectStore = useRedirectStore();
-        await redirectStore.fetchDomain({
-          page: this.page,
-          limit: this.itemsPerPage,
-          search: this.search,
-          sortBy: this.sortBy,
-          sortDesc: this.sortDesc,
-        });
-        this.items = await redirectStore.domain;
-        this.totalItems = await redirectStore.total;
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        this.loading = false;
-      }
-    },
+    
     reset() {
       this.items.splice(0, this.items.length);
     },
@@ -126,30 +89,6 @@ export default defineComponent({
       this.editedIndex = this.items.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialog = true
-    },
-    handlePageChange(newPage) {
-      this.page = newPage;
-      this.fetchData();
-    },
-    handleItemsPerPageChange(newItemsPerPage) {
-      this.itemsPerPage = newItemsPerPage;
-      this.page = 1;
-      this.fetchData();
-    },
-    handleOnSearch() {
-      this.page = 1;
-      this.fetchData();
-    },
-    handleSortBy({ page, itemsPerPage, sortBy }) {
-      if (sortBy.length === 0) return;
-      this.sortBy = sortBy[0].key;
-      this.sortDesc = (sortBy[0].order === 'desc') ? true : false;
-      this.page = 1;
-      this.fetchData();
-    },
-    handleClearSearch() {
-      this.page = 1;
-      this.fetchData();
     },
     validateIPAddress(value) {
       const ipPattern = /^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$/;
@@ -252,17 +191,17 @@ export default defineComponent({
 
 </script>
 <template>
-  <v-container fluid class="px-0">
   <v-row>
     <v-col cols="6" class="pr-0">
-      <RedirectStep1DomainsToDomainsFrom v-if="showOptionDomainsToDomains" />
+      <!-- <RedirectStep1DomainsToDomainsFrom v-if="showOptionDomainsToDomains" /> -->
+      <RedirectStep1DomainsToDomainsFrom />
     </v-col>
 
     <v-col cols="6" class="pl-0">
-      <RedirectStep1DomainsToDomainsTo v-if="showOptionDomainsToDomains" />
+      <!-- <RedirectStep1DomainsToDomainsTo v-if="showOptionDomainsToDomains" /> -->
+      <RedirectStep1DomainsToDomainsTo />
     </v-col>
   </v-row>
-  </v-container>
 </template>
 
 <style>
