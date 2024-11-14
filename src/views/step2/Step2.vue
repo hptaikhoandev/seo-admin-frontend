@@ -19,6 +19,11 @@ export default defineComponent({
       sortBy: ref('body'),
       sortDesc: ref(false),
       selected: ref([]),
+      showResult: false,
+      resultMessage: {
+        success: 0,
+        fail: 0,
+      },
       headers: [
         { title: 'DOMAIN', key: 'domain' },
         { title: 'NS', key: 'ns' },
@@ -104,6 +109,7 @@ export default defineComponent({
     async submitStep2() {
       this.close();
       this.loading = true;
+      this.showResult = false;
       try {
         const serverIP = this.domainStore.serverIP;
         const isSSL = this.domainStore.isSSL !== undefined ? this.domainStore.isSSL : 'flexible'; 
@@ -123,7 +129,9 @@ export default defineComponent({
           domains: domainList
         };
         const domainStore = useDomainStore();
-        await domainStore.addListDomainsToCloudflare(requestData);
+        const ketqua = await domainStore.addListDomainsToCloudflare(requestData);
+        this.resultMessage = ketqua.resultMessage;
+
         let dataResult = await domainStore.domainNS;
         const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
         dataResult = await dataResult.map(item => ({
@@ -138,6 +146,7 @@ export default defineComponent({
         console.error("Error fetching data:", error);
       } finally {
         this.loading = false;
+        this.showResult = true;
       }
 
 
@@ -269,6 +278,11 @@ export default defineComponent({
     <template v-slot:item.actions="{ item }">
     </template>
   </v-data-table-server>
+    <!-- Hiển thị kết quả chỉ sau khi gọi API xong (khi loading là false) -->
+    <v-text v-if="showResult">
+    <span class="text-success font-bold">Success: {{ resultMessage.success }}</span>
+    <span v-if="resultMessage.fail !== 0" class="text-error font-bold">, Fail: {{ resultMessage.fail }}</span>
+  </v-text>
 </template>
 <style>
 /* .custom-spacing .v-label {
