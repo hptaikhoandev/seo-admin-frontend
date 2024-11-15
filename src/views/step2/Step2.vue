@@ -22,7 +22,10 @@ export default defineComponent({
       showResult: false,
       resultMessage: {
         success: 0,
-        fail: 0,
+        fail: {
+          count:0,
+          messages: []
+        },
       },
       headers: [
         { title: 'DOMAIN', key: 'domain' },
@@ -280,10 +283,17 @@ export default defineComponent({
   </v-data-table-server>
     <!-- Hiển thị kết quả chỉ sau khi gọi API xong (khi loading là false) -->
     <v-text v-if="showResult">
-    <span class="text-success font-bold">Success: {{ resultMessage.success }}</span>
-    <span v-if="resultMessage.fail !== 0" class="text-error font-bold">, Fail: {{ resultMessage.fail }}</span>
-  </v-text>
-</template>
+      <span class="text-success font-bold">Success: {{ resultMessage.success }}</span>
+      <span v-if="resultMessage.fail.count !== 0" class="text-error font-bold">, Fail: {{ resultMessage.fail.count }}</span>
+    </v-text>
+    <v-text v-if="resultMessage.fail.count !== 0">
+      <ul>
+        <li v-for="(message, index) in resultMessage.fail.messages" :key="index" class="text-error font-bold">
+          {{ message }}
+        </li>
+      </ul>
+    </v-text>
+  </template>
 <style>
 /* .custom-spacing .v-label {
   margin-bottom: 25px;
