@@ -122,7 +122,7 @@ export default defineComponent({
 <template>
   <v-toolbar flat v-if="showStept3">
     <v-toolbar-title>
-      Step 3(Final): Export to Excel
+      Step 3: export to Excel
       <v-btn class="text-white mx-2" :style="{ backgroundColor: '#7DA77D' }" @click="submitStep3">
         Export
       </v-btn>

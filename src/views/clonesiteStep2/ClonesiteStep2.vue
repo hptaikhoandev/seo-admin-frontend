@@ -2,16 +2,16 @@
 import { defineComponent, ref, type Ref } from 'vue';
 import moment from 'moment';
 import {jwtDecode} from 'jwt-decode';
-import { useRedirectStore } from '@/stores/modules/redirect/redirect';
+import { useClonesiteStore } from '@/stores/modules/clonesite/clonesite';
 
 export default defineComponent({
-  name: 'RedirectStep2',
+  name: 'ClonesiteStep2',
   components: {
     //
   },
   data() {
     return {
-      redirectStore: useRedirectStore(),
+      cloneStore: useClonesiteStore(),
       dialog: false,
       dialogDelete: false,
       search: ref(''),
@@ -66,12 +66,6 @@ export default defineComponent({
     formTitle() {
       return this.editedIndex === -1 ? 'New Message' : 'Edit Message'
     },
-    showStept2(): boolean {
-      const store = useRedirectStore();
-      const storeRedirect = useRedirectStore();
-      return (store.domainRedirectFrom.length > 0 && store.domainRedirectTo.length > 0 && store.domainRedirectFrom.length === store.domainRedirectTo.length);
-    },
-
   },
   watch: {
 
@@ -85,10 +79,9 @@ export default defineComponent({
       this.loading = true;
       this.showResult = false;
       try {
-        const redirectType = this.redirectStore.redirectType;
-        const domainRedirectFrom = this.redirectStore.domainRedirectFrom.map(domain => domain.name);
-        const domainRedirectTo = this.redirectStore.domainRedirectTo.map(domain => domain.name);
-
+        const serverIP = this.cloneStore.serverIP;
+        const domainNameSource = this.cloneStore.domainNameSource;
+        const domainNameTarget = this.cloneStore.domainNameTarget;
 
         const user = ref(null);
         const storedUser = localStorage.getItem('user');
@@ -100,12 +93,12 @@ export default defineComponent({
         }
         const requestData = {
           team: user.value.roleId,
-          redirect_type: redirectType,
-          source_domains: domainRedirectFrom,
-          target_domains: domainRedirectTo,
+          server_ip: serverIP,
+          source_domain: domainNameSource,
+          target_domain: domainNameTarget,
         };
 
-        const ketqua = await this.redirectStore.redirectListDomainsToCloudflare(requestData);
+        const ketqua = await this.cloneStore.cloneSite(requestData);
         this.resultMessage = ketqua.result;
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -133,9 +126,9 @@ export default defineComponent({
 
 </script>
 <template>
-  <v-toolbar flat v-if="showStept2">
+  <v-toolbar flat>
     <v-toolbar-title>
-      Step 2: Submit to CloudFlare
+      Step 2: submit to server
       <v-btn class="text-white mx-2" :style="{ backgroundColor: '#6A8DBA' }" @click="submitStep2" :disabled="loading">
         <v-progress-circular
           v-if="loading"
@@ -162,7 +155,6 @@ export default defineComponent({
     </ul>
   </v-text>
 </template>
-
 <style>
 /* .custom-spacing .v-label {
   margin-bottom: 25px;

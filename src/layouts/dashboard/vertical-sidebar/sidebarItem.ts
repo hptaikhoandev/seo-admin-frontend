@@ -97,7 +97,7 @@ const sidebarItemRole = (() => {
         {
           title: 'Clone WP Site',
           icon: FontSizeOutlined,
-          to: '/whiltelist-ip'
+          to: '/clone-site'
         },
         {
           title: 'Tạo Multi WP Site',

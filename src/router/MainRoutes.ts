@@ -38,8 +38,8 @@ const MainRoutes = {
     },
     {
       name: 'Whiltelist IP',
-      path: '/whiltelist-ip',
-      component: () => import('@/views/emails/EmailPage.vue')
+      path: '/clone-site',
+      component: () => import('@/views/clonesite/Clonesite.vue')
     },
     {
       name: 'Tạo Multi WP Site',

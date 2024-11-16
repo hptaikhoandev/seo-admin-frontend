@@ -258,7 +258,7 @@ export default defineComponent({
   <v-container class="px-5" :style="{ backgroundColor: '#EEEEEE', borderRadius: '5px', maxWidth: '100%' }">
     <v-row class="pb-0">
       <v-col class="pb-2" :style="{ fontSize: '20px' }">
-        Step 1: Input domains
+        Step 1: input domains
       </v-col>
     </v-row>
     <v-row class="py-0">
