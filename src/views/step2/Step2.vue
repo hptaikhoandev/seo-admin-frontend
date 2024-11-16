@@ -234,7 +234,7 @@ export default defineComponent({
     <template v-slot:top>
       <v-toolbar :style="{ height: 'auto', alignItems: 'center' }">
         <v-toolbar-title :style="{ height: 'auto', display: 'flex', alignItems: 'center' }">
-          Step 2: Submit to CloudFlare
+          Step 2: submit to CloudFlare
           <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ props }">
               <v-btn class="text-white mx-2" :style="{ backgroundColor: '#6A8DBA' }" v-bind="props" :disabled="loading">
@@ -286,7 +286,7 @@ export default defineComponent({
       <span class="text-success font-bold">Success: {{ resultMessage.success }}</span>
       <span v-if="resultMessage.fail.count !== 0" class="text-error font-bold">, Fail: {{ resultMessage.fail.count }}</span>
     </v-text>
-    <v-text v-if="resultMessage.fail.count !== 0">
+    <v-text v-if="showResult && resultMessage.fail.count !== 0">
       <ul>
         <li v-for="(message, index) in resultMessage.fail.messages" :key="index" class="text-error font-bold">
           {{ message }}
