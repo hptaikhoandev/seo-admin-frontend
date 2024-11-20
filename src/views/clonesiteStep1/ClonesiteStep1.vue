@@ -67,13 +67,13 @@ export default defineComponent({
       console.log('domainName:', newDomainNameSource);
       const store = useClonesiteStore();
       store.domainNameSource = newDomainNameSource;
-      store.isDomainNameSourceValid = this.validateDomain(newDomainNameSource) === true;
+      store.isDomainNameSourceValid = this.validateDomain(newDomainNameSource) === true && newDomainNameSource !== store.domainNameTarget;
     },
     domainNameTarget(newDomainNameTarget) {
       console.log('domainName:', newDomainNameTarget);
       const store = useClonesiteStore();
       store.domainNameTarget = newDomainNameTarget;
-      store.isDomainNameTargetValid = this.validateDomain(newDomainNameTarget) === true;
+      store.isDomainNameTargetValid = this.validateDomain(newDomainNameTarget) === true && newDomainNameTarget !== store.domainNameSource;
     },
   
   },
