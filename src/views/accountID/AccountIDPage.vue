@@ -1,10 +1,10 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
-import { useUserStore } from '@/stores/modules/user/user';
+import { useAccountIDStore } from '@/stores/modules/accountID/accountid';
 import moment from 'moment';
 
 export default defineComponent({
-  name: 'UserPage',
+  name: 'AccountIDPage',
   components: {
     //
   },
@@ -13,13 +13,13 @@ export default defineComponent({
       dialog: false,
       dialogDelete: false,
       search: ref(''),
-      sortBy: ref('name'),
+      sortBy: ref('team'),
       sortDesc: ref(false),
       headers: [
-        { title: 'ID', align: 'start', sortable: false, key: 'id', },
-        { title: 'NAME', key: 'name' },
+      { title: 'ID', align: 'start', sortable: false, key: 'id', },
+        { title: 'TEAM', key: 'team' },
+        { title: 'ACCOUNT ID', key: 'account_id' },
         { title: 'EMAIL', key: 'email' },
-        { title: 'ROLE ID', key: 'roleId' },
         { title: 'CREATED AT', key: 'createdAt' },
         { title: 'UPDATED AT', key: 'updatedAt' },
         { title: 'ACTIONS', key: 'actions', sortable: false },
@@ -27,19 +27,17 @@ export default defineComponent({
       editedIndex: -1,
       editedItem: {
         id: 0,
-        name: '',
+        team: '',
+        account_id: '',
         email: '',
-        password: '',
-        roleId: '',
         createdAt: '',
         updatedAt: '',
       },
       defaultItem: {
         id: 0,
-        name: '',
+        team: '',
+        account_id: '',
         email: '',
-        password: '',
-        roleId: '',
         createdAt: '',
         updatedAt: '',
       },
@@ -59,7 +57,7 @@ export default defineComponent({
   },
   computed: {
     formTitle() {
-      return this.editedIndex === -1 ? 'New User' : 'Edit User'
+      return this.editedIndex === -1 ? 'New AccountId' : 'Edit AccountId'
     },
   },
   watch: {
@@ -74,16 +72,16 @@ export default defineComponent({
     async fetchData() {
       this.loading = true;
       try {
-        const userStore = useUserStore();
-        await userStore.fetchUser({
+        const accountIdStore = useAccountIDStore();
+        await accountIdStore.fetchAccountId({
           page: this.page,
           limit: this.itemsPerPage,
           search: this.search,
           sortBy: this.sortBy,
           sortDesc: this.sortDesc,
         });
-        this.items = await userStore.user;
-        this.totalItems = await userStore.total;
+        this.items = await accountIdStore.accountId;
+        this.totalItems = await accountIdStore.total;
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -92,7 +90,6 @@ export default defineComponent({
     },
     submitForm() {
       // Xử lý dữ liệu form sau khi submit
-      console.log('>>>>> submitForm');
       alert('submitForm');
     },
     editItem(item) {
@@ -133,8 +130,8 @@ export default defineComponent({
 
     deleteItemConfirm() {
       this.items.splice(this.editedIndex, 1)
-      const userStore = useUserStore();
-      userStore.deleteUser(this.editedItem.id);
+      const accountIdStore = useAccountIDStore();
+      accountIdStore.deleteAccountId(this.editedItem.id);
       this.closeDelete()
     },
 
@@ -155,16 +152,16 @@ export default defineComponent({
     },
 
     save() {
-      const userStore = useUserStore();
+      const accountIdStore = useAccountIDStore();
       const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
       this.editedItem.createdAt = currentTime;
       this.editedItem.updatedAt = currentTime;
       if (this.editedIndex > -1) {
         Object.assign(this.items[this.editedIndex], this.editedItem)
-        userStore.updateUser({ id: this.editedItem.id, name: this.editedItem.name, email: this.editedItem.email, password: this.editedItem.password, roleId: this.editedItem.roleId });
+        accountIdStore.updateAccountId({ id: this.editedItem.id, team: this.editedItem.team, email: this.editedItem.email, account_id: this.editedItem.account_id });
       } else {
         this.items.push(this.editedItem)
-        userStore.createUser({ name: this.editedItem.name, email: this.editedItem.email, password: this.editedItem.password, roleId: this.editedItem.roleId });
+        accountIdStore.createAccountId({ team: this.editedItem.team, email: this.editedItem.email, account_id: this.editedItem.account_id  });
 
       }
       this.close()
@@ -180,7 +177,7 @@ export default defineComponent({
     @update:items-per-page="handleItemsPerPageChange" hover :loading="loading" @update:options="handleSortBy">
     <template v-slot:top>
       <v-toolbar flat>
-        <v-toolbar-title>USER</v-toolbar-title>
+        <v-toolbar-title>ACCOUNT ID</v-toolbar-title>
         <v-divider class="mx-4" inset vertical></v-divider>
         <v-text-field v-model="search" label="Search" variant="outlined" hide-details single-line clearable
           @click:clear="handleClearSearch" @input="handleOnSearch">
@@ -190,7 +187,7 @@ export default defineComponent({
           <template v-slot:activator="{ props }">
             <v-btn class="mb-2" color="success" dark v-bind="props">
               <SquarePlusIcon size="18" color="green" />
-              <b>New User</b>
+              <b>New AccountId</b>
             </v-btn>
           </template>
           <v-card>
@@ -207,7 +204,17 @@ export default defineComponent({
 
                 <v-row>
                   <v-col cols="12">
-                    <v-text-field v-model="editedItem.name" label="Name" density="comfortable"></v-text-field>
+                      <v-select
+                          v-model="editedItem.team"
+                          :items="['admin', 'seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6']"
+                          label="Team"
+                          density="comfortable"
+                      ></v-select>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col cols="12">
+                    <v-text-field v-model="editedItem.account_id" label="Account ID" density="comfortable"></v-text-field>
                   </v-col>
                 </v-row>
 
@@ -216,23 +223,6 @@ export default defineComponent({
                     <v-text-field v-model="editedItem.email" label="Email" density="comfortable"></v-text-field>
                   </v-col>
                 </v-row>
-                <v-row>
-                  <v-col cols="12">
-                      <v-select
-                          v-model="editedItem.roleId"
-                          :items="['admin', 'seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6']"
-                          label="Role Id"
-                          density="comfortable"
-                      ></v-select>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col cols="12">
-                    <v-text-field type="password" v-model="editedItem.password" label="Password"
-                      density="comfortable"></v-text-field>
-                  </v-col>
-                </v-row>
-
                 <v-row>
                   <v-col cols="12">
                     <v-text-field disabled v-model="editedItem.createdAt" label="Created At"

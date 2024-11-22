@@ -1,10 +1,10 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
-import { useUserStore } from '@/stores/modules/user/user';
+import { usePemStore } from '@/stores/modules/pem/pem';
 import moment from 'moment';
 
 export default defineComponent({
-  name: 'UserPage',
+  name: 'PemPage',
   components: {
     //
   },
@@ -13,13 +13,12 @@ export default defineComponent({
       dialog: false,
       dialogDelete: false,
       search: ref(''),
-      sortBy: ref('name'),
+      sortBy: ref('server_ip'),
       sortDesc: ref(false),
       headers: [
         { title: 'ID', align: 'start', sortable: false, key: 'id', },
-        { title: 'NAME', key: 'name' },
-        { title: 'EMAIL', key: 'email' },
-        { title: 'ROLE ID', key: 'roleId' },
+        { title: 'PRIVATE KEY', key: 'pem' },
+        { title: 'SERVER IP', key: 'server_ip' },
         { title: 'CREATED AT', key: 'createdAt' },
         { title: 'UPDATED AT', key: 'updatedAt' },
         { title: 'ACTIONS', key: 'actions', sortable: false },
@@ -27,19 +26,15 @@ export default defineComponent({
       editedIndex: -1,
       editedItem: {
         id: 0,
-        name: '',
-        email: '',
-        password: '',
-        roleId: '',
+        pem: '',
+        server_ip: '',
         createdAt: '',
         updatedAt: '',
       },
       defaultItem: {
         id: 0,
-        name: '',
-        email: '',
-        password: '',
-        roleId: '',
+        pem: '',
+        server_ip: '',
         createdAt: '',
         updatedAt: '',
       },
@@ -59,7 +54,7 @@ export default defineComponent({
   },
   computed: {
     formTitle() {
-      return this.editedIndex === -1 ? 'New User' : 'Edit User'
+      return this.editedIndex === -1 ? 'New Pem' : 'Edit Pem'
     },
   },
   watch: {
@@ -74,26 +69,21 @@ export default defineComponent({
     async fetchData() {
       this.loading = true;
       try {
-        const userStore = useUserStore();
-        await userStore.fetchUser({
+        const pemStore = usePemStore();
+        await pemStore.fetchPem({
           page: this.page,
           limit: this.itemsPerPage,
           search: this.search,
           sortBy: this.sortBy,
           sortDesc: this.sortDesc,
         });
-        this.items = await userStore.user;
-        this.totalItems = await userStore.total;
+        this.items = await pemStore.pem;
+        this.totalItems = await pemStore.total;
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         this.loading = false;
       }
-    },
-    submitForm() {
-      // Xử lý dữ liệu form sau khi submit
-      console.log('>>>>> submitForm');
-      alert('submitForm');
     },
     editItem(item) {
       this.editedIndex = this.items.indexOf(item)
@@ -133,8 +123,8 @@ export default defineComponent({
 
     deleteItemConfirm() {
       this.items.splice(this.editedIndex, 1)
-      const userStore = useUserStore();
-      userStore.deleteUser(this.editedItem.id);
+      const pemStore = usePemStore();
+      pemStore.deletePem(this.editedItem.id);
       this.closeDelete()
     },
 
@@ -155,21 +145,19 @@ export default defineComponent({
     },
 
     save() {
-      const userStore = useUserStore();
+      const pemStore = usePemStore();
       const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
       this.editedItem.createdAt = currentTime;
       this.editedItem.updatedAt = currentTime;
       if (this.editedIndex > -1) {
         Object.assign(this.items[this.editedIndex], this.editedItem)
-        userStore.updateUser({ id: this.editedItem.id, name: this.editedItem.name, email: this.editedItem.email, password: this.editedItem.password, roleId: this.editedItem.roleId });
+        pemStore.updatePem({ id: this.editedItem.id, pem: this.editedItem.pem, server_ip: this.editedItem.server_ip });
       } else {
         this.items.push(this.editedItem)
-        userStore.createUser({ name: this.editedItem.name, email: this.editedItem.email, password: this.editedItem.password, roleId: this.editedItem.roleId });
-
+        pemStore.createPem({ pem: this.editedItem.pem, server_ip: this.editedItem.server_ip });
       }
       this.close()
     },
-
   }
 });
 
@@ -178,9 +166,12 @@ export default defineComponent({
   <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
     :items-length="totalItems" :page.sync="page" @update:page="handlePageChange"
     @update:items-per-page="handleItemsPerPageChange" hover :loading="loading" @update:options="handleSortBy">
+    <template v-slot:[`item.pem`]="{ item }">
+      <span>******************</span>
+    </template>
     <template v-slot:top>
       <v-toolbar flat>
-        <v-toolbar-title>USER</v-toolbar-title>
+        <v-toolbar-title>PEM</v-toolbar-title>
         <v-divider class="mx-4" inset vertical></v-divider>
         <v-text-field v-model="search" label="Search" variant="outlined" hide-details single-line clearable
           @click:clear="handleClearSearch" @input="handleOnSearch">
@@ -190,7 +181,7 @@ export default defineComponent({
           <template v-slot:activator="{ props }">
             <v-btn class="mb-2" color="success" dark v-bind="props">
               <SquarePlusIcon size="18" color="green" />
-              <b>New User</b>
+              <b>New Pem</b>
             </v-btn>
           </template>
           <v-card>
@@ -207,39 +198,21 @@ export default defineComponent({
 
                 <v-row>
                   <v-col cols="12">
-                    <v-text-field v-model="editedItem.name" label="Name" density="comfortable"></v-text-field>
+                    <v-textarea class="custom-spacing" v-model="editedItem.pem" label="Private key" density="comfortable" row="5"></v-textarea>
                   </v-col>
                 </v-row>
 
                 <v-row>
                   <v-col cols="12">
-                    <v-text-field v-model="editedItem.email" label="Email" density="comfortable"></v-text-field>
+                    <v-text-field v-model="editedItem.server_ip" label="Server IP" density="comfortable"></v-text-field>
                   </v-col>
                 </v-row>
-                <v-row>
-                  <v-col cols="12">
-                      <v-select
-                          v-model="editedItem.roleId"
-                          :items="['admin', 'seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6']"
-                          label="Role Id"
-                          density="comfortable"
-                      ></v-select>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col cols="12">
-                    <v-text-field type="password" v-model="editedItem.password" label="Password"
-                      density="comfortable"></v-text-field>
-                  </v-col>
-                </v-row>
-
                 <v-row>
                   <v-col cols="12">
                     <v-text-field disabled v-model="editedItem.createdAt" label="Created At"
                       density="comfortable"></v-text-field>
                   </v-col>
                 </v-row>
-
                 <v-row>
                   <v-col cols="12">
                     <v-text-field disabled v-model="editedItem.updatedAt" label="Updated At"
@@ -284,4 +257,5 @@ export default defineComponent({
 .custom-spacing .v-label {
   margin-bottom: 25px;
 }
+
 </style>

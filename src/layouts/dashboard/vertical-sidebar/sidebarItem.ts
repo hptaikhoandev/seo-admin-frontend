@@ -46,24 +46,24 @@ const sidebarItemRole = (() => {
           to: '/dashboard'
         },
         {
-          title: 'User Management',
-          icon: UserOutlined,
+          title: '🤵 User Management',
+          // icon: UserOutlined,
           to: '/user-management'
         },
         {
-          title: 'AccountID Management',
-          icon: UserOutlined,
-          to: '/user-management'
+          title: '🍷 AccountID Management',
+          // icon: UserOutlined,
+          to: '/account-id-management'
         },
         {
-          title: 'Pem Management',
-          icon: UserOutlined,
-          to: '/user-management'
+          title: '☕ Pem Management',
+          // icon: UserOutlined,
+          to: '/pem-management'
         },
         {
-          title: 'Server Management',
-          icon: UserOutlined,
-          to: '/user-management'
+          title: '🍯 Server Management',
+          // icon: UserOutlined,
+          to: '/server-management'
         },
         { header: 'Chức năng' },
         {
