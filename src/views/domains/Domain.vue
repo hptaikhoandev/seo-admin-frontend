@@ -198,15 +198,15 @@ export default defineComponent({
         <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ props }">
             <v-btn class="mb-2 ml-2 mr-1 bg-primary" color="white" dark v-bind="props">
-              <DownloadIcon size="24" color="white" />
+              <DownloadIcon size="18" color="white" />
               <b>Download sample</b>
             </v-btn>
             <v-btn class="mb-2 mx-1 bg-warning" color="white" dark v-bind="props">
-              <UploadIcon size="24" color="white" />
+              <UploadIcon size="18" color="white" />
               <b>Import domains</b>
             </v-btn>
             <v-btn class="mb-2 ml-1 mr-2 bg-success" color="white" dark v-bind="props">
-              <SquarePlusIcon size="24" color="white" />
+              <SquarePlusIcon size="18" color="white" />
               <b>New domain</b>
             </v-btn>
           </template>
@@ -263,8 +263,8 @@ export default defineComponent({
     </template>
     <template v-slot:item.actions="{ item }">
 
-      <EditIcon size="24" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
-      <TrashIcon size="24" color="red" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
+      <EditIcon size="18" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
+      <TrashIcon size="18" color="red" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
     </template>
   </v-data-table-server>
 

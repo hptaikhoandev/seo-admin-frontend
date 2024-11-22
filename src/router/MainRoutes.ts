@@ -22,6 +22,21 @@ const MainRoutes = {
       component: () => import('@/views/users/UserPage.vue')
     },
     {
+      name: 'AccountID Management',
+      path: '/account-id-management',
+      component: () => import('@/views/accountID/AccountIDPage.vue')
+    },
+    {
+      name: 'Pem Management',
+      path: '/pem-management',
+      component: () => import('@/views/pem/PemPage.vue')
+    },
+    {
+      name: 'Server Management',
+      path: '/server-management',
+      component: () => import('@/views/server/ServerPage.vue')
+    },
+    {
       name: 'Thêm domains vào CF',
       path: '/them-domains-vao-cf',
       component: () => import('@/views/domainToCF/DomainToCF.vue')

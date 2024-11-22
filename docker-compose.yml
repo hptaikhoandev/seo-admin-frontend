@@ -1,7 +1,9 @@
-version: '3.4'
 services:
-  seo-admin-frontend-app:
-    image: seo-admin-frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: "seo-admin-frontend_${TIMESTAMP}"
     ports:
       - '180:80' # Public HTTP Port
       - '143:443' # Public HTTPS Port
