@@ -33,9 +33,32 @@ export const useAuthStore = defineStore({
       router.push(this.returnUrl || '/dashboard');
     },
     async logout() {
+      // Xóa toàn bộ dữ liệu trong localStorage
+      localStorage.clear();
+    
+      // Xóa toàn bộ dữ liệu trong sessionStorage
+      sessionStorage.clear();
+    
+      // Xóa tất cả cookie
+      document.cookie.split(";").forEach(cookie => {
+        const name = cookie.split("=")[0].trim();
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      });
+    
+      // Xóa cache nếu có
+      if ('caches' in window) {
+        const cacheKeys = await caches.keys();
+        for (const key of cacheKeys) {
+          await caches.delete(key);
+        }
+      }
+    
+      // Reset thông tin người dùng
       this.user = null;
-      localStorage.removeItem('user');
+    
+      // Điều hướng đến trang login
       router.push('/auth/login');
     }
+    
   }
 });
