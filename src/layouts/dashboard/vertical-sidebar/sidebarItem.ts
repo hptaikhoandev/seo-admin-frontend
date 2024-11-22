@@ -50,74 +50,94 @@ const sidebarItemRole = (() => {
           icon: UserOutlined,
           to: '/user-management'
         },
+        {
+          title: 'AccountID Management',
+          icon: UserOutlined,
+          to: '/user-management'
+        },
+        {
+          title: 'Pem Management',
+          icon: UserOutlined,
+          to: '/user-management'
+        },
+        {
+          title: 'Server Management',
+          icon: UserOutlined,
+          to: '/user-management'
+        },
         { header: 'Chức năng' },
         {
-          title: 'Thêm domains vào CF',
-          icon: ProfileOutlined,
+          title: '☘️ Thêm domains vào CF',
+          // icon: ProfileOutlined,
           to: '/them-domains-vao-cf'
         },
         {
-          title: 'Redirect Domain',
-          icon: CrownOutlined,
+          title: '🪵 Redirect Domain',
+          // icon: CrownOutlined,
           to: '/redirect-domain'
         },
         {
-          title: 'Clone WP Site',
-          icon: FontSizeOutlined,
-          to: '/whiltelist-ip'
+          title: '🌷 Clone WP Site',
+          // icon: FontSizeOutlined,
+          to: '/clone-site'
         },
+        // {
+        //   title: '🌺 Delete WP Site',
+        //   // icon: FontSizeOutlined,
+        //   to: '/clone-site',
+        // },
         {
-          title: 'Tạo Multi WP Site',
-          icon: BarcodeOutlined,
+          title: '💐 Create Multi PBN WP Site',
+          // icon: BarcodeOutlined,
           to: '/tao-multi-wp-site'
         },
-        
+        // {
+        //   title: '❄️ Replace link for multi site',
+        //   // icon: CrownOutlined,
+        //   to: '/tao-multi-wp-site'
+        // },  
       ];
       break;
     case 'seo-3':
       return [
         { header: 'Quản lý chung' },
         {
-          title: 'Dashboard',
-          icon: DashboardOutlined,
+          title: '🍄 Dashboard',
+          // icon: DashboardOutlined,
           to: '/dashboard'
         },
 
         { header: 'Chức năng' },
         {
-          title: 'Thêm domains vào CF',
-          icon: ProfileOutlined,
+          title: '☘️ Thêm domains vào CF',
+          // icon: ProfileOutlined,
           to: '/them-domains-vao-cf'
         },
         {
-          title: 'Redirect Domain',
-          icon: CrownOutlined,
+          title: '🪵 Redirect Domain',
+          // icon: CrownOutlined,
           to: '/redirect-domain'
         },
         {
-          title: 'Clone WP Site',
-          icon: FontSizeOutlined,
+          title: '🌷 Clone WP Site',
+          // icon: FontSizeOutlined,
           to: '/clone-site'
         },
+        // {
+        //   title: '🌺 Delete WP Site',
+        //   // icon: FontSizeOutlined,
+        //   to: '/clone-site',
+        // },
         {
-          title: 'Tạo Multi WP Site',
-          icon: BarcodeOutlined,
+          title: '💐 Create Multi PBN WP Site',
+          // icon: BarcodeOutlined,
           to: '/tao-multi-wp-site'
         },
-        
-      ];
-      break;
-
-    case '2':
-      return [
-        { header: 'Quản lý chung' },
-        {
-          title: 'Dashboard',
-          icon: DashboardOutlined,
-          to: '/dashboard'
-        },
-        { header: 'Chức năng' },
-        
+        // {
+        //   title: '❄️ Replace link for multi site',
+        //   // icon: CrownOutlined,
+        //   to: '/tao-multi-wp-site'
+        // },        
       ];
       break;
   }

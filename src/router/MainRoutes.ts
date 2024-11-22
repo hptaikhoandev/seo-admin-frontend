@@ -27,24 +27,19 @@ const MainRoutes = {
       component: () => import('@/views/domainToCF/DomainToCF.vue')
     },
     {
-      name: 'Thay đổi Name Server',
-      path: '/thay-doi-name-server',
-      component: () => import('@/views/phones/Phone.vue')
-    },
-    {
       name: 'Redirect Domain',
       path: '/redirect-domain',
       component: () => import('@/views/redirectToCF/RedirectToCF.vue')
     },
     {
-      name: 'Whiltelist IP',
+      name: 'Clone Site',
       path: '/clone-site',
       component: () => import('@/views/clonesite/Clonesite.vue')
     },
     {
-      name: 'Tạo Multi WP Site',
+      name: 'Create Multi PBN WP Site',
       path: '/tao-multi-wp-site',
-      component: () => import('@/views/messages/Message.vue')
+      component: () => import('@/views/multiSite/MultiSite.vue')
     },
   ]
 };
