@@ -41,8 +41,8 @@ const sidebarItemRole = (() => {
       return [
         { header: 'Quản lý chung' },
         {
-          title: 'Dashboard',
-          icon: DashboardOutlined,
+          title: '🌸 Dashboard',
+          // icon: DashboardOutlined,
           to: '/dashboard'
         },
         {
@@ -55,11 +55,11 @@ const sidebarItemRole = (() => {
           // icon: UserOutlined,
           to: '/account-id-management'
         },
-        {
-          title: '☕ Pem Management',
-          // icon: UserOutlined,
-          to: '/pem-management'
-        },
+        // {
+        //   title: '☕ Key Pairs Management',
+        //   // icon: UserOutlined,
+        //   to: '/pem-management'
+        // },
         {
           title: '🍯 Server Management',
           // icon: UserOutlined,
@@ -102,7 +102,7 @@ const sidebarItemRole = (() => {
       return [
         { header: 'Quản lý chung' },
         {
-          title: '🍄 Dashboard',
+          title: '🌸 Dashboard',
           // icon: DashboardOutlined,
           to: '/dashboard'
         },

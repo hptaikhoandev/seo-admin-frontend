@@ -16,7 +16,7 @@ export default defineComponent({
       sortBy: ref('team'),
       sortDesc: ref(false),
       headers: [
-      { title: 'ID', align: 'start', sortable: false, key: 'id', },
+      // { title: 'ID', align: 'start', sortable: false, key: 'id', },
         { title: 'TEAM', key: 'team' },
         { title: 'ACCOUNT ID', key: 'account_id' },
         { title: 'EMAIL', key: 'email' },
@@ -59,6 +59,12 @@ export default defineComponent({
     formTitle() {
       return this.editedIndex === -1 ? 'New AccountId' : 'Edit AccountId'
     },
+    isFormValid() {
+      const teamValid = this.validateTeam(this.editedItem.team) === true;
+      const accountIDValid = this.validateAccountID(this.editedItem.account_id) === true;
+      const emailValid = this.validateEmail(this.editedItem.email) === true;
+      return teamValid && accountIDValid && emailValid;
+    },
   },
   watch: {
     dialog(val) {
@@ -87,10 +93,6 @@ export default defineComponent({
       } finally {
         this.loading = false;
       }
-    },
-    submitForm() {
-      // Xử lý dữ liệu form sau khi submit
-      alert('submitForm');
     },
     editItem(item) {
       this.editedIndex = this.items.indexOf(item)
@@ -150,7 +152,20 @@ export default defineComponent({
         this.editedIndex = -1
       })
     },
-
+    validateEmail: value => {
+      const emailRegex =
+        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      return (
+        emailRegex.test(value) ||
+        "Please enter a valid email address." 
+      );
+    },
+    validateAccountID(value) {
+      return !!value || "AccountID is required"; 
+    },
+    validateTeam(value) {
+      return !!value || "Team is required"; 
+    },
     save() {
       const accountIdStore = useAccountIDStore();
       const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
@@ -198,29 +213,24 @@ export default defineComponent({
               <v-container>
                 <v-row>
                   <v-col cols="12">
-                    <v-text-field disabled v-model="editedItem.id" label="ID" density="comfortable"></v-text-field>
-                  </v-col>
-                </v-row>
-
-                <v-row>
-                  <v-col cols="12">
                       <v-select
                           v-model="editedItem.team"
                           :items="['admin', 'seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6']"
                           label="Team"
                           density="comfortable"
+                          :rules="[validateTeam]"
                       ></v-select>
                   </v-col>
                 </v-row>
                 <v-row>
                   <v-col cols="12">
-                    <v-text-field v-model="editedItem.account_id" label="Account ID" density="comfortable"></v-text-field>
+                    <v-text-field v-model="editedItem.account_id" label="Account ID" density="comfortable" :rules="[validateAccountID]"></v-text-field>
                   </v-col>
                 </v-row>
 
                 <v-row>
                   <v-col cols="12">
-                    <v-text-field v-model="editedItem.email" label="Email" density="comfortable"></v-text-field>
+                    <v-text-field v-model="editedItem.email" label="Email" density="comfortable" :rules="[validateEmail]" clearable></v-text-field>
                   </v-col>
                 </v-row>
                 <v-row>
@@ -243,7 +253,7 @@ export default defineComponent({
               <v-btn color="blue-darken-1" variant="text" @click="close">
                 Cancel
               </v-btn>
-              <v-btn color="blue-darken-1" variant="text" @click="save">
+              <v-btn color="blue-darken-1" variant="text" @click="save" :disabled="!isFormValid">
                 Save
               </v-btn>
             </v-card-actions>
@@ -263,7 +273,6 @@ export default defineComponent({
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
-
       <EditIcon size="18" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
       <TrashIcon size="18" color="red" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
     </template>
