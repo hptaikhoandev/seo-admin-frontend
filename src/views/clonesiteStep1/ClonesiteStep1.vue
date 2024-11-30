@@ -1,9 +1,7 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
 import { useClonesiteStore } from '@/stores/modules/clonesite/clonesite';
-import moment from 'moment';
-import { Loader2Icon, ReloadIcon } from 'vue-tabler-icons';
-import { RedoOutlined } from '@ant-design/icons-vue';
+import {jwtDecode} from 'jwt-decode';
 
 export default defineComponent({
   name: 'ClonesiteStep1',
@@ -15,6 +13,7 @@ export default defineComponent({
       serverIP: '',
       domainNameSource: '',
       domainNameTarget: '',
+      serverList: ref([]) as Ref<any[]>,
       dialog: false,
       dialogDelete: false,
       search: ref(''),
@@ -48,29 +47,26 @@ export default defineComponent({
   },
 
   mounted() {
-    // this.fetchData();
+    //
   },
   created() {
-    //
+    this.getServerList();
   },
   computed: {
     //
   },
   watch: {
     serverIP(newServerIP) {
-      console.log('serverIP:', newServerIP);
       const store = useClonesiteStore();
       store.serverIP = newServerIP;
       store.isServerIPValid = this.validateIPAddress(newServerIP) === true;
     },
     domainNameSource(newDomainNameSource) {
-      console.log('domainName:', newDomainNameSource);
       const store = useClonesiteStore();
       store.domainNameSource = newDomainNameSource;
       store.isDomainNameSourceValid = this.validateDomain(newDomainNameSource) === true;
     },
     domainNameTarget(newDomainNameTarget) {
-      console.log('domainName:', newDomainNameTarget);
       const store = useClonesiteStore();
       store.domainNameTarget = newDomainNameTarget;
       store.isDomainNameTargetValid = this.validateDomain(newDomainNameTarget) === true;
@@ -78,6 +74,19 @@ export default defineComponent({
   
   },
   methods: {
+    async getServerList() {
+      const store = useClonesiteStore();
+      const user = ref(null);
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        if (parsedUser && parsedUser.user && parsedUser.user.token) {
+          user.value = jwtDecode(parsedUser.user.token);
+        }
+      }
+      const ketqua = await store.fetchServerList(user.value.roleId);
+      this.serverList = ketqua.map(item => item.server_ip);
+    },
     validateIPAddress(value) {
       const ipPattern = /^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$/;
       return ipPattern.test(value) || 'Please enter a valid IP address (e.g., 54.243.100.131)';
@@ -99,9 +108,15 @@ export default defineComponent({
     </v-row>
     <v-row class="py-0">
       <v-col cols="3" class="py-0">
-        <v-text-field v-model="serverIP" label="Server IP chứa website" placeholder="Enter Server IP" class="mt-3"
-          :rules="[validateIPAddress]" />
-      </v-col>
+        <v-select
+          v-model="serverIP"
+          :items="serverList"
+          label="Server IP chứa website"
+          placeholder="Select Server IP"
+          class="mt-3"
+          :rules="[validateIPAddress]"
+        />
+        </v-col>
       <v-col cols="3" class="py-0">
         <v-text-field v-model="domainNameSource" label="Domain name source" placeholder="Enter Domain source" class="mt-3"
           :rules="[validateDomain]" />
