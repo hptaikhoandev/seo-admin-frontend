@@ -55,11 +55,11 @@ const sidebarItemRole = (() => {
           // icon: UserOutlined,
           to: '/account-id-management'
         },
-        // {
-        //   title: '☕ Key Pairs Management',
-        //   // icon: UserOutlined,
-        //   to: '/pem-management'
-        // },
+        {
+          title: '☕ Pem File Management',
+          // icon: UserOutlined,
+          to: '/pem-management'
+        },
         {
           title: '🍯 Server Management',
           // icon: UserOutlined,

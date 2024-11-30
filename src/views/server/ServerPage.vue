@@ -38,6 +38,7 @@ export default defineComponent({
         server_ip: '',
         team: '',
         key_name: '',
+        private_key: '',
         createdAt: '',
         updatedAt: '',
       },
@@ -46,6 +47,7 @@ export default defineComponent({
         server_ip: '',
         team: '',
         key_name: '',
+        private_key: '',
         createdAt: '',
         updatedAt: '',
       },
@@ -65,13 +67,21 @@ export default defineComponent({
   },
   computed: {
     formTitle() {
-      return this.editedIndex === -1 ? 'New Server' : 'Import Server'
+      switch (this.dialogType) {
+      case 'import':
+        return 'Import Server';
+      case 'edit':
+        return 'Edit Server';
+      default:
+        return 'New Server';
+    }
+      // return this.editedIndex === -1 ? 'New Server' : 'Import Server'
     },
     isFormValid() {
       const teamValid = this.validateTeam(this.editedItem.team) === true;
-      const keyNameValid = this.validateTeam(this.editedItem.key_name) === true;
+      const privateKeyValid = this.validateTeam(this.editedItem.private_key) === true;
       const serverIPValid = this.validateTeam(this.editedItem.server_ip) === true;
-      return teamValid && keyNameValid && serverIPValid;
+      return (this.dialogType === 'import') ? teamValid && privateKeyValid && serverIPValid : teamValid;
     },
   },
   watch: {
@@ -108,7 +118,7 @@ export default defineComponent({
     },
 
     editItem(item) {
-      this.dialogType = 'new';
+      this.dialogType = 'edit';
       this.editedIndex = this.items.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialog = true
@@ -170,7 +180,7 @@ export default defineComponent({
     validateTeam(value) {
       return !!value || "Team is required"; 
     },
-    validateKeyName(value) {
+    validatePrivateKey(value) {
       return !!value || "Key Name is required"; 
     },
     validateIPAddress(value) {
@@ -197,18 +207,30 @@ export default defineComponent({
       const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
       this.editedItem.createdAt = currentTime;
       this.editedItem.updatedAt = currentTime;
+      const serverStore = useServerStore();
+      console.log('hhhh===>', this.editedItem);
       if (this.editedIndex > -1) {
         //
       } else {
-        const serverStore = useServerStore();
-        const ketqua = await serverStore.createServer({ server_ip: this.editedItem.server_ip, team: this.editedItem.team });
-        this.resultMessage = ketqua.result;
-        if (this.resultMessage.fail.count === 0) {
-          this.showResult = false;
-          this.items.push(this.editedItem)
+        if (this.dialogType === 'import') {
+          const ketqua = await serverStore.createServerImport({ server_ip: this.editedItem.server_ip, team: this.editedItem.team, private_key: this.editedItem.private_key });
+          this.resultMessage = await ketqua.result;
+          if (this.resultMessage.fail.count === 0) {
+            this.showResult = false;
+            this.items.push(this.editedItem)
+          } else {
+            this.showResult = true;
+          }        
         } else {
-          this.showResult = true;
-        }        
+          const ketqua = await serverStore.createServer({ server_ip: this.editedItem.server_ip, team: this.editedItem.team });
+          this.resultMessage = await ketqua.result;
+          if (this.resultMessage.fail.count === 0) {
+            this.showResult = false;
+            this.items.push(this.editedItem)
+          } else {
+            this.showResult = true;
+          }        
+        }
       }
       this.fetchData();
       this.close()
@@ -245,7 +267,7 @@ export default defineComponent({
           </template>
           <v-card>
             <v-card-title>
-              <span class="text-h5">{{ dialogType === 'import' ? 'Import Server' : 'New Server' }}</span>
+              <span class="text-h5">{{ formTitle }}</span>
             </v-card-title>
             <v-card-text>
               <v-container>
@@ -253,6 +275,7 @@ export default defineComponent({
                   <v-col cols="12">
                     <v-text-field 
                       v-model="editedItem.server_ip" 
+                      :rules="[validateIPAddress]" 
                       :disabled="dialogType !== 'import'" 
                       :label="dialogType !== 'import' ? 'Server IP sẽ được thêm vào sau khi server được tạo' : 'Thêm vào Server IP import tại đây'" 
                       density="comfortable">
@@ -262,9 +285,9 @@ export default defineComponent({
                 <v-row>
                   <v-col cols="12">
                     <v-textarea 
-                      :rules="[validateKeyName]" 
+                      :rules="[validatePrivateKey]" 
                       class="custom-spacing" 
-                      v-model="editedItem.key_name"
+                      v-model="editedItem.private_key"
                       :disabled="dialogType !== 'import'" 
                       :label="dialogType !== 'import' ? 'Private key sẽ được thêm vào sau khi server được tạo' : 'Private key'"  
                       density="comfortable" row="5">
@@ -278,6 +301,7 @@ export default defineComponent({
                           :items="['admin', 'seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6']"
                           label="Team"
                           density="comfortable"
+                          :disabled="dialogType === 'edit'" 
                           :rules="[validateTeam]"
                       ></v-select>
                   </v-col>
@@ -288,13 +312,18 @@ export default defineComponent({
                       density="comfortable"></v-text-field>
                   </v-col>
                 </v-row>
-
                 <v-row>
                   <v-col cols="12">
                     <v-text-field disabled v-model="editedItem.updatedAt" label="Updated At"
                       density="comfortable"></v-text-field>
                   </v-col>
                 </v-row>
+                <v-row>
+                  <v-col cols="12" v-if="dialogType !== 'import' && dialogType !== 'edit'">
+                    📚 Khi Submit sẽ tạo 01 server mới trên AWS Cloud và thêm 01 serverIP, 01 privateKey vào database
+                  </v-col>
+                </v-row>
+
               </v-container>
             </v-card-text>
             <v-card-actions>
@@ -318,7 +347,7 @@ export default defineComponent({
         </v-dialog>
         <v-dialog v-model="dialogDelete" max-width="500px">
           <v-card>
-            <v-card-title class="text-h5">Are you sure you want to delete this item?</v-card-title>
+            <v-card-title class="text-h5">Lệnh này không thực sự xóa server trên AWS</v-card-title>
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="blue-darken-1" variant="text" @click="closeDelete">Cancel</v-btn>
@@ -330,7 +359,9 @@ export default defineComponent({
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
-      <EditIcon size="18" color="green" class="mr-2" style="cursor: pointer;" />
+      <EditIcon size="18" color="gray" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
+      <TrashIcon size="18" color="#FF5252" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
+
     </template>
   </v-data-table-server>
     <!-- Hiển thị kết quả chỉ sau khi gọi API xong (khi loading là false) -->
@@ -351,5 +382,8 @@ export default defineComponent({
 <style>
 .custom-spacing .v-label {
   margin-bottom: 25px;
+}
+.v-field--variant-filled textarea {
+  padding-top: 20px;
 }
 </style>

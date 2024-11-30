@@ -27,7 +27,6 @@ export default defineComponent({
         // { title: 'ID', align: 'start', sortable: false, key: 'id', },
         { title: 'PRIVATE KEY', key: 'pem' },
         { title: 'TEAM', key: 'team' },
-        { title: 'FILE NAME', key: 'fileName' },
         { title: 'CREATED AT', key: 'createdAt' },
         { title: 'UPDATED AT', key: 'updatedAt' },
         { title: 'ACTIONS', key: 'actions', sortable: false },
@@ -138,14 +137,8 @@ export default defineComponent({
       this.loading = true;
       const pemStore = usePemStore();
       const ketqua = await pemStore.deletePem(this.editedItem.id, this.editedItem.team);
-      this.resultMessage = ketqua.result;
-      if (this.resultMessage.fail.count === 0) {
-        this.showResult = false;
-        this.items.splice(this.editedIndex, 1)
-      } else {
-        this.showResult = true;
-      } 
       this.loading = false;
+      this.fetchData();
       this.closeDelete()
     },
 
@@ -175,10 +168,12 @@ export default defineComponent({
       const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
       this.editedItem.createdAt = currentTime;
       this.editedItem.updatedAt = currentTime;
+      const pemStore = usePemStore();
       if (this.editedIndex > -1) {
-        //
+        const ketqua = await pemStore.updatePem({ id: this.editedItem.id, pem: this.editedItem.pem, team: this.editedItem.team });
+        this.resultMessage = ketqua.result;        
+
       } else {
-        const pemStore = usePemStore();
         const ketqua = await pemStore.createPem({ pem: this.editedItem.pem, team: this.editedItem.team });
         this.resultMessage = ketqua.result;
         if (this.resultMessage.fail.count === 0) {
@@ -213,10 +208,10 @@ export default defineComponent({
         <v-spacer></v-spacer>
         <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ props }">
-            <!-- <v-btn class="mb-2" color="success" dark v-bind="props">
+            <v-btn class="mb-2" color="success" dark v-bind="props">
               <SquarePlusIcon size="18" color="green" />
               <b>New Pem</b>
-            </v-btn> -->
+            </v-btn>
           </template>
           <v-card>
             <v-card-title>
@@ -226,7 +221,7 @@ export default defineComponent({
               <v-container>
                 <v-row>
                   <v-col cols="12">
-                    <v-textarea disabled class="custom-spacing" v-model="editedItem.pem" label="Private key"
+                    <v-textarea class="custom-spacing" v-model="editedItem.pem" label="Private key"
                       density="comfortable" row="5"></v-textarea>
                   </v-col>
                 </v-row>
@@ -234,7 +229,7 @@ export default defineComponent({
                   <v-col cols="12">
                     <v-select v-model="editedItem.team"
                       :items="['admin', 'seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6']" label="Team"
-                      density="comfortable" :rules="[validateTeam]" :disabled="formTitle === 'Edit Pem'">
+                      density="comfortable" :rules="[validateTeam]">
                     </v-select>
                   </v-col>
                 </v-row>
@@ -295,8 +290,8 @@ export default defineComponent({
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
-      <EditIcon size="18" color="green" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
-      <!-- <TrashIcon size="18" color="red" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" /> -->
+      <EditIcon size="18" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
+      <TrashIcon size="18" color="red" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
     </template>
   </v-data-table-server>
   <!-- Hiển thị kết quả chỉ sau khi gọi API xong (khi loading là false) -->

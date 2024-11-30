@@ -82,6 +82,24 @@ export const useServerStore = defineStore({
         this.loading = false
       }
     },
+    async createServerImport({server_ip, team, private_key}) {
+      this.loading = true
+      const params = { server_ip, team, private_key }
+      try {
+        const response = await axios.post(`${baseUrl}/servers/import-servers`, params, { 
+          headers: {
+            Authorization: bearerToken
+          }
+         })
+        this.server = response.data.data
+        this.total = response.data.total
+        return response.data;
+      } catch (error: any) {
+        // this.error = error.message
+      } finally {
+        this.loading = false
+      }
+    },
 
     async updateServer({id, server_ip, team }) {
       this.loading = true

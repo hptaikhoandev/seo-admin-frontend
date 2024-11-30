@@ -78,6 +78,7 @@ export const usePemStore = defineStore({
         })
         this.pem = response.data.data
         this.total = response.data.total
+        return response.data;
       } catch (error: any) {
         this.error = error.message
       } finally {

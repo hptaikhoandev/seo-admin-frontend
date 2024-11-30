@@ -166,20 +166,21 @@ export default defineComponent({
     validateTeam(value) {
       return !!value || "Team is required"; 
     },
-    save() {
+    async save() {
       const accountIdStore = useAccountIDStore();
       const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
       this.editedItem.createdAt = currentTime;
       this.editedItem.updatedAt = currentTime;
       if (this.editedIndex > -1) {
         Object.assign(this.items[this.editedIndex], this.editedItem)
-        accountIdStore.updateAccountId({ id: this.editedItem.id, team: this.editedItem.team, email: this.editedItem.email, account_id: this.editedItem.account_id });
+        await accountIdStore.updateAccountId({ id: this.editedItem.id, team: this.editedItem.team, email: this.editedItem.email, account_id: this.editedItem.account_id });
       } else {
         this.items.push(this.editedItem)
-        accountIdStore.createAccountId({ team: this.editedItem.team, email: this.editedItem.email, account_id: this.editedItem.account_id  });
+        await accountIdStore.createAccountId({ team: this.editedItem.team, email: this.editedItem.email, account_id: this.editedItem.account_id  });
 
       }
-      this.close()
+      await this.fetchData();
+      await this.close()
     },
 
   }
