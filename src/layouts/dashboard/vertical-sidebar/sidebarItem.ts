@@ -41,8 +41,8 @@ const sidebarItemRole = (() => {
       return [
         { header: 'Quản lý chung' },
         {
-          title: 'Dashboard',
-          icon: DashboardOutlined,
+          title: '🌸 Dashboard',
+          // icon: DashboardOutlined,
           to: '/dashboard'
         },
         {
@@ -56,7 +56,7 @@ const sidebarItemRole = (() => {
           to: '/account-id-management'
         },
         {
-          title: '☕ Pem Management',
+          title: '☕ Pem File Management',
           // icon: UserOutlined,
           to: '/pem-management'
         },
@@ -102,7 +102,7 @@ const sidebarItemRole = (() => {
       return [
         { header: 'Quản lý chung' },
         {
-          title: '🍄 Dashboard',
+          title: '🌸 Dashboard',
           // icon: DashboardOutlined,
           to: '/dashboard'
         },

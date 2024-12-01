@@ -140,13 +140,12 @@ export default defineComponent({
         domainList.forEach(domainName => {
           const nameExists = this.items.some(item => item.name === domainName);
           if (!nameExists) {
-            this.editedItem = {
+            this.items.unshift({
               id: 0,
               name: domainName,
               createdAt: currentTime.toString(),
               updatedAt: currentTime.toString(),
-            };
-            this.items.unshift(this.editedItem);
+            });
           }
         });
         event.target.value = null;

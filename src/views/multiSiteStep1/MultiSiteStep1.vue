@@ -2,8 +2,7 @@
 import { defineComponent, ref, type Ref } from 'vue';
 import { useMutilSiteStore } from '@/stores/modules/mutilSite/mutilSite';
 import moment from 'moment';
-import { Loader2Icon, ReloadIcon } from 'vue-tabler-icons';
-import { RedoOutlined } from '@ant-design/icons-vue';
+import {jwtDecode} from 'jwt-decode';
 
 export default defineComponent({
   name: 'MultiSiteStep1',
@@ -14,6 +13,7 @@ export default defineComponent({
     return {
       mutilSiteStore: useMutilSiteStore,
       serverIP: '',
+      serverList: ref([]) as Ref<any[]>,
       isSSL: 'flexible',
       dialog: false,
       dialogDelete: false,
@@ -51,7 +51,7 @@ export default defineComponent({
     // this.fetchData();
   },
   created() {
-    // this.fetchData()
+    this.getServerList();
   },
   computed: {
     formTitle() {
@@ -87,6 +87,19 @@ export default defineComponent({
     },
   },
   methods: {
+    async getServerList() {
+      const store = useMutilSiteStore();
+      const user = ref(null);
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        if (parsedUser && parsedUser.user && parsedUser.user.token) {
+          user.value = jwtDecode(parsedUser.user.token);
+        }
+      }
+      const ketqua = await store.fetchServerList(user.value.roleId);
+      this.serverList = ketqua.map(item => item.server_ip);
+    },
     reset() {
       this.items.splice(0, this.items.length);
     },
@@ -165,13 +178,12 @@ export default defineComponent({
         domainList.forEach(domainName => {
           const nameExists = this.items.some(item => item.name === domainName);
           if (!nameExists) {
-            this.editedItem = {
+            this.items.unshift({
               id: 0,
               name: domainName,
               createdAt: currentTime.toString(),
               updatedAt: currentTime.toString(),
-            };
-            this.items.unshift(this.editedItem);
+            });
           }
         });
         event.target.value = null;
@@ -218,9 +230,15 @@ export default defineComponent({
     </v-row>
     <v-row class="py-0">
       <v-col cols="3" class="py-0">
-        <v-text-field v-model="serverIP" label="Server IP cài WP" placeholder="Enter Server IP cài WP" class="mt-3"
-          :rules="[validateIPAddress]" />
-      </v-col>
+        <v-select
+          v-model="serverIP"
+          :items="serverList"
+          label="Server IP cài WP"
+          placeholder="Enter Server IP cài WP"
+          class="mt-3"
+          :rules="[validateIPAddress]"
+        />
+        </v-col>
     </v-row>
     <v-row>
       <v-col cols="auto">

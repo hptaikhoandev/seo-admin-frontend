@@ -30,42 +30,46 @@ export const usePemStore = defineStore({
         this.loading = false
       }
     },
-    async deletePem(id: number) {
+    async deletePem(id: number, team: string) {
       this.loading = true
+      const params = { team }
       try {
-        const response = await axios.delete(`${baseUrl}/pems/` + id, { 
+        const response = await axios.delete(`${baseUrl}/pems/${id}`, { 
+          params,
           headers: {
             Authorization: bearerToken
           }
          })
         this.pem = response.data.data
         this.total = response.data.total
+        return response.data;
       } catch (error: any) {
-        this.error = error.message
+        // this.error = error.message
       } finally {
         this.loading = false
       }
     },
-    async createPem({pem, server_ip}) {
+    async createPem({pem, team}) {
       this.loading = true
-      const params = { pem, server_ip }
+      const params = { pem, team }
       try {
-        const response = await axios.post(`${baseUrl}/pems`, params, { 
+        const response = await axios.post(`${baseUrl}/pems/`, params, { 
           headers: {
             Authorization: bearerToken
           }
          })
         this.pem = response.data.data
         this.total = response.data.total
+        return response.data;
       } catch (error: any) {
-        this.error = error.message
+        // this.error = error.message
       } finally {
         this.loading = false
       }
     },
-    async updatePem({id, pem, server_ip }) {
+    async updatePem({id, pem, team }) {
       this.loading = true
-      const params = { id, pem, server_ip }
+      const params = { id, pem, team }
       try {
         const response = await axios.put(`${baseUrl}/pems/` + params.id, params, { 
           headers: {
@@ -74,6 +78,7 @@ export const usePemStore = defineStore({
         })
         this.pem = response.data.data
         this.total = response.data.total
+        return response.data;
       } catch (error: any) {
         this.error = error.message
       } finally {

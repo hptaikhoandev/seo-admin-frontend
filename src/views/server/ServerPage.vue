@@ -12,13 +12,22 @@ export default defineComponent({
     return {
       dialog: false,
       dialogDelete: false,
+      dialogType: "", 
       search: ref(''),
       sortBy: ref('server_ip'),
       sortDesc: ref(false),
+      showResult: false,
+      resultMessage: {
+        success: 0,
+        fail: {
+          count:0,
+          messages: []
+        },
+      },
       headers: [
-        { title: 'ID', align: 'start', sortable: false, key: 'id', },
         { title: 'SERVER IP', key: 'server_ip' },
         { title: 'TEAM', key: 'team' },
+        { title: 'KEY NAME', key: 'key_name' },
         { title: 'CREATED AT', key: 'createdAt' },
         { title: 'UPDATED AT', key: 'updatedAt' },
         { title: 'ACTIONS', key: 'actions', sortable: false },
@@ -28,6 +37,8 @@ export default defineComponent({
         id: 0,
         server_ip: '',
         team: '',
+        key_name: '',
+        private_key: '',
         createdAt: '',
         updatedAt: '',
       },
@@ -35,6 +46,8 @@ export default defineComponent({
         id: 0,
         server_ip: '',
         team: '',
+        key_name: '',
+        private_key: '',
         createdAt: '',
         updatedAt: '',
       },
@@ -54,7 +67,21 @@ export default defineComponent({
   },
   computed: {
     formTitle() {
-      return this.editedIndex === -1 ? 'New Server' : 'Edit Server'
+      switch (this.dialogType) {
+      case 'import':
+        return 'Import Server';
+      case 'edit':
+        return 'Edit Server';
+      default:
+        return 'New Server';
+    }
+      // return this.editedIndex === -1 ? 'New Server' : 'Import Server'
+    },
+    isFormValid() {
+      const teamValid = this.validateTeam(this.editedItem.team) === true;
+      const privateKeyValid = this.validateTeam(this.editedItem.private_key) === true;
+      const serverIPValid = this.validateTeam(this.editedItem.server_ip) === true;
+      return (this.dialogType === 'import') ? teamValid && privateKeyValid && serverIPValid : teamValid;
     },
   },
   watch: {
@@ -85,12 +112,13 @@ export default defineComponent({
         this.loading = false;
       }
     },
-    submitForm() {
-      // Xử lý dữ liệu form sau khi submit
-      console.log('>>>>> submitForm');
-      alert('submitForm');
+    openDialogImport() {
+      this.dialogType = 'import';
+      this.dialog = true;
     },
+
     editItem(item) {
+      this.dialogType = 'edit';
       this.editedIndex = this.items.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialog = true
@@ -139,6 +167,7 @@ export default defineComponent({
         this.editedItem = Object.assign({}, this.defaultItem)
         this.editedIndex = -1
       })
+      this.dialogType = "";
     },
 
     closeDelete() {
@@ -148,21 +177,64 @@ export default defineComponent({
         this.editedIndex = -1
       })
     },
+    validateTeam(value) {
+      return !!value || "Team is required"; 
+    },
+    validatePrivateKey(value) {
+      return !!value || "Key Name is required"; 
+    },
+    validateIPAddress(value) {
+      const ipPattern = /^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})(\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})){3}$/;
+      const invalidIPs = [
+        "0.0.0.0", "1.1.1.1", "127.0.0.1", "169.254.0.0", "192.0.2.0",
+        "198.51.100.0", "203.0.113.0", "224.0.0.0", "255.255.255.255",
+        "100.64.0.0", "240.0.0.0"
+      ];
 
-    save() {
-      const serverStore = useServerStore();
+      if (!ipPattern.test(value)) {
+        return 'Please enter a valid IP address (e.g., 54.243.100.131)';
+      }
+
+      if (invalidIPs.includes(value)) {
+        return 'This IP address cannot be used.';
+      }
+
+      return true;
+    },
+
+    async save() {
+      this.loading = true;
       const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
       this.editedItem.createdAt = currentTime;
       this.editedItem.updatedAt = currentTime;
+      const serverStore = useServerStore();
+      console.log('hhhh===>', this.editedItem);
       if (this.editedIndex > -1) {
-        Object.assign(this.items[this.editedIndex], this.editedItem)
-        serverStore.updateServer({ id: this.editedItem.id, server_ip: this.editedItem.server_ip, team: this.editedItem.team });
+        //
       } else {
-        this.items.push(this.editedItem)
-        serverStore.createServer({ server_ip: this.editedItem.server_ip, team: this.editedItem.team });
-
+        if (this.dialogType === 'import') {
+          const ketqua = await serverStore.createServerImport({ server_ip: this.editedItem.server_ip, team: this.editedItem.team, private_key: this.editedItem.private_key });
+          this.resultMessage = await ketqua.result;
+          if (this.resultMessage.fail.count === 0) {
+            this.showResult = false;
+            this.items.push(this.editedItem)
+          } else {
+            this.showResult = true;
+          }        
+        } else {
+          const ketqua = await serverStore.createServer({ server_ip: this.editedItem.server_ip, team: this.editedItem.team });
+          this.resultMessage = await ketqua.result;
+          if (this.resultMessage.fail.count === 0) {
+            this.showResult = false;
+            this.items.push(this.editedItem)
+          } else {
+            this.showResult = true;
+          }        
+        }
       }
+      this.fetchData();
       this.close()
+      this.loading = false;
     },
 
   }
@@ -183,9 +255,14 @@ export default defineComponent({
         <v-spacer></v-spacer>
         <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ props }">
-            <v-btn class="mb-2" color="success" dark v-bind="props">
-              <SquarePlusIcon size="18" color="green" />
-              <b>New Server</b>
+            <v-btn size="small" class="mb-2 ml-1 mr-2" :style="{ backgroundColor: '#CCAA4D', color: '#ffff' }" dark @click="openDialogImport">
+              <UploadIcon size="15" color="white" />
+              Import server
+            </v-btn>
+            <v-btn size="small" class="mb-2 ml-1 mr-2" :style="{ backgroundColor: '#7DA77D', color: '#ffff' }" dark
+              v-bind="props">
+              <SquarePlusIcon size="15" color="white" />
+              New server
             </v-btn>
           </template>
           <v-card>
@@ -196,13 +273,25 @@ export default defineComponent({
               <v-container>
                 <v-row>
                   <v-col cols="12">
-                    <v-text-field disabled v-model="editedItem.id" label="ID" density="comfortable"></v-text-field>
+                    <v-text-field 
+                      v-model="editedItem.server_ip" 
+                      :rules="[validateIPAddress]" 
+                      :disabled="dialogType !== 'import'" 
+                      :label="dialogType !== 'import' ? 'Server IP sẽ được thêm vào sau khi server được tạo' : 'Thêm vào Server IP import tại đây'" 
+                      density="comfortable">
+                    </v-text-field>
                   </v-col>
                 </v-row>
-
                 <v-row>
                   <v-col cols="12">
-                    <v-text-field v-model="editedItem.server_ip" label="Server IP" density="comfortable"></v-text-field>
+                    <v-textarea 
+                      :rules="[validatePrivateKey]" 
+                      class="custom-spacing" 
+                      v-model="editedItem.private_key"
+                      :disabled="dialogType !== 'import'" 
+                      :label="dialogType !== 'import' ? 'Private key sẽ được thêm vào sau khi server được tạo' : 'Private key'"  
+                      density="comfortable" row="5">
+                    </v-textarea>
                   </v-col>
                 </v-row>
                 <v-row>
@@ -212,6 +301,8 @@ export default defineComponent({
                           :items="['admin', 'seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6']"
                           label="Team"
                           density="comfortable"
+                          :disabled="dialogType === 'edit'" 
+                          :rules="[validateTeam]"
                       ></v-select>
                   </v-col>
                 </v-row>
@@ -221,13 +312,18 @@ export default defineComponent({
                       density="comfortable"></v-text-field>
                   </v-col>
                 </v-row>
-
                 <v-row>
                   <v-col cols="12">
                     <v-text-field disabled v-model="editedItem.updatedAt" label="Updated At"
                       density="comfortable"></v-text-field>
                   </v-col>
                 </v-row>
+                <v-row>
+                  <v-col cols="12" v-if="dialogType !== 'import' && dialogType !== 'edit'">
+                    📚 Khi Submit sẽ tạo 01 server mới trên AWS Cloud và thêm 01 serverIP, 01 privateKey vào database
+                  </v-col>
+                </v-row>
+
               </v-container>
             </v-card-text>
             <v-card-actions>
@@ -235,7 +331,15 @@ export default defineComponent({
               <v-btn color="blue-darken-1" variant="text" @click="close">
                 Cancel
               </v-btn>
-              <v-btn color="blue-darken-1" variant="text" @click="save">
+              <v-btn color="blue-darken-1" variant="text" @click="save" :disabled="!isFormValid">
+                <v-progress-circular
+                  v-if="loading"
+                  indeterminate
+                  color="green"
+                  size="20"
+                  class="mr-2"
+                >
+                </v-progress-circular>
                 Save
               </v-btn>
             </v-card-actions>
@@ -243,7 +347,7 @@ export default defineComponent({
         </v-dialog>
         <v-dialog v-model="dialogDelete" max-width="500px">
           <v-card>
-            <v-card-title class="text-h5">Are you sure you want to delete this item?</v-card-title>
+            <v-card-title class="text-h5">Lệnh này không thực sự xóa server trên AWS</v-card-title>
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="blue-darken-1" variant="text" @click="closeDelete">Cancel</v-btn>
@@ -255,15 +359,31 @@ export default defineComponent({
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
+      <EditIcon size="18" color="gray" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
+      <TrashIcon size="18" color="#FF5252" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
 
-      <EditIcon size="18" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
-      <TrashIcon size="18" color="red" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
     </template>
   </v-data-table-server>
+    <!-- Hiển thị kết quả chỉ sau khi gọi API xong (khi loading là false) -->
+    <v-text v-if="showResult">
+    <span class="text-success font-bold">Success: {{ resultMessage.success }}</span>
+    <span v-if="resultMessage.fail.count !== 0" class="text-error font-bold">, Fail: {{ resultMessage.fail.count
+      }}</span>
+  </v-text>
+  <v-text v-if="showResult && resultMessage.fail.count !== 0">
+    <ul>
+      <li v-for="(message, index) in resultMessage.fail.messages" :key="index" class="text-error font-bold">
+        {{ message }}
+      </li>
+    </ul>
+  </v-text>
 </template>
 
 <style>
 .custom-spacing .v-label {
   margin-bottom: 25px;
+}
+.v-field--variant-filled textarea {
+  padding-top: 20px;
 }
 </style>

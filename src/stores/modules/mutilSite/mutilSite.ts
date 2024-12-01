@@ -40,21 +40,23 @@ export const useMutilSiteStore = defineStore({
         this.loading = false
       }
     },
-    async addListDomainsToMultiSites(requestData: any) {
+    async fetchServerList(team) {
       this.loading = true
       let params = { 
-        team: requestData.team,
-        server_ip: requestData.server_ip,
-        domains: requestData.domains
-       }
+        page: 1, 
+        limit: 10000, 
+        search: team, 
+        sortBy : 'team', 
+        sortDesc: 'false' 
+      }
       try {
-        const response = await axios.post(`${baseUrlScript}/add-list-domains-to-multi-sites`, params,{ 
+        const response = await axios.get(`${baseUrl}/servers`, { 
+          params,
           headers: {
-            Authorization: bearerToken,
-            KeepAlive: 'timeout=7200',
-          },
-         });
-        return response.data;
+            Authorization: bearerToken
+          }
+         })
+        return response.data.data
       } catch (error: any) {
         this.error = error.message
       } finally {

@@ -13,12 +13,20 @@ export default defineComponent({
       dialog: false,
       dialogDelete: false,
       search: ref(''),
-      sortBy: ref('server_ip'),
+      sortBy: ref('pem'),
       sortDesc: ref(false),
+      showResult: false,
+      resultMessage: {
+        success: 0,
+        fail: {
+          count:0,
+          messages: []
+        },
+      },
       headers: [
-        { title: 'ID', align: 'start', sortable: false, key: 'id', },
+        // { title: 'ID', align: 'start', sortable: false, key: 'id', },
         { title: 'PRIVATE KEY', key: 'pem' },
-        { title: 'SERVER IP', key: 'server_ip' },
+        { title: 'TEAM', key: 'team' },
         { title: 'CREATED AT', key: 'createdAt' },
         { title: 'UPDATED AT', key: 'updatedAt' },
         { title: 'ACTIONS', key: 'actions', sortable: false },
@@ -27,14 +35,14 @@ export default defineComponent({
       editedItem: {
         id: 0,
         pem: '',
-        server_ip: '',
+        team: '',
         createdAt: '',
         updatedAt: '',
       },
       defaultItem: {
         id: 0,
         pem: '',
-        server_ip: '',
+        team: '',
         createdAt: '',
         updatedAt: '',
       },
@@ -55,6 +63,10 @@ export default defineComponent({
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? 'New Pem' : 'Edit Pem'
+    },
+    isFormValid() {
+      const teamValid = this.validatePem(this.editedItem.team) === true;
+      return teamValid;
     },
   },
   watch: {
@@ -121,10 +133,12 @@ export default defineComponent({
       this.dialogDelete = true
     },
 
-    deleteItemConfirm() {
-      this.items.splice(this.editedIndex, 1)
+    async deleteItemConfirm() {
+      this.loading = true;
       const pemStore = usePemStore();
-      pemStore.deletePem(this.editedItem.id);
+      const ketqua = await pemStore.deletePem(this.editedItem.id, this.editedItem.team);
+      this.loading = false;
+      this.fetchData();
       this.closeDelete()
     },
 
@@ -143,20 +157,35 @@ export default defineComponent({
         this.editedIndex = -1
       })
     },
-
-    save() {
-      const pemStore = usePemStore();
+    validatePem(value) {
+      return !!value || "Pem is required"; 
+    },
+    validateTeam(value) {
+      return !!value || "Team is required"; 
+    },
+    async save() {
+      this.loading = true;
       const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
       this.editedItem.createdAt = currentTime;
       this.editedItem.updatedAt = currentTime;
+      const pemStore = usePemStore();
       if (this.editedIndex > -1) {
-        Object.assign(this.items[this.editedIndex], this.editedItem)
-        pemStore.updatePem({ id: this.editedItem.id, pem: this.editedItem.pem, server_ip: this.editedItem.server_ip });
+        const ketqua = await pemStore.updatePem({ id: this.editedItem.id, pem: this.editedItem.pem, team: this.editedItem.team });
+        this.resultMessage = ketqua.result;        
+
       } else {
-        this.items.push(this.editedItem)
-        pemStore.createPem({ pem: this.editedItem.pem, server_ip: this.editedItem.server_ip });
+        const ketqua = await pemStore.createPem({ pem: this.editedItem.pem, team: this.editedItem.team });
+        this.resultMessage = ketqua.result;
+        if (this.resultMessage.fail.count === 0) {
+          this.showResult = false;
+          this.items.push(this.editedItem)
+        } else {
+          this.showResult = true;
+        }        
       }
+      this.fetchData();
       this.close()
+      this.loading = false;
     },
   }
 });
@@ -192,19 +221,16 @@ export default defineComponent({
               <v-container>
                 <v-row>
                   <v-col cols="12">
-                    <v-text-field disabled v-model="editedItem.id" label="ID" density="comfortable"></v-text-field>
+                    <v-textarea class="custom-spacing" v-model="editedItem.pem" label="Private key"
+                      density="comfortable" row="5"></v-textarea>
                   </v-col>
                 </v-row>
-
                 <v-row>
                   <v-col cols="12">
-                    <v-textarea class="custom-spacing" v-model="editedItem.pem" label="Private key" density="comfortable" row="5"></v-textarea>
-                  </v-col>
-                </v-row>
-
-                <v-row>
-                  <v-col cols="12">
-                    <v-text-field v-model="editedItem.server_ip" label="Server IP" density="comfortable"></v-text-field>
+                    <v-select v-model="editedItem.team"
+                      :items="['admin', 'seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6']" label="Team"
+                      density="comfortable" :rules="[validateTeam]">
+                    </v-select>
                   </v-col>
                 </v-row>
                 <v-row>
@@ -226,7 +252,15 @@ export default defineComponent({
               <v-btn color="blue-darken-1" variant="text" @click="close">
                 Cancel
               </v-btn>
-              <v-btn color="blue-darken-1" variant="text" @click="save">
+              <v-btn color="blue-darken-1" variant="text" @click="save" :disabled="!isFormValid">
+                <v-progress-circular
+                  v-if="loading"
+                  indeterminate
+                  color="green"
+                  size="20"
+                  class="mr-2"
+                >
+                </v-progress-circular>
                 Save
               </v-btn>
             </v-card-actions>
@@ -238,7 +272,17 @@ export default defineComponent({
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="blue-darken-1" variant="text" @click="closeDelete">Cancel</v-btn>
-              <v-btn color="blue-darken-1" variant="text" @click="deleteItemConfirm">OK</v-btn>
+              <v-btn color="blue-darken-1" variant="text" @click="deleteItemConfirm">
+                <v-progress-circular
+                  v-if="loading"
+                  indeterminate
+                  color="green"
+                  size="20"
+                  class="mr-2"
+                >
+                </v-progress-circular>
+                  OK
+              </v-btn>
               <v-spacer></v-spacer>
             </v-card-actions>
           </v-card>
@@ -246,16 +290,31 @@ export default defineComponent({
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
-
       <EditIcon size="18" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
       <TrashIcon size="18" color="red" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
     </template>
   </v-data-table-server>
+  <!-- Hiển thị kết quả chỉ sau khi gọi API xong (khi loading là false) -->
+  <v-text v-if="showResult">
+    <span class="text-success font-bold">Success: {{ resultMessage.success }}</span>
+    <span v-if="resultMessage.fail.count !== 0" class="text-error font-bold">, Fail: {{ resultMessage.fail.count
+      }}</span>
+  </v-text>
+  <v-text v-if="showResult && resultMessage.fail.count !== 0">
+    <ul>
+      <li v-for="(message, index) in resultMessage.fail.messages" :key="index" class="text-error font-bold">
+        {{ message }}
+      </li>
+    </ul>
+  </v-text>
+
 </template>
 
 <style>
 .custom-spacing .v-label {
   margin-bottom: 25px;
 }
-
+.v-field--variant-filled textarea {
+  padding-top: 20px;
+}
 </style>
