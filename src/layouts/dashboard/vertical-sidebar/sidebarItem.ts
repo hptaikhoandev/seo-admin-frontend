@@ -36,8 +36,8 @@ const sidebarItemRole = (() => {
   const user = jwtDecode(parsedUser.user.token);
   if (!(user && user.roleId)) return [];
 
-  switch (user.roleId) {
-    case 'admin':
+  switch (true) {
+    case ['admin'].includes(user.roleId):
       return [
         { header: 'Quản lý chung' },
         {
@@ -98,7 +98,7 @@ const sidebarItemRole = (() => {
         // },  
       ];
       break;
-    case 'seo-3':
+    case ['seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6'].includes(user.roleId):
       return [
         { header: 'Quản lý chung' },
         {
