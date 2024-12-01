@@ -65,6 +65,29 @@ export const useDomainStore = defineStore({
         this.loading = false
       }
     },
+    async fetchServerList(team) {
+      this.loading = true
+      let params = { 
+        page: 1, 
+        limit: 10000, 
+        search: team, 
+        sortBy : 'team', 
+        sortDesc: 'false' 
+      }
+      try {
+        const response = await axios.get(`${baseUrl}/servers`, { 
+          params,
+          headers: {
+            Authorization: bearerToken
+          }
+         })
+        return response.data.data
+      } catch (error: any) {
+        this.error = error.message
+      } finally {
+        this.loading = false
+      }
+    },
     async sendSMS(domainList: any, messageList: any) {
       this.loading = true
       let params = { domainList, messageList }

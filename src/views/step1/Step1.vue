@@ -2,8 +2,7 @@
 import { defineComponent, ref, type Ref } from 'vue';
 import { useDomainStore } from '@/stores/modules/domain/domain';
 import moment from 'moment';
-import { Loader2Icon, ReloadIcon } from 'vue-tabler-icons';
-import { RedoOutlined } from '@ant-design/icons-vue';
+import {jwtDecode} from 'jwt-decode';
 
 export default defineComponent({
   name: 'Step1',
@@ -14,6 +13,7 @@ export default defineComponent({
     return {
       domainStore: useDomainStore,
       serverIP: '',
+      serverList: ref([]) as Ref<any[]>,
       isSSL: 'flexible',
       dialog: false,
       dialogDelete: false,
@@ -51,7 +51,7 @@ export default defineComponent({
     // this.fetchData();
   },
   created() {
-    this.fetchData()
+    this.getServerList();
   },
   computed: {
     formTitle() {
@@ -232,6 +232,19 @@ export default defineComponent({
         reader.readAsText(file);
       });
     },
+    async getServerList() {
+      const store = useDomainStore();
+      const user = ref(null);
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        if (parsedUser && parsedUser.user && parsedUser.user.token) {
+          user.value = jwtDecode(parsedUser.user.token);
+        }
+      }
+      const ketqua = await store.fetchServerList(user.value.roleId);
+      this.serverList = ketqua.map(item => item.server_ip);
+    },
     save() {
       const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
       this.editedItem.createdAt = currentTime;
@@ -260,11 +273,16 @@ export default defineComponent({
         Step 1: input domains
       </v-col>
     </v-row>
-    <v-row class="py-0">
-      <v-col cols="3" class="py-0">
-        <v-text-field v-model="serverIP" label="Server IP" placeholder="Enter Server IP" class="mt-3"
-          :rules="[validateIPAddress]" />
-      </v-col>
+      <v-row class="py-0">
+        <v-col cols="3">
+        <v-select
+            v-model="serverIP"
+            :items="serverList"
+            label="Server IP"
+            placeholder="Enter Server IP"
+            :rules="[validateIPAddress]"
+          />
+        </v-col>
       <v-col cols="2" class="py-0">
         <v-select v-model="isSSL" label="SSL Type" class="mt-3" :items="['flexible', 'full', 'strict']" />
       </v-col>
