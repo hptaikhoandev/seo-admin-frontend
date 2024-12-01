@@ -7,4 +7,4 @@ TIMESTAMP=$(date +%s)
 echo "Running Docker Compose with TIMESTAMP=$TIMESTAMP"
 
 # Run Docker Compose with the TIMESTAMP environment variable
-TIMESTAMP=$TIMESTAMP docker-compose up -d
+TIMESTAMP=$TIMESTAMP docker-composer down -v && docker image prune -f && docker-compose up -d --build --no-cache
