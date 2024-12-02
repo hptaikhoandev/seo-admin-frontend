@@ -69,6 +69,7 @@ export default defineComponent({
 
     serverIP(newServerIP) {
       const store = useDomainStore();
+      this.domainStore.serverIP = newServerIP;
       store.serverIP = newServerIP;
       store.isServerIPValid = this.validateIPAddress(newServerIP) === true;
     },
@@ -76,12 +77,12 @@ export default defineComponent({
       handler(newItems) {
         const store = useDomainStore();
         store.domain = newItems;
+        this.domainStore.domain = newItems;
       },
       deep: true,
     },
     isSSL(newValue, oldValue) {
       this.domainStore.isSSL = newValue;
-      // Additional actions on change can be added here
     },
     dialog(val) {
       val || this.close()
