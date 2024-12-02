@@ -12,7 +12,7 @@ export const useDomainStore = defineStore({
   state: () => ({
     serverIP: '',
     isSSL: 'flexible',
-    isValidServerIP: false,
+    isServerIPValid: false,
     domain: [] as Array<Record<string, any>>,
     domainNS: [] as Array<Record<string, any>>,
     domainExport: [] as Array<Record<string, any>>,
