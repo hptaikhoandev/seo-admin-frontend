@@ -71,9 +71,9 @@ export default defineComponent({
       const store = useDomainStore();
       if (store.domain.length == 0) {
         this.items.splice(0, this.items.length);
-        store.domainNS.splice(0, store.domainNS.length);
+        store.domain.splice(0, store.domain.length);
       }
-      return (store.domain.length > 0);
+      return (store.domain.length > 0) && (store.serverIP !== '' || store.isServerIPValid);
     },
   },
   watch: {

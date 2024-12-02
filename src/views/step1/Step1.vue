@@ -66,20 +66,22 @@ export default defineComponent({
     }
   },
   watch: {
-    serverIP(newIP) {
-      this.domainStore.serverIP = newIP;
-      this.domainStore.isValidServerIP = this.validateIPAddress(newIP) === true;
 
+    serverIP(newServerIP) {
+      const store = useDomainStore();
+      store.serverIP = newServerIP;
+      store.isServerIPValid = this.validateIPAddress(newServerIP) === true;
+    },
+    items: {
+      handler(newItems) {
+        const store = useDomainStore();
+        store.domain = newItems;
+      },
+      deep: true,
     },
     isSSL(newValue, oldValue) {
       this.domainStore.isSSL = newValue;
       // Additional actions on change can be added here
-    },
-    items: {
-      handler(newItems) {
-        this.domainStore.domain = newItems;
-      },
-      deep: true,
     },
     dialog(val) {
       val || this.close()
@@ -89,25 +91,6 @@ export default defineComponent({
     },
   },
   methods: {
-    async fetchData() {
-      this.loading = true;
-      try {
-        const domainStore = useDomainStore();
-        await domainStore.fetchDomain({
-          page: this.page,
-          limit: this.itemsPerPage,
-          search: this.search,
-          sortBy: this.sortBy,
-          sortDesc: this.sortDesc,
-        });
-        this.items = await domainStore.domain;
-        this.totalItems = await domainStore.total;
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        this.loading = false;
-      }
-    },
     reset() {
       this.items.splice(0, this.items.length);
     },
@@ -115,30 +98,6 @@ export default defineComponent({
       this.editedIndex = this.items.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialog = true
-    },
-    handlePageChange(newPage) {
-      this.page = newPage;
-      this.fetchData();
-    },
-    handleItemsPerPageChange(newItemsPerPage) {
-      this.itemsPerPage = newItemsPerPage;
-      this.page = 1;
-      this.fetchData();
-    },
-    handleOnSearch() {
-      this.page = 1;
-      this.fetchData();
-    },
-    handleSortBy({ page, itemsPerPage, sortBy }) {
-      if (sortBy.length === 0) return;
-      this.sortBy = sortBy[0].key;
-      this.sortDesc = (sortBy[0].order === 'desc') ? true : false;
-      this.page = 1;
-      this.fetchData();
-    },
-    handleClearSearch() {
-      this.page = 1;
-      this.fetchData();
     },
     validateIPAddress(value) {
       const ipPattern = /^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})(\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})){3}$/;
