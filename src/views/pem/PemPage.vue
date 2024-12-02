@@ -192,9 +192,17 @@ export default defineComponent({
 
 </script>
 <template>
-  <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
-    :items-length="totalItems" :page.sync="page" @update:page="handlePageChange"
-    @update:items-per-page="handleItemsPerPageChange" hover :loading="loading" @update:options="handleSortBy">
+  <v-data-table-server 
+    :headers="headers" 
+    :items="items" item-value="id" 
+    :items-per-page="itemsPerPage"
+    :items-length="totalItems" 
+    :page.sync="page" 
+    height="300" 
+    @update:page="handlePageChange"
+    @update:items-per-page="handleItemsPerPageChange" 
+    hover :loading="loading" 
+    @update:options="handleSortBy">
     <template v-slot:[`item.pem`]="{ item }">
       <span>******************</span>
     </template>
