@@ -13,6 +13,9 @@ export const useAuthStore = defineStore({
     returnUrl: null
   }),
   actions: {
+    resetState() {
+      this.$reset(); // Reset toàn bộ state về trạng thái mặc định
+    },
     async register(name: string, email: string, password: string) {
       const user = await fetchWrapper.post(`${baseUrl}/auth/register`, { name, email, password });
       // update pinia state
@@ -53,11 +56,14 @@ export const useAuthStore = defineStore({
         }
       }
     
-      // Reset thông tin người dùng
-      this.user = null;
+      // Reset toàn bộ store hoặc trạng thái của ứng dụng
+      this.resetState(); // Reset toàn bộ state về trạng thái mặc định
     
       // Điều hướng đến trang login
       router.push('/auth/login');
+      
+      // Làm mới toàn bộ ứng dụng
+      window.location.reload(); // Đảm bảo không có trạng thái cũ nào được giữ lại
     }
     
   }

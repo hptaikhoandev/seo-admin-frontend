@@ -3,17 +3,17 @@ import { defineComponent, ref, type Ref, computed } from 'vue';
 import { usePhoneStore } from '@/stores/modules/phone/phone';
 import { useMessageStore } from '@/stores/modules/message/message';
 import { useDomainStore } from '@/stores/modules/domain/domain';
-import Step1 from './../step1/Step1.vue';
-import Step2 from './../step2/Step2.vue';
-import Step3 from '../step3/Step3.vue';
+import DomainToCFStep1 from './../domainToCFStep1/DomainToCFStep1.vue';
+import DomainToCFStep2 from './../domainToCFStep2/DomainToCFStep2.vue';
+import DomainToCFStep3 from '../domainToCFStep3/DomainToCFStep3.vue';
 
 
 export default defineComponent({
   name: 'DomainToCF',
   components: {
-    Step1,
-    Step2,
-    Step3,
+    DomainToCFStep1,
+    DomainToCFStep2,
+    DomainToCFStep3,
   },
   data() {
     return {
@@ -120,14 +120,14 @@ export default defineComponent({
 </script>
 <template>
 
-  <Step1 />
+  <DomainToCFStep1 />
  
   <v-divider class="my-4" inset vertical></v-divider>
 
-  <Step2 v-if="isVisibleStep2" />
+  <DomainToCFStep2 v-if="isVisibleStep2" />
   <v-divider class="my-4" inset vertical></v-divider>
 
-  <Step3 v-if="isVisibleStep3" />
+  <DomainToCFStep3 v-if="isVisibleStep3" />
 </template>
 
 <style>
