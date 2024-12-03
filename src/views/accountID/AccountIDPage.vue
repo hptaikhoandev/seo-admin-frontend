@@ -188,9 +188,20 @@ export default defineComponent({
 
 </script>
 <template>
-  <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
-    :items-length="totalItems" :page.sync="page" @update:page="handlePageChange"
-    @update:items-per-page="handleItemsPerPageChange" hover :loading="loading" @update:options="handleSortBy">
+  <v-data-table-server 
+    :headers="headers" 
+    :items="items" 
+    item-value="id" 
+    :items-per-page="itemsPerPage"
+    :items-length="totalItems" 
+    :page.sync="page" 
+    @update:page="handlePageChange"
+    @update:items-per-page="handleItemsPerPageChange" 
+    hover 
+    height="300" 
+    :loading="loading" 
+    @update:options="handleSortBy"
+    >
     <template v-slot:top>
       <v-toolbar flat>
         <v-toolbar-title>ACCOUNT ID</v-toolbar-title>
