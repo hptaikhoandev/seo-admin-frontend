@@ -4,7 +4,7 @@ import { useMessageStore } from '@/stores/modules/message/message';
 import { useDomainStore } from '@/stores/modules/domain/domain';
 
 export default defineComponent({
-  name: 'Step3',
+  name: 'DomainToCFStep3',
   components: {
     //
   },
@@ -16,6 +16,7 @@ export default defineComponent({
       sortBy: ref('body'),
       sortDesc: ref(false),
       selected: ref([]),
+      isSortData: false,
       headers: [
         { title: 'NAME', key: 'name' },
         { title: 'NS', key: 'ns' },
@@ -70,13 +71,41 @@ export default defineComponent({
   methods: {
     submitStep3() {
       const store = useDomainStore();
-      const dataExport = store.domainExport;
-      console.log('===>newItemsyyy', dataExport);
+      let dataExport = store.domainExport;
+      dataExport = dataExport.sort((a, b) => {
+        const nsA = a.ns.toLowerCase();
+        const nsB = b.ns.toLowerCase();
+        return nsA.localeCompare(nsB); // Sắp xếp từ A-Z
+      });
+      let csvData = "";
+      if (this.isSortData) {
+         // Tổ chức dữ liệu theo nhóm `ns`
+        const groupedData = new Map();
+        dataExport.forEach(item => {
+          const ns = item.ns; // Lấy Name Servers
+          if (!groupedData.has(ns)) {
+            groupedData.set(ns, []); // Nếu chưa có nhóm, tạo mới
+          }
+          groupedData.get(ns).push(item.domain); // Thêm domain vào nhóm
+        });
 
-      // Create CSV content from dataExport
-      const csvHeaders = "Domain,Name Servers\n"; // Header row
-      const csvContent = dataExport?.map(item => `${item.domain},"${item.ns}"`).join("\n");
-      const csvData = csvHeaders + csvContent;
+        // Tạo nội dung CSV
+        const csvContentSort = Array.from(groupedData.entries())
+          .map(([ns, domains]) => {
+            const domainsFormatted = domains.join("\n"); // Danh sách domain
+            const nsFormatted = ns.split(",").join("\n"); // Định dạng Name Servers
+            return `${domainsFormatted}\nNS:\n${nsFormatted}`;
+          })
+          .join("\n\n"); // Thêm khoảng trắng giữa các cụm
+
+        csvData = csvContentSort;
+      } else {
+        // Create CSV content from dataExport
+        const csvHeaders = "Domain,Name Servers\n"; // Header row
+        const csvContent = dataExport?.map(item => `${item.domain},"${item.ns}"`).join("\n");
+        csvData = csvHeaders + csvContent;
+
+      }
       // Create a Blob from the CSV data
       const blob = new Blob([csvData], { type: "text/csv" });
       // Create a download link for the Blob
@@ -103,7 +132,9 @@ export default defineComponent({
         this.editedIndex = -1
       })
     },
-
+      updateSortData(newValue) {
+      this.isSortData = newValue;
+    },
     save() {
       const messageStore = useMessageStore();
       if (this.editedIndex > -1) {
@@ -122,10 +153,18 @@ export default defineComponent({
 <template>
   <v-toolbar flat v-if="showStept3">
     <v-toolbar-title>
-      Step 3: export to Excel
-      <v-btn class="text-white mx-2" :style="{ backgroundColor: '#7DA77D' }" @click="submitStep3">
-        Export
-      </v-btn>
+      <div class="d-flex align-center">
+        <span>Step 3: export to Excel</span>
+        <v-btn class="text-white mx-2" :style="{ backgroundColor: '#7DA77D' }" @click="submitStep3">
+          Export
+        </v-btn>
+        <v-checkbox
+          v-model="isSortData"
+          label="Sort data"
+          class="mt-5"
+          @update:modelValue="updateSortData"
+        />
+      </div>
     </v-toolbar-title>
   </v-toolbar>
 </template>

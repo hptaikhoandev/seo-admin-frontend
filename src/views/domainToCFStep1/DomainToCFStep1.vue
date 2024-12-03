@@ -5,7 +5,7 @@ import moment from 'moment';
 import {jwtDecode} from 'jwt-decode';
 
 export default defineComponent({
-  name: 'Step1',
+  name: 'DomainToCFStep1',
   components: {
     //
   },
