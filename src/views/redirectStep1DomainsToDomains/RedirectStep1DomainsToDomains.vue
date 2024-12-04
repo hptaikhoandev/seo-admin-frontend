@@ -1,11 +1,7 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
 import { useRedirectStore } from '@/stores/modules/redirect/redirect';
-import { useDomainFromStore } from '@/stores/modules/domainFrom/domainFrom';
-import { useDomainToStore } from '@/stores/modules/domainTo/domainTo';
 import moment from 'moment';
-import { Loader2Icon, ReloadIcon } from 'vue-tabler-icons';
-import { RedoOutlined } from '@ant-design/icons-vue';
 import RedirectStep1DomainsToDomainsFrom from './../redirectStep1DomainsToDomainsFrom/RedirectStep1DomainsToDomainsFrom.vue';
 import RedirectStep1DomainsToDomainsTo from './../redirectStep1DomainsToDomainsTo/RedirectStep1DomainsToDomainsTo.vue';
 

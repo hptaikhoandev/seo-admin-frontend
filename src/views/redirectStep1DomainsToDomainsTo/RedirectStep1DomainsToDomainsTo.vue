@@ -2,8 +2,6 @@
 import { defineComponent, ref, type Ref } from 'vue';
 import { useRedirectStore } from '@/stores/modules/redirect/redirect';
 import moment from 'moment';
-import { Loader2Icon, ReloadIcon } from 'vue-tabler-icons';
-import { RedoOutlined } from '@ant-design/icons-vue';
 
 export default defineComponent({
   name: 'RedirectStep1DomainsToDomainsTo',
