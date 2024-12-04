@@ -52,9 +52,14 @@ const MainRoutes = {
       component: () => import('@/views/clonesite/Clonesite.vue')
     },
     {
-      name: 'Create Multi PBN WP Site',
+      name: 'Create WP Sites',
       path: '/tao-multi-wp-site',
       component: () => import('@/views/multiSite/MultiSite.vue')
+    },
+    {
+      name: 'Delete WP Sites',
+      path: '/destroy-wp-site',
+      component: () => import('@/views/destroySite/DestroySite.vue')
     },
   ]
 };

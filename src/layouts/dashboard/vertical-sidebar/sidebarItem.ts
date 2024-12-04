@@ -67,7 +67,7 @@ const sidebarItemRole = (() => {
         },
         { header: 'Chức năng' },
         {
-          title: '☘️ Thêm domains vào CF',
+          title: '☘️ Thêm domains vào CloudFlare',
           // icon: ProfileOutlined,
           to: '/them-domains-vao-cf'
         },
@@ -81,21 +81,16 @@ const sidebarItemRole = (() => {
           // icon: FontSizeOutlined,
           to: '/clone-site'
         },
-        // {
-        //   title: '🌺 Delete WP Site',
-        //   // icon: FontSizeOutlined,
-        //   to: '/clone-site',
-        // },
         {
-          title: '💐 Create Multi PBN WP Site',
+          title: '💐 Create WP Sites',
           // icon: BarcodeOutlined,
           to: '/tao-multi-wp-site'
         },
-        // {
-        //   title: '❄️ Replace link for multi site',
-        //   // icon: CrownOutlined,
-        //   to: '/tao-multi-wp-site'
-        // },  
+        {
+          title: '🌺 Delete WP Sites',
+          // icon: FontSizeOutlined,
+          to: '/destroy-site',
+        },
       ];
       break;
     case ['seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6'].includes(user.roleId):
@@ -123,21 +118,16 @@ const sidebarItemRole = (() => {
           // icon: FontSizeOutlined,
           to: '/clone-site'
         },
-        // {
-        //   title: '🌺 Delete WP Site',
-        //   // icon: FontSizeOutlined,
-        //   to: '/clone-site',
-        // },
         {
-          title: '💐 Create Multi PBN WP Site',
+          title: '💐 Create WP Sites',
           // icon: BarcodeOutlined,
           to: '/tao-multi-wp-site'
         },
-        // {
-        //   title: '❄️ Replace link for multi site',
-        //   // icon: CrownOutlined,
-        //   to: '/tao-multi-wp-site'
-        // },        
+        {
+          title: '🌺 Delete WP Sites',
+          // icon: FontSizeOutlined,
+          to: '/destroy-wp-site',
+        },
       ];
       break;
   }
