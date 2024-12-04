@@ -1,17 +1,17 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
-import { useDomainStore } from '@/stores/modules/domain/domain';
+import { useDestroySiteStore } from '@/stores/modules/destroySite/destroySite';
 import moment from 'moment';
 import {jwtDecode} from 'jwt-decode';
 
 export default defineComponent({
-  name: 'DomainToCFStep1',
+  name: 'DestroySiteStep1',
   components: {
     //
   },
   data() {
     return {
-      domainStore: useDomainStore,
+      destroySiteStore: useDestroySiteStore,
       serverIP: '',
       serverList: ref([]) as Ref<any[]>,
       isSSL: 'flexible',
@@ -61,29 +61,24 @@ export default defineComponent({
       return this.validateDomain(this.editedItem.name) === true;
     },
     items(): Array<Record<string, any>> {
-      const store = useDomainStore();
+      const store = useDestroySiteStore();
       return store.domain;
     }
   },
   watch: {
-
     serverIP(newServerIP) {
-      const store = useDomainStore();
-      this.domainStore.serverIP = newServerIP;
+      const store = useDestroySiteStore();
       store.serverIP = newServerIP;
       store.isServerIPValid = this.validateIPAddress(newServerIP) === true;
     },
     items: {
       handler(newItems) {
-        const store = useDomainStore();
+        const store = useDestroySiteStore();
         store.domain = newItems;
-        this.domainStore.domain = newItems;
       },
       deep: true,
     },
-    isSSL(newValue, oldValue) {
-      this.domainStore.isSSL = newValue;
-    },
+
     dialog(val) {
       val || this.close()
     },
@@ -92,6 +87,19 @@ export default defineComponent({
     },
   },
   methods: {
+    async getServerList() {
+      const store = useDestroySiteStore();
+      const user = ref(null);
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        if (parsedUser && parsedUser.user && parsedUser.user.token) {
+          user.value = jwtDecode(parsedUser.user.token);
+        }
+      }
+      const ketqua = await store.fetchServerList(user.value.roleId);
+      this.serverList = ketqua.map(item => item.server_ip);
+    },
     reset() {
       this.items.splice(0, this.items.length);
     },
@@ -192,19 +200,6 @@ export default defineComponent({
         reader.readAsText(file);
       });
     },
-    async getServerList() {
-      const store = useDomainStore();
-      const user = ref(null);
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        if (parsedUser && parsedUser.user && parsedUser.user.token) {
-          user.value = jwtDecode(parsedUser.user.token);
-        }
-      }
-      const ketqua = await store.fetchServerList(user.value.roleId);
-      this.serverList = ketqua.map(item => item.server_ip);
-    },
     save() {
       const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
       this.editedItem.createdAt = currentTime;
@@ -230,22 +225,20 @@ export default defineComponent({
   <v-container class="px-5" :style="{ backgroundColor: '#EEEEEE', borderRadius: '5px', maxWidth: '100%' }">
     <v-row class="pb-0">
       <v-col class="pb-2" :style="{ fontSize: '20px' }">
-        Step 1: input domains to Cloudflare
+        Step 1: input domains to delete website
       </v-col>
     </v-row>
-      <v-row class="py-0">
-        <v-col cols="3">
+    <v-row class="py-0">
+      <v-col cols="3" class="py-0">
         <v-select
-            v-model="serverIP"
-            :items="serverList"
-            label="Server IP"
-            placeholder="Enter Server IP"
-            :rules="[validateIPAddress]"
-          />
+          v-model="serverIP"
+          :items="serverList"
+          label="Server IP chứa WP site"
+          placeholder="Enter Server IP chứa WP site"
+          class="mt-3"
+          :rules="[validateIPAddress]"
+        />
         </v-col>
-      <v-col cols="2" class="py-0">
-        <v-select v-model="isSSL" label="SSL Type" class="mt-3" :items="['flexible', 'full', 'strict']" />
-      </v-col>
     </v-row>
     <v-row>
       <v-col cols="auto">
@@ -256,7 +249,7 @@ export default defineComponent({
       <v-col cols="auto">
         <v-btn size="small" :style="{ backgroundColor: '#6A8DBA', color: '#ffff' }" @click="downloadFile">
           <DownloadIcon size="20" color="white" />
-          Download sample file
+            Download sample file
         </v-btn>
       </v-col>
       <v-col cols="auto">
@@ -269,7 +262,7 @@ export default defineComponent({
       <v-col>
         <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ props }">
-            <v-btn class="ml-1 mr-2" size="small" :style="{ backgroundColor: '#7DA77D', color: '#ffff' }" dark v-bind="props">
+            <v-btn class="mb-2 ml-1 mr-2" size="small" :style="{ backgroundColor: '#7DA77D', color: '#ffff' }" dark v-bind="props">
               <SquarePlusIcon size="20" color="white" />
               New domain
             </v-btn>
@@ -326,10 +319,16 @@ export default defineComponent({
   </v-container>
 
 
-  <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
-    :items-length="totalItems" :page.sync="page" @update:page="handlePageChange"
-    @update:items-per-page="handleItemsPerPageChange" height="200" hover hide-default-footer :loading="loading"
-    @update:options="handleSortBy">
+  <v-data-table-server 
+    :headers="headers" 
+    :items="items" 
+    item-value="id" 
+    :items-per-page="itemsPerPage"
+    :items-length="totalItems" 
+    :page.sync="page" 
+    height="200" 
+    hover hide-default-footer 
+    :loading="loading">
     <template v-slot:item.actions="{ item }" class="scrollable-table">
       <EditIcon size="18" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
       <TrashIcon size="18" color="#FF5252" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
