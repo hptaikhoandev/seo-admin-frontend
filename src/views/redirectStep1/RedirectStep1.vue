@@ -2,8 +2,6 @@
 import { defineComponent, ref, type Ref } from 'vue';
 import { useRedirectStore } from '@/stores/modules/redirect/redirect';
 import moment from 'moment';
-import { Loader2Icon, ReloadIcon } from 'vue-tabler-icons';
-import { RedoOutlined } from '@ant-design/icons-vue';
 
 export default defineComponent({
   name: 'RedirectStep1',
@@ -89,7 +87,6 @@ export default defineComponent({
   },
   methods: {
     reset() {
-      console.log('>>>>> reset', this.editedItem);
       this.items.splice(0, this.items.length);
     },
     editItem(item) {

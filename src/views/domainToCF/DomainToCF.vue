@@ -1,7 +1,5 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref, computed } from 'vue';
-import { usePhoneStore } from '@/stores/modules/phone/phone';
-import { useMessageStore } from '@/stores/modules/message/message';
 import { useDomainStore } from '@/stores/modules/domain/domain';
 import DomainToCFStep1 from './../domainToCFStep1/DomainToCFStep1.vue';
 import DomainToCFStep2 from './../domainToCFStep2/DomainToCFStep2.vue';
@@ -64,7 +62,7 @@ export default defineComponent({
     // this.fetchData();
   },
   created() {
-    this.fetchData();
+    // this.fetchData();
 
   },
   computed: {
@@ -76,45 +74,8 @@ export default defineComponent({
     //
   },
   methods: {
-    async fetchData() {
-      this.loading = true;
-      try {
-        const phoneStore = usePhoneStore();
-        await phoneStore.fetchPhone({
-          page: this.page,
-          limit: this.itemsPerPage,
-          search: this.search,
-          sortBy: this.sortBy,
-          sortDesc: this.sortDesc,
-        });
-        this.items = await phoneStore.phone;
-        this.totalItems = await phoneStore.total;
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        this.loading = false;
-      }
-    },
-    async sendSMS() {
-      this.loading = true;
-      try {
-        const phoneStore = usePhoneStore();
-        const messageStore = useMessageStore();
-        await phoneStore.sendSMS(Object.values(phoneStore.selectedPhones), Object.values(messageStore.selectedMessages));
-      } catch (error) {
-        console.error("Error send sms:", error);
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    handleSendPhone() {
-      const phoneStore = usePhoneStore();
-      const messageStore = useMessageStore();
-      console.log("Selected phone items submit:", Object.values(phoneStore.selectedPhones));
-      console.log("Selected message items submit:", Object.values(messageStore.selectedMessages));
-    },
-  }
+    //
+  },
 });
 
 </script>
