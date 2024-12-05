@@ -208,7 +208,6 @@ export default defineComponent({
       this.editedItem.createdAt = currentTime;
       this.editedItem.updatedAt = currentTime;
       const serverStore = useServerStore();
-      console.log('hhhh===>', this.editedItem);
       if (this.editedIndex > -1) {
         //
       } else {
@@ -224,6 +223,7 @@ export default defineComponent({
         } else {
           const ketqua = await serverStore.createServer({ server_ip: this.editedItem.server_ip, team: this.editedItem.team });
           this.resultMessage = await ketqua.result;
+          this.playAudio();
           if (this.resultMessage.fail.count === 0) {
             this.showResult = false;
             this.items.push(this.editedItem)
@@ -236,7 +236,10 @@ export default defineComponent({
       this.close()
       this.loading = false;
     },
-
+    playAudio() {
+      const audio = new Audio('/task_tao_website_success.mp3'); 
+      audio.play().catch(err => console.error("Error playing audio:", err)); 
+    },
   }
 });
 

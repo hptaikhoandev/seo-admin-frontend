@@ -100,13 +100,17 @@ export default defineComponent({
 
         const ketqua = await this.cloneStore.cloneSite(requestData);
         this.resultMessage = ketqua.result;
+        this.playAudio();
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         this.loading = false;
         this.showResult = true;
       }
-
+    },
+    playAudio() {
+      const audio = new Audio('/task_tao_website_success.mp3'); 
+      audio.play().catch(err => console.error("Error playing audio:", err)); 
     },
     editItem(item) {
       this.editedIndex = this.items.indexOf(item)
