@@ -133,6 +133,7 @@ export default defineComponent({
         };
         const domainStore = useDomainStore();
         const ketqua = await domainStore.addListDomainsToCloudflare(requestData);
+        this.playAudio();
         this.resultMessage = ketqua.resultMessage;
 
         let dataResult = await domainStore.domainNS;
@@ -151,8 +152,10 @@ export default defineComponent({
         this.loading = false;
         this.showResult = true;
       }
-
-
+    },
+    playAudio() {
+      const audio = new Audio('/task_tao_website_success.mp3'); 
+      audio.play().catch(err => console.error("Error playing audio:", err)); 
     },
     editItem(item) {
       this.editedIndex = this.items.indexOf(item)

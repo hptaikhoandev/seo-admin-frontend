@@ -106,14 +106,19 @@ export default defineComponent({
         };
 
         const ketqua = await this.destroySiteStore.addListDomainsToDestroySites(requestData);
+        // Thực hiện logic phát một file audio sau khi hoàn thành công việc
         this.resultMessage = ketqua.result;
+        this.playAudio();
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         this.loading = false;
         this.showResult = true;
       }
-
+    },
+    playAudio() {
+      const audio = new Audio('/task_xoa_success.mp3'); 
+      audio.play().catch(err => console.error("Error playing audio:", err)); 
     },
     editItem(item) {
       this.editedIndex = this.items.indexOf(item)
