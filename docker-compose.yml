@@ -6,7 +6,7 @@ services:
     container_name: "seo-admin-frontend_${TIMESTAMP}"
     ports:
       - '180:80' # Public HTTP Port
-      - '143:443' # Public HTTPS Port
+      - '443:443' # Public HTTPS Port
       - '5173:5173' # Web Port
     volumes:
       - ./data:/data

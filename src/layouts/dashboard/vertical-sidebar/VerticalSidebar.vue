@@ -38,9 +38,9 @@ const sidebarMenu = shallowRef(sidebarItems);
           <!---Item Sub Header -->
           <NavGroup :item="item" v-if="item.header" :key="item.title" />
           <!---Item Divider -->
-          <v-divider class="my-3" v-else-if="item.divider" />
+          <v-divider class="my-3" v-else-if="false" />
           <!---If Has Child -->
-          <NavCollapse class="leftPadding" :item="item" :level="0" v-else-if="item.children" />
+          <NavCollapse class="leftPadding" :item="item" :level="0" v-else-if="false" />
           <!---Single Item-->
           <NavItem :item="item" v-else />
           <!---End Single Item-->

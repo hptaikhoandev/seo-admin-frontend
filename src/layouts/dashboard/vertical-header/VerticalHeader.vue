@@ -8,15 +8,28 @@ import {jwtDecode} from 'jwt-decode';
 import { ref } from 'vue';
 
 const customizer = useCustomizerStore();
-const user = ref(null);
-
-const storedUser = localStorage.getItem('user');
-if (storedUser) {
-  const parsedUser = JSON.parse(storedUser);
-  if (parsedUser && parsedUser.user && parsedUser.user.token) {
-    user.value = jwtDecode(parsedUser.user.token);
+function getUserName(): string | null {
+  const storedUser = localStorage.getItem('user');
+  
+  if (!storedUser) {
+    return null; 
+  }
+  
+  try {
+    const parsedUser = JSON.parse(storedUser);
+    if (!(parsedUser && parsedUser.user && parsedUser.user.token)) {
+      return null; 
+    }
+    const user = jwtDecode(parsedUser.user.token);
+    return (user as any).name || null; 
+  } catch (error) {
+    console.error('Error decoding user token:', error);
+    return null; 
   }
 }
+
+const userName = getUserName();
+
 </script>
 
 <template>
@@ -98,7 +111,7 @@ if (storedUser) {
             <v-avatar class="mr-sm-2 mr-0 py-2">
               <img src="@/assets/images/users/avatar-1.png" alt="Julia" />
             </v-avatar>
-            <h6 class="text-subtitle-1 mb-0 d-sm-block d-none">{{ user.name }}</h6>
+            <h6 class="text-subtitle-1 mb-0 d-sm-block d-none">{{ userName }}</h6>
           </div>
         </v-btn>
       </template>

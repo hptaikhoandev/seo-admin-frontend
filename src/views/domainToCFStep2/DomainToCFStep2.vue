@@ -1,6 +1,5 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
-import { useMessageStore } from '@/stores/modules/message/message';
 import { useDomainStore } from '@/stores/modules/domain/domain';
 import moment from 'moment';
 import {jwtDecode} from 'jwt-decode';
@@ -12,7 +11,6 @@ export default defineComponent({
   },
   data() {
     return {
-      domainStore: useDomainStore,
       dialog: false,
       dialogDelete: false,
       search: ref(''),
@@ -61,11 +59,14 @@ export default defineComponent({
     // this.fetchData();
   },
   created() {
-    this.fetchData()
+    // this.fetchData()
   },
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? 'New Message' : 'Edit Message'
+    },
+    domainStore() {
+      return useDomainStore();
     },
     showStept2(): boolean {
       const store = useDomainStore();
@@ -90,25 +91,6 @@ export default defineComponent({
     },
   },
   methods: {
-    async fetchData() {
-      this.loading = true;
-      try {
-        const messageStore = useMessageStore();
-        await messageStore.fetchMessage({
-          page: this.page,
-          limit: this.itemsPerPage,
-          search: this.search,
-          sortBy: this.sortBy,
-          sortDesc: this.sortDesc,
-        });
-        this.items = await messageStore.message;
-        this.totalItems = await messageStore.total;
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        this.loading = false;
-      }
-    },
     async submitStep2() {
       this.close();
       this.loading = true;
@@ -117,16 +99,17 @@ export default defineComponent({
         const serverIP = this.domainStore.serverIP;
         const isSSL = this.domainStore.isSSL !== undefined ? this.domainStore.isSSL : 'flexible'; 
         const domainList = this.domainStore.domain?.map(domain => domain.name); 
-        const user = ref(null);
+        
         const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          if (parsedUser && parsedUser.user && parsedUser.user.token) {
-            user.value = jwtDecode(parsedUser.user.token);
-          }
-        }
-        const requestData = {
-          team: user.value.roleId,
+        if (!storedUser) return [];
+        const parsedUser = JSON.parse(storedUser);
+        if (!(parsedUser && parsedUser.user && parsedUser.user.token)) return [];
+        const user = jwtDecode(parsedUser.user.token);
+        const userRole = (user as any).roleId;
+        if (!(user && userRole)) return [];
+
+      const requestData = {
+          team: userRole,
           server_ip: serverIP,
           ssl_type: isSSL,
           domains: domainList
@@ -162,35 +145,6 @@ export default defineComponent({
       this.editedItem = Object.assign({}, item)
       this.dialog = true
     },
-    handleSelectionChange(selectedItems) {
-      const messageStore = useMessageStore();
-      messageStore.selectedMessages = selectedItems;
-    },
-    handlePageChange(newPage) {
-      this.page = newPage;
-      this.fetchData();
-    },
-    handleItemsPerPageChange(newItemsPerPage) {
-      this.itemsPerPage = newItemsPerPage;
-      this.page = 1;
-      this.fetchData();
-    },
-    handleOnSearch() {
-      this.page = 1;
-      this.fetchData();
-    },
-    handleSortBy({ page, itemsPerPage, sortBy }) {
-      if (sortBy.length === 0) return;
-      this.sortBy = sortBy[0].key;
-      this.sortDesc = (sortBy[0].order === 'desc') ? true : false;
-      this.page = 1;
-      this.fetchData();
-    },
-    handleClearSearch() {
-      this.page = 1;
-      this.fetchData();
-    },
-
     close() {
       this.dialog = false
       this.$nextTick(() => {
@@ -198,25 +152,11 @@ export default defineComponent({
         this.editedIndex = -1
       })
     },
-
-    save() {
-      const messageStore = useMessageStore();
-      if (this.editedIndex > -1) {
-        Object.assign(this.items[this.editedIndex], this.editedItem)
-        messageStore.updateMessage({ id: this.editedItem.id, userId: this.editedItem.userId, body: this.editedItem.body });
-      } else {
-        this.items.push(this.editedItem)
-        messageStore.createMessage({ userId: this.editedItem.userId, body: this.editedItem.body });
-      }
-      this.close();
-    },
   }
 });
 
 </script>
 <template>
-  <!-- <p>{{ domainStore.isValidServerIP !== undefined ? domainStore.isValidServerIP : false }}</p> -->
-
   <v-data-table-server
     v-if="showStept2"
     :headers="headers" 
@@ -226,13 +166,9 @@ export default defineComponent({
     :items-length="totalItems" 
     :page.sync="page"
     hide-default-footer 
-    @update:page="handlePageChange"
-    @update:items-per-page="handleItemsPerPageChange" 
-    @update:options="handleSortBy" 
     hover 
     height="200"
     :loading="loading"
-    @update:modelValue="handleSelectionChange"
   >
     <template v-slot:top>
       <v-toolbar :style="{ height: 'auto', alignItems: 'center' }">

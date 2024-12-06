@@ -87,17 +87,31 @@ export default defineComponent({
     },
   },
   methods: {
+    triggerFileInput() {
+      const fileInput = this.$refs.fileInput as HTMLInputElement;
+      if (fileInput) {
+        fileInput.click();
+      }
+    },
+    handleFileChange(event: Event) {
+      const input = event.target as HTMLInputElement;
+      if (input && input.files) {
+        const file = input.files[0];
+        console.log('Selected file:', file.name);
+      }
+    },
     async getServerList() {
       const store = useMutilSiteStore();
-      const user = ref(null);
+
       const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        if (parsedUser && parsedUser.user && parsedUser.user.token) {
-          user.value = jwtDecode(parsedUser.user.token);
-        }
-      }
-      const ketqua = await store.fetchServerList(user.value.roleId);
+      if (!storedUser) return [];
+      const parsedUser = JSON.parse(storedUser);
+      if (!(parsedUser && parsedUser.user && parsedUser.user.token)) return [];
+      const user = jwtDecode(parsedUser.user.token);
+      const userRole = (user as any).roleId;
+      if (!(user && userRole)) return [];
+
+      const ketqua = await store.fetchServerList(userRole);
       this.serverList = ketqua.map(item => item.server_ip);
     },
     reset() {
@@ -166,26 +180,36 @@ export default defineComponent({
       document.body.removeChild(link);
     },
     async importDomains(event) {
-      // Access the file uploaded
       const file = event.target.files[0];
       if (!file) {
         return;
       }
       try {
-        const fileContent = await this.readFile(file);
-        const domainList = fileContent.split('\n').map(domain => domain.trim()).filter(domain => domain);
-        const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
-        domainList.forEach(domainName => {
-          const nameExists = this.items.some(item => item.name === domainName);
-          if (!nameExists) {
-            this.items.unshift({
-              id: 0,
-              name: domainName,
-              createdAt: currentTime.toString(),
-              updatedAt: currentTime.toString(),
-            });
-          }
-        });
+        const fileContent: string | unknown = await this.readFile(file);
+        let domainList: string[] = [];
+
+        if (typeof fileContent === 'string') {
+          domainList = fileContent
+            .split('\n')
+            .map(domain => domain.trim())
+            .filter(domain => domain);
+        }
+
+        // Kiểm tra nếu domainList không rỗng trước khi xử lý
+        if (domainList.length > 0) {
+          const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
+          domainList.forEach(domainName => {
+            const nameExists = this.items.some(item => item.name === domainName);
+            if (!nameExists) {
+              this.items.unshift({
+                id: 0,
+                name: domainName,
+                createdAt: currentTime.toString(),
+                updatedAt: currentTime.toString(),
+              });
+            }
+          });
+        }        
         event.target.value = null;
       } catch (error) {
         console.error('Error reading file:', error);
@@ -195,7 +219,13 @@ export default defineComponent({
       // Return a promise to read the file content
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = event => resolve(event.target.result);
+        reader.onload = event => {
+          if (event.target) {
+            resolve(event.target.result);
+          } else {
+            reject(new Error("FileReader target is null"));
+          }
+        };
         reader.onerror = error => reject(error);
         reader.readAsText(file);
       });
@@ -253,7 +283,7 @@ export default defineComponent({
         </v-btn>
       </v-col>
       <v-col cols="auto">
-        <v-btn size="small" :style="{ backgroundColor: '#CCAA4D', color: '#ffff' }" @click="$refs.fileInput.click()">
+        <v-btn size="small" :style="{ backgroundColor: '#CCAA4D', color: '#ffff' }" @click="triggerFileInput">
           <UploadIcon size="20" color="white" />
           Import domains
         </v-btn>

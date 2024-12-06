@@ -83,16 +83,16 @@ export default defineComponent({
         const domainNameSource = this.cloneStore.domainNameSource;
         const domainNameTarget = this.cloneStore.domainNameTarget;
 
-        const user = ref(null);
         const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          if (parsedUser && parsedUser.user && parsedUser.user.token) {
-            user.value = jwtDecode(parsedUser.user.token);
-          }
-        }
+        if (!storedUser) return [];
+        const parsedUser = JSON.parse(storedUser);
+        if (!(parsedUser && parsedUser.user && parsedUser.user.token)) return [];
+        const user = jwtDecode(parsedUser.user.token);
+        const userRole = (user as any).roleId;
+        if (!(user && userRole)) return [];
+
         const requestData = {
-          team: user.value.roleId,
+          team: userRole,
           server_ip: serverIP,
           source_domain: domainNameSource,
           target_domain: domainNameTarget,
@@ -100,6 +100,11 @@ export default defineComponent({
 
         const ketqua = await this.cloneStore.cloneSite(requestData);
         this.resultMessage = ketqua.result;
+        // Loại trừ những trường hợp lỗi đặc biệt
+        const exceptionText = this.resultMessage.fail.messages[0] as string;
+        if (exceptionText.includes('mysql: Deprecated program name. It will be removed in a future release, use')) {
+          this.resultMessage.fail.count = this.resultMessage.fail.count -1;
+        }        
         this.playAudio();
       } catch (error) {
         console.error("Error fetching data:", error);

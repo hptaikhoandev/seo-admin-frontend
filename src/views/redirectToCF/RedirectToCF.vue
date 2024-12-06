@@ -1,6 +1,5 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref, computed } from 'vue';
-import { useMessageStore } from '@/stores/modules/message/message';
 import { useDomainStore } from '@/stores/modules/domain/domain';
 import RedirectStep1 from './../redirectStep1/RedirectStep1.vue';
 import RedirectStep1DomainsToDomains from './../redirectStep1DomainsToDomains/RedirectStep1DomainsToDomains.vue';
