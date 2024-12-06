@@ -76,15 +76,14 @@ export default defineComponent({
   methods: {
     async getServerList() {
       const store = useClonesiteStore();
-      const user = ref(null);
       const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        if (parsedUser && parsedUser.user && parsedUser.user.token) {
-          user.value = jwtDecode(parsedUser.user.token);
-        }
-      }
-      const ketqua = await store.fetchServerList(user.value.roleId);
+      if (!storedUser) return [];
+      const parsedUser = JSON.parse(storedUser);
+      if (!(parsedUser && parsedUser.user && parsedUser.user.token)) return [];
+      const user = jwtDecode(parsedUser.user.token);
+      const userRole = (user as any).roleId;
+      if (!(user && userRole)) return [];
+      const ketqua = await store.fetchServerList(userRole);
       this.serverList = ketqua.map(item => item.server_ip);
     },
     validateIPAddress(value) {

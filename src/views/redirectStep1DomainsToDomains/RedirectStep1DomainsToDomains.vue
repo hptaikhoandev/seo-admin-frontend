@@ -130,27 +130,36 @@ export default defineComponent({
       document.body.removeChild(link);
     },
     async importDomains(event) {
-      // Access the file uploaded
       const file = event.target.files[0];
       if (!file) {
         return;
       }
       try {
-        const fileContent = await this.readFile(file);
-        const domainList = fileContent.split('\n').map(domain => domain.trim()).filter(domain => domain);
-        const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
-        domainList.forEach(domainName => {
-          const nameExists = this.items.some(item => item.name === domainName);
-          if (!nameExists) {
-            this.editedItem = {
-              id: 0,
-              name: domainName,
-              createdAt: currentTime.toString(),
-              updatedAt: currentTime.toString(),
-            };
-            this.items.unshift(this.editedItem);
-          }
-        });
+        const fileContent: string | unknown = await this.readFile(file);
+        let domainList: string[] = [];
+
+        if (typeof fileContent === 'string') {
+          domainList = fileContent
+            .split('\n')
+            .map(domain => domain.trim())
+            .filter(domain => domain);
+        }
+
+        // Kiểm tra nếu domainList không rỗng trước khi xử lý
+        if (domainList.length > 0) {
+          const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
+          domainList.forEach(domainName => {
+            const nameExists = this.items.some(item => item.name === domainName);
+            if (!nameExists) {
+              this.items.unshift({
+                id: 0,
+                name: domainName,
+                createdAt: currentTime.toString(),
+                updatedAt: currentTime.toString(),
+              });
+            }
+          });
+        }        
         event.target.value = null;
       } catch (error) {
         console.error('Error reading file:', error);
@@ -160,7 +169,13 @@ export default defineComponent({
       // Return a promise to read the file content
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = event => resolve(event.target.result);
+        reader.onload = event => {
+          if (event.target) {
+            resolve(event.target.result);
+          } else {
+            reject(new Error("FileReader target is null"));
+          }
+        };
         reader.onerror = error => reject(error);
         reader.readAsText(file);
       });

@@ -90,16 +90,16 @@ export default defineComponent({
         const domainRedirectTo = this.redirectStore.domainRedirectTo.map(domain => domain.name);
 
 
-        const user = ref(null);
         const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          if (parsedUser && parsedUser.user && parsedUser.user.token) {
-            user.value = jwtDecode(parsedUser.user.token);
-          }
-        }
-        const requestData = {
-          team: user.value.roleId,
+        if (!storedUser) return [];
+        const parsedUser = JSON.parse(storedUser);
+        if (!(parsedUser && parsedUser.user && parsedUser.user.token)) return [];
+        const user = jwtDecode(parsedUser.user.token);
+        const userRole = (user as any).roleId;
+        if (!(user && userRole)) return [];
+
+      const requestData = {
+          team: userRole,
           redirect_type: redirectType,
           source_domains: domainRedirectFrom,
           target_domains: domainRedirectTo,

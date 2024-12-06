@@ -1,6 +1,5 @@
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
-import { useMessageStore } from '@/stores/modules/message/message';
 import { useDomainStore } from '@/stores/modules/domain/domain';
 
 export default defineComponent({
@@ -134,17 +133,6 @@ export default defineComponent({
     },
       updateSortData(newValue) {
       this.isSortData = newValue;
-    },
-    save() {
-      const messageStore = useMessageStore();
-      if (this.editedIndex > -1) {
-        Object.assign(this.items[this.editedIndex], this.editedItem)
-        messageStore.updateMessage({ id: this.editedItem.id, userId: this.editedItem.userId, body: this.editedItem.body });
-      } else {
-        this.items.push(this.editedItem)
-        messageStore.createMessage({ userId: this.editedItem.userId, body: this.editedItem.body });
-      }
-      this.close()
     },
   }
 });

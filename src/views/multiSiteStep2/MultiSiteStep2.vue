@@ -91,16 +91,16 @@ export default defineComponent({
         const serverIP = this.mutilSiteStore.serverIP;
         const domains = this.mutilSiteStore.domain.map(domain => domain.name);
 
-        const user = ref(null);
         const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          if (parsedUser && parsedUser.user && parsedUser.user.token) {
-            user.value = jwtDecode(parsedUser.user.token);
-          }
-        }
+        if (!storedUser) return [];
+        const parsedUser = JSON.parse(storedUser);
+        if (!(parsedUser && parsedUser.user && parsedUser.user.token)) return [];
+        const user = jwtDecode(parsedUser.user.token);
+        const userRole = (user as any).roleId;
+        if (!(user && userRole)) return [];
+
         const requestData = {
-          team: user.value.roleId,
+          team: userRole,
           server_ip: serverIP,
           domains: domains,
         };

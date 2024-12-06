@@ -11,7 +11,6 @@ export default defineComponent({
   },
   data() {
     return {
-      domainStore: useDomainStore,
       dialog: false,
       dialogDelete: false,
       search: ref(''),
@@ -66,6 +65,9 @@ export default defineComponent({
     formTitle() {
       return this.editedIndex === -1 ? 'New Message' : 'Edit Message'
     },
+    domainStore() {
+      return useDomainStore();
+    },
     showStept2(): boolean {
       const store = useDomainStore();
       if (store.domain.length == 0) {
@@ -97,16 +99,17 @@ export default defineComponent({
         const serverIP = this.domainStore.serverIP;
         const isSSL = this.domainStore.isSSL !== undefined ? this.domainStore.isSSL : 'flexible'; 
         const domainList = this.domainStore.domain?.map(domain => domain.name); 
-        const user = ref(null);
+        
         const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          if (parsedUser && parsedUser.user && parsedUser.user.token) {
-            user.value = jwtDecode(parsedUser.user.token);
-          }
-        }
-        const requestData = {
-          team: user.value.roleId,
+        if (!storedUser) return [];
+        const parsedUser = JSON.parse(storedUser);
+        if (!(parsedUser && parsedUser.user && parsedUser.user.token)) return [];
+        const user = jwtDecode(parsedUser.user.token);
+        const userRole = (user as any).roleId;
+        if (!(user && userRole)) return [];
+
+      const requestData = {
+          team: userRole,
           server_ip: serverIP,
           ssl_type: isSSL,
           domains: domainList
