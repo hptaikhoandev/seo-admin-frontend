@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: "seo-admin-frontend_${TIMESTAMP}"
     ports:
-      - '180:80' # Public HTTP Port
+      - '80:80' # Public HTTP Port
       - '443:443' # Public HTTPS Port
       - '5173:5173' # Web Port
     volumes:
