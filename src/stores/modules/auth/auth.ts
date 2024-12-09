@@ -33,38 +33,11 @@ export const useAuthStore = defineStore({
       // store user details and jwt in local storage to keep user logged in between page refreshes
       localStorage.setItem('user', JSON.stringify(user));
       // redirect to previous url or default to home page
-      router.push('/dashboard');
+      router.push('/');
     },
     async logout() {
-      // Xóa toàn bộ dữ liệu trong localStorage
-      localStorage.clear();
-    
-      // Xóa toàn bộ dữ liệu trong sessionStorage
-      sessionStorage.clear();
-    
-      // Xóa tất cả cookie
-      document.cookie.split(";").forEach(cookie => {
-        const name = cookie.split("=")[0].trim();
-        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-      });
-    
-      // Xóa cache nếu có
-      if ('caches' in window) {
-        const cacheKeys = await caches.keys();
-        for (const key of cacheKeys) {
-          await caches.delete(key);
-        }
-      }
-    
-      // Reset toàn bộ store hoặc trạng thái của ứng dụng
-      this.resetState(); // Reset toàn bộ state về trạng thái mặc định
-    
       // Điều hướng đến trang login
-      router.push('/auth/login');
-      
-      // Làm mới toàn bộ ứng dụng
-      window.location.reload(); // Đảm bảo không có trạng thái cũ nào được giữ lại
+      router.push('/auth/login');    
     }
-    
   }
 });
