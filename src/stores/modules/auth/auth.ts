@@ -10,7 +10,7 @@ export const useAuthStore = defineStore({
     /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
     // @ts-ignore
     user: JSON.parse(localStorage.getItem('user')),
-    returnUrl: null
+    returnUrl: null,
   }),
   actions: {
     resetState() {
@@ -30,14 +30,22 @@ export const useAuthStore = defineStore({
 
       // update pinia state
       this.user = user;
-      // store user details and jwt in local storage to keep user logged in between page refreshes
       localStorage.setItem('user', JSON.stringify(user));
       // redirect to previous url or default to home page
       router.push('/');
+      
+
     },
     async logout() {
+      this.user = null;
+      localStorage.removeItem('user');
       // Điều hướng đến trang login
-      router.push('/auth/login');    
+      router.push('/auth/login');   
+      // // Xóa toàn bộ dữ liệu trong localStorage
+      // localStorage.clear();
+
+      // // Xóa toàn bộ dữ liệu trong sessionStorage
+      // sessionStorage.clear();
     }
   }
 });
