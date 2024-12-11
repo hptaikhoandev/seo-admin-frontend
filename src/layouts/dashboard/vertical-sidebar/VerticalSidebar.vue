@@ -34,7 +34,7 @@ onMounted(() => {
           { title: '🪵 Redirect Domain', to: '/redirect-domain' },
           { title: '🌷 Clone WP Site', to: '/clone-site' },
           { title: '💐 Create WP Sites', to: '/tao-multi-wp-site' },
-          { title: '🌺 Delete WP Sites', to: '/destroy-site' },
+          { title: '🌺 Delete WP Sites', to: '/destroy-wp-site' },
       ] as any;
       break;
     case ['seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6'].includes(userRole):
@@ -46,7 +46,7 @@ onMounted(() => {
         { title: '🪵 Redirect Domain', to: '/redirect-domain' },
         { title: '🌷 Clone WP Site', to: '/clone-site' },
         { title: '💐 Create WP Sites', to: '/tao-multi-wp-site' },
-        { title: '🌺 Delete WP Sites', to: '/destroy-site' },
+        { title: '🌺 Delete WP Sites', to: '/destroy-wp-site' },
       ] as any;
       break;
   }
