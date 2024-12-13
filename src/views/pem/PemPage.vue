@@ -171,8 +171,13 @@ export default defineComponent({
       const pemStore = usePemStore();
       if (this.editedIndex > -1) {
         const ketqua = await pemStore.updatePem({ id: this.editedItem.id, pem: this.editedItem.pem, team: this.editedItem.team });
-        this.resultMessage = ketqua.result;        
-
+        this.resultMessage = ketqua.result;  
+        if (this.resultMessage.fail.count === 0) {
+          this.showResult = false;
+          this.items.push(this.editedItem)
+        } else {
+          this.showResult = true;
+        }        
       } else {
         const ketqua = await pemStore.createPem({ pem: this.editedItem.pem, team: this.editedItem.team });
         this.resultMessage = ketqua.result;

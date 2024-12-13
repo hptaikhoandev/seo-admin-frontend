@@ -23,8 +23,28 @@ export const useServerStore = defineStore({
             Authorization: bearerToken
           }
          })
-        this.server = response.data.data
-        this.total = response.data.total
+        const servers = response.data.data;
+        for (const server of servers) {
+          try {
+            const res = await this.getStatusServer({ team: server.team, server_ip: server.server_ip });
+            console.log("bbbb===>", res);
+            if (res.data?.instance_state === 'running') {
+              server.iconStartDisable = true; // Không thể start
+              server.iconStopDisable = false;  // Có thể stop
+              server.iconRestartDisable = false; // Không thể restart
+            } else {
+              server.iconStartDisable = false; // Có thể start
+              server.iconStopDisable = true;  // Không thể stop
+              server.iconRestartDisable = true; // Không thể restart
+            }  
+          } catch (error: any) {
+            server.iconStartDisable = false; // Có thể start
+            server.iconStopDisable = true;  // Không thể stop
+            server.iconRestartDisable = true; // Không thể restart
+          }
+        }
+        this.server = await servers;
+        this.total = response.data.total;
       } catch (error: any) {
         this.error = error.message
       } finally {
@@ -47,23 +67,6 @@ export const useServerStore = defineStore({
         this.loading = false
       }
     },
-    // async createServer({server_ip, team}) {
-    //   this.loading = true
-    //   const params = { server_ip, team }
-    //   try {
-    //     const response = await axios.post(`${baseUrl}/servers`, params, { 
-    //       headers: {
-    //         Authorization: bearerToken
-    //       }
-    //      })
-    //     this.server = response.data.data
-    //     this.total = response.data.total
-    //   } catch (error: any) {
-    //     this.error = error.message
-    //   } finally {
-    //     this.loading = false
-    //   }
-    // },
     async createServer({server_ip, team}) {
       this.loading = true
       const params = { server_ip, team }
@@ -100,7 +103,6 @@ export const useServerStore = defineStore({
         this.loading = false
       }
     },
-
     async updateServer({id, server_ip, team }) {
       this.loading = true
       const params = { id, server_ip, team }
@@ -112,10 +114,47 @@ export const useServerStore = defineStore({
         })
         this.server = response.data.data
         this.total = response.data.total
+        return response.data;
       } catch (error: any) {
         this.error = error.message
       } finally {
         this.loading = false
+      }
+    },
+    async getStatusServer({team, server_ip}) {
+      this.loading = true
+      const params = { team, server_ip }
+      try {
+        const response = await axios.post(`${baseUrlScript}/status-servers`, params, { 
+          headers: {
+            Authorization: bearerToken,
+            KeepAlive: 'timeout=7200',
+          },
+         });
+        
+        return response.data;
+      } catch (error: any) {
+        this.error = error.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async transitionsServer({team, server_ip, transitions}) {
+      this.loading = true
+      const params = { team, server_ip, transitions }
+      try {
+        const response = await axios.post(`${baseUrlScript}/transitions-server`, params, { 
+          headers: {
+            Authorization: bearerToken,
+            KeepAlive: 'timeout=7200',
+          },
+         });
+        
+        return response.data;
+      } catch (error: any) {
+        this.error = error.message;
+      } finally {
+        this.loading = false;
       }
     },
   }

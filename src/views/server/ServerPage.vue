@@ -2,6 +2,7 @@
 import { defineComponent, ref, type Ref } from 'vue';
 import { useServerStore } from '@/stores/modules/server/server';
 import moment from 'moment';
+import { PlayerPlayFilledIcon, RefreshDotIcon, PlayerStopFilledIcon } from 'vue-tabler-icons';
 
 export default defineComponent({
   name: 'ServerPage',
@@ -10,9 +11,10 @@ export default defineComponent({
   },
   data() {
     return {
+      currentDateTime: ref(''),
       dialog: false,
       dialogDelete: false,
-      dialogType: "", 
+      dialogType: "",
       search: ref(''),
       sortBy: ref('server_ip'),
       sortDesc: ref(false),
@@ -20,7 +22,7 @@ export default defineComponent({
       resultMessage: {
         success: 0,
         fail: {
-          count:0,
+          count: 0,
           messages: []
         },
       },
@@ -28,7 +30,7 @@ export default defineComponent({
         { title: 'SERVER IP', key: 'server_ip' },
         { title: 'TEAM', key: 'team' },
         { title: 'KEY NAME', key: 'key_name' },
-        { title: 'CREATED AT', key: 'createdAt' },
+        // { title: 'CREATED AT', key: 'createdAt' },
         { title: 'UPDATED AT', key: 'updatedAt' },
         { title: 'ACTIONS', key: 'actions', sortable: false },
       ],
@@ -41,6 +43,12 @@ export default defineComponent({
         private_key: '',
         createdAt: '',
         updatedAt: '',
+        loadingStart: false,
+        loadingRestart: false,
+        loadingStop: false,
+        iconStartDisable: true,
+        iconRestartDisable: false,
+        iconStopDisable: false,
       },
       defaultItem: {
         id: 0,
@@ -50,6 +58,12 @@ export default defineComponent({
         private_key: '',
         createdAt: '',
         updatedAt: '',
+        loadingStart: false,
+        loadingRestart: false,
+        loadingStop: false,
+        iconStartDisable: true,
+        iconRestartDisable: false,
+        iconStopDisable: false,
       },
       items: ref([]) as Ref<any[]>,
       page: ref(1),
@@ -60,22 +74,21 @@ export default defineComponent({
   },
 
   mounted() {
-    // this.fetchData();
+    //
   },
-  created() {
-    this.fetchData()
+  async created() {
+    await this.fetchData();
   },
   computed: {
     formTitle() {
       switch (this.dialogType) {
-      case 'import':
-        return 'Import Server';
-      case 'edit':
-        return 'Edit Server';
-      default:
-        return 'New Server';
-    }
-      // return this.editedIndex === -1 ? 'New Server' : 'Import Server'
+        case 'import':
+          return 'Import Server';
+        case 'edit':
+          return 'Edit Server';
+        default:
+          return 'New Server';
+      }
     },
     isFormValid() {
       const teamValid = this.validateTeam(this.editedItem.team) === true;
@@ -83,6 +96,10 @@ export default defineComponent({
       const serverIPValid = this.validateTeam(this.editedItem.server_ip) === true;
       return (this.dialogType === 'import') ? teamValid && privateKeyValid && serverIPValid : teamValid;
     },
+    formattedDateTime() {
+      // Mỗi khi currentDateTime thay đổi, hàm này sẽ tự động chạy lại
+      return moment(this.currentDateTime, "DD:MM:YY HH:mm:ss").format("DD:MM:YY HH:mm:ss");
+    }
   },
   watch: {
     dialog(val) {
@@ -122,6 +139,81 @@ export default defineComponent({
       this.editedIndex = this.items.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialog = true
+    },
+    async startItem(item) {
+      // Đặt trạng thái Start
+      item.loadingStart = true;
+      item.iconStartDisable = false;
+      item.iconRestartDisable = true;
+      item.iconStopDisable = true;
+
+      const serverStore = useServerStore();
+      const ketqua = await serverStore.transitionsServer({team: item.team, server_ip: item.server_ip, transitions: 'start'});
+      this.resultMessage = ketqua.result;        
+      if (this.resultMessage.fail.count === 0) {
+        this.showResult = false;
+        // Khi start hoàn tất
+        item.loadingStart = false;
+        item.iconStartDisable = true;
+        item.iconRestartDisable = false;
+        item.iconStopDisable = false;
+        this.currentDateTime = moment().format("DD:MM:YY HH:mm:ss");
+
+      } else {
+        this.showResult = true;
+        item.loadingStart = false;
+        this.currentDateTime = moment().format("DD:MM:YY HH:mm:ss");
+      }        
+    },
+
+    async restartItem(item) {
+
+      // Đặt trạng thái Restart
+      item.loadingRestart = true;
+      item.iconRestartDisable = false;
+
+      const serverStore = useServerStore();
+      const ketqua = await serverStore.transitionsServer({team: item.team, server_ip: item.server_ip, transitions: 'restart'});
+      this.resultMessage = ketqua.result;        
+      if (this.resultMessage.fail.count === 0) {
+        this.showResult = false;
+        // Giữ trạng thái khi restart hoàn tất
+        item.loadingRestart = false;
+        item.iconStartDisable = true;
+        item.iconRestartDisable = false;
+        item.iconStopDisable = false;
+        this.currentDateTime = moment().format("DD:MM:YY HH:mm:ss");
+      } else {
+        this.showResult = true;
+        item.loadingRestart = false;
+        this.currentDateTime = moment().format("DD:MM:YY HH:mm:ss");
+      }        
+    },
+
+    async stopItem(item) {
+      // Đặt trạng thái Stop
+      item.loadingStop = true;
+      item.iconStopDisable = false;
+      item.iconStartDisable = true;
+      item.iconRestartDisable = true;
+
+      const serverStore = useServerStore();
+      const ketqua = await serverStore.transitionsServer({team: item.team, server_ip: item.server_ip, transitions: 'stop'});
+      this.resultMessage = ketqua.result;        
+      if (this.resultMessage.fail.count === 0) {
+        this.showResult = false;
+        // Khi start hoàn tất
+        item.loadingStop = false;
+        item.iconStartDisable = false;
+        item.iconRestartDisable = true;
+        item.iconStopDisable = true;
+        this.currentDateTime = moment().format("DD:MM:YY HH:mm:ss");
+      } else {
+        this.showResult = true;
+        // Khi start hoàn tất
+        item.loadingStop = false;
+        this.currentDateTime = moment().format("DD:MM:YY HH:mm:ss");
+      }        
     },
     handlePageChange(newPage) {
       this.page = newPage;
@@ -178,10 +270,10 @@ export default defineComponent({
       })
     },
     validateTeam(value) {
-      return !!value || "Team is required"; 
+      return !!value || "Team is required";
     },
     validatePrivateKey(value) {
-      return !!value || "Key Name is required"; 
+      return !!value || "Key Name is required";
     },
     validateIPAddress(value) {
       const ipPattern = /^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})(\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})){3}$/;
@@ -209,7 +301,9 @@ export default defineComponent({
       this.editedItem.updatedAt = currentTime;
       const serverStore = useServerStore();
       if (this.editedIndex > -1) {
-        //
+        const ketqua = await serverStore.updateServer({ id: this.editedItem.id, server_ip: this.editedItem.server_ip, team: this.editedItem.team });
+        this.resultMessage = ketqua.result;
+
       } else {
         if (this.dialogType === 'import') {
           const ketqua = await serverStore.createServerImport({ server_ip: this.editedItem.server_ip, team: this.editedItem.team, private_key: this.editedItem.private_key });
@@ -219,7 +313,7 @@ export default defineComponent({
             this.items.push(this.editedItem)
           } else {
             this.showResult = true;
-          }        
+          }
         } else {
           const ketqua = await serverStore.createServer({ server_ip: this.editedItem.server_ip, team: this.editedItem.team });
           this.resultMessage = await ketqua.result;
@@ -229,7 +323,7 @@ export default defineComponent({
             this.items.push(this.editedItem)
           } else {
             this.showResult = true;
-          }        
+          }
         }
       }
       this.fetchData();
@@ -237,8 +331,8 @@ export default defineComponent({
       this.loading = false;
     },
     playAudio() {
-      const audio = new Audio('/task_tao_website_success.mp3'); 
-      audio.play().catch(err => console.error("Error playing audio:", err)); 
+      const audio = new Audio('/task_tao_website_success.mp3');
+      audio.play().catch(err => console.error("Error playing audio:", err));
     },
   }
 });
@@ -258,7 +352,8 @@ export default defineComponent({
         <v-spacer></v-spacer>
         <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ props }">
-            <v-btn size="small" class="mb-2 ml-1 mr-2" :style="{ backgroundColor: '#CCAA4D', color: '#ffff' }" dark @click="openDialogImport">
+            <v-btn size="small" class="mb-2 ml-1 mr-2" :style="{ backgroundColor: '#CCAA4D', color: '#ffff' }" dark
+              @click="openDialogImport">
               <UploadIcon size="15" color="white" />
               Import server
             </v-btn>
@@ -276,37 +371,25 @@ export default defineComponent({
               <v-container>
                 <v-row>
                   <v-col cols="12">
-                    <v-text-field 
-                      v-model="editedItem.server_ip" 
-                      :rules="[validateIPAddress]" 
-                      :disabled="dialogType !== 'import'" 
-                      :label="dialogType !== 'import' ? 'Server IP sẽ được thêm vào sau khi server được tạo' : 'Thêm vào Server IP import tại đây'" 
+                    <v-text-field v-model="editedItem.server_ip" :rules="[validateIPAddress]"
+                      :label="dialogType !== 'import' ? 'Server IP sẽ được thêm vào sau khi server được tạo' : 'Thêm vào Server IP import tại đây'"
                       density="comfortable">
                     </v-text-field>
                   </v-col>
                 </v-row>
                 <v-row>
                   <v-col cols="12">
-                    <v-textarea 
-                      :rules="[validatePrivateKey]" 
-                      class="custom-spacing" 
-                      v-model="editedItem.private_key"
-                      :disabled="dialogType !== 'import'" 
-                      :label="dialogType !== 'import' ? 'Private key sẽ được thêm vào sau khi server được tạo' : 'Private key'"  
+                    <v-textarea :rules="[validatePrivateKey]" class="custom-spacing" v-model="editedItem.private_key"
+                      :label="dialogType !== 'import' ? 'Private key sẽ được thêm vào sau khi server được tạo' : 'Private key'"
                       density="comfortable" row="5">
                     </v-textarea>
                   </v-col>
                 </v-row>
                 <v-row>
                   <v-col cols="12">
-                      <v-select
-                          v-model="editedItem.team"
-                          :items="['admin', 'seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6']"
-                          label="Team"
-                          density="comfortable"
-                          :disabled="dialogType === 'edit'" 
-                          :rules="[validateTeam]"
-                      ></v-select>
+                    <v-select v-model="editedItem.team"
+                      :items="['admin', 'seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6']" label="Team"
+                      density="comfortable" :rules="[validateTeam]"></v-select>
                   </v-col>
                 </v-row>
                 <v-row>
@@ -335,13 +418,7 @@ export default defineComponent({
                 Cancel
               </v-btn>
               <v-btn color="blue-darken-1" variant="text" @click="save" :disabled="!isFormValid">
-                <v-progress-circular
-                  v-if="loading"
-                  indeterminate
-                  color="green"
-                  size="20"
-                  class="mr-2"
-                >
+                <v-progress-circular v-if="loading" indeterminate color="green" size="20" class="mr-2">
                 </v-progress-circular>
                 Save
               </v-btn>
@@ -362,16 +439,75 @@ export default defineComponent({
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
-      <EditIcon size="18" color="gray" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
-      <TrashIcon size="18" color="#FF5252" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
 
+      <div class="d-inline-flex align-center">
+        <v-btn
+          variant="text"
+          class="d-inline-flex align-center justify-center"
+          @click="startItem(item)" 
+          :class="{ 'opacity-30 pointer-events-none': item.iconStartDisable }" 
+          style="min-width:30px; width:30px; height: 40px; cursor: pointer;"
+          :disabled="item.iconStartDisable"
+        >
+          <v-progress-circular 
+            v-if="item.loadingStart" 
+            indeterminate 
+            color="black"
+            size="18">
+          </v-progress-circular>
+          <PlayerPlayFilledIcon v-else :size="18" color="green" />
+        </v-btn>
+
+        <v-btn 
+          variant="text"
+          class="d-inline-flex align-center justify-center"
+          @click="restartItem(item)" 
+          :class="{ 'opacity-30 pointer-events-none': item.iconRestartDisable }" 
+          style="min-width:30px; width: 30px; height: 40px; cursor: pointer;"
+          :disabled="item.iconRestartDisable"
+        >
+          <v-progress-circular 
+            v-if="item.loadingRestart" 
+            indeterminate 
+            size="18">
+          </v-progress-circular>
+          <RefreshDotIcon v-else :size="18" color="orange" />
+        </v-btn>
+
+        <v-btn 
+          variant="text"
+          class="d-inline-flex align-center justify-center"
+          @click="stopItem(item)" 
+          :class="{ 'opacity-30 pointer-events-none': item.iconStopDisable }" 
+          style="min-width:30px; width: 30px; height: 40px; cursor: pointer;"
+          :disabled="item.iconStopDisable"
+        >
+          <v-progress-circular 
+            v-if="item.loadingStop" 
+            indeterminate 
+            size="18">
+          </v-progress-circular>
+          <PlayerStopFilledIcon v-else :size="18" color="red" />
+        </v-btn>
+        <div class="d-inline-flex align-center justify-center blue-darken-1--text" style="width: 20px; height: 40px;">|</div>
+      </div>
+      <EditIcon title="Update link server" size="18" color="orange" class="ml-2" style="cursor: pointer;"
+        @click="editItem(item)" />
+      <TrashIcon title="Delete link server" size="18" color="#FF5252" class="ml-2" style="cursor: pointer;"
+        @click="deleteItem(item)" />
     </template>
   </v-data-table-server>
-    <!-- Hiển thị kết quả chỉ sau khi gọi API xong (khi loading là false) -->
-    <v-text v-if="showResult">
-    <span class="text-success font-bold">Success: {{ resultMessage.success }}</span>
-    <span v-if="resultMessage.fail.count !== 0" class="text-error font-bold">, Fail: {{ resultMessage.fail.count
-      }}</span>
+  <!-- Hiển thị kết quả chỉ sau khi gọi API xong (khi loading là false) -->
+  <v-text v-if="showResult">
+    <ul>
+      <span> {{ 'Time: ' + currentDateTime + ' ' }} </span>
+    </ul>
+    <ul>
+      <span class="text-success font-bold">Success: {{ resultMessage.success }}</span>
+    </ul>
+    <ul>
+      <span v-if="resultMessage.fail.count !== 0" class="text-error font-bold">Fail: {{ resultMessage.fail.count}}</span>
+    </ul>
   </v-text>
   <v-text v-if="showResult && resultMessage.fail.count !== 0">
     <ul>
@@ -386,6 +522,7 @@ export default defineComponent({
 .custom-spacing .v-label {
   margin-bottom: 25px;
 }
+
 .v-field--variant-filled textarea {
   padding-top: 20px;
 }
