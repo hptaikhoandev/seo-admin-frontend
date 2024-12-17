@@ -90,7 +90,6 @@ export default {
       const store = useDashboardStore();
       this.loadingAmountSites = true;
       const ketqua = await store.fetchDomainsAmountParam();
-      console.log('k===>etqua', ketqua);
       this.loadingAmountSites = false;
       // Build data
       this.totalDomains = ketqua.totalSiteAll;

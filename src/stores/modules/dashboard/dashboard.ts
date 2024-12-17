@@ -53,50 +53,24 @@ export const useDashboardStore = defineStore({
         sortDesc: 'false' 
       }
       try {
-        const response = await axios.get(`${baseUrl}/servers`, { 
+        const response = await axios.get(`${baseUrl}/tasks`, { 
           params,
           headers: {
             Authorization: bearerToken
           }
          })
          const ketqua = response.data.data;
-         const itemsVPSSeo1 = ketqua.filter(item => item.team === 'seo-1');
-         const itemsVPSSeo2 = ketqua.filter(item => item.team === 'seo-2');
-         const itemsVPSSeo3 = ketqua.filter(item => item.team === 'seo-3');
-         const itemsVPSSeo4 = ketqua.filter(item => item.team === 'seo-4');
-
+         const itemsSeo1 = ketqua.filter(item => item.team === 'seo-1');
+         const itemsSeo2 = ketqua.filter(item => item.team === 'seo-2');
+         const itemsSeo3 = ketqua.filter(item => item.team === 'seo-3');
+         const itemsSeo4 = ketqua.filter(item => item.team === 'seo-4');
         let totalSiteAll = 0;
-        let totalSiteSEO1 = 0;
-        let totalSiteSEO2 = 0;
-        let totalSiteSEO3 = 0;
-        let totalSiteSEO4 = 0;
-         for (let i = 0; i < itemsVPSSeo1.length; i++) {
-          let amountDomain = await this.fetchDomainAmount({team: itemsVPSSeo1[i].team, server_ip: itemsVPSSeo1[i].server_ip});
-          if (amountDomain.status === 'success') {
-            totalSiteSEO1 += amountDomain.result.success;
-          }
-         }
-         for (let i = 0; i < itemsVPSSeo2.length; i++) {
-          let amountDomain = await this.fetchDomainAmount({team: itemsVPSSeo2[i].team, server_ip: itemsVPSSeo2[i].server_ip});
-          if (amountDomain.status === 'success') {
-            totalSiteSEO2 += amountDomain.result.success;
-          }
-         }
-         for (let i = 0; i < itemsVPSSeo3.length; i++) {
-          let amountDomain = await this.fetchDomainAmount({team: itemsVPSSeo3[i].team, server_ip: itemsVPSSeo3[i].server_ip});
-          if (amountDomain.status === 'success') {
-            console.log('===>amountDomain', amountDomain)
-            totalSiteSEO3 += amountDomain.result.success;
-          }
-         }
-         for (let i = 0; i < itemsVPSSeo4.length; i++) {
-          let amountDomain = await this.fetchDomainAmount({team: itemsVPSSeo4[i].team, server_ip: itemsVPSSeo4[i].server_ip});
-          if (amountDomain.status === 'success') {
-            totalSiteSEO4 += amountDomain.result.success;
-          }
-         }
-         totalSiteAll = totalSiteSEO1 + totalSiteSEO2 + totalSiteSEO3 + totalSiteSEO4;  
-
+        let totalSiteSEO1 = Number(itemsSeo1[0].total_sites);
+        let totalSiteSEO2 = Number(itemsSeo2[0].total_sites);
+        let totalSiteSEO3 = Number(itemsSeo3[0].total_sites);
+        let totalSiteSEO4 = Number(itemsSeo4[0].total_sites);
+        
+        totalSiteAll = totalSiteSEO1 + totalSiteSEO2 + totalSiteSEO3 + totalSiteSEO4;  
 
         return {
           totalSiteAll,
