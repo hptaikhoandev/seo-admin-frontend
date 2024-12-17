@@ -29,7 +29,6 @@ export default defineComponent({
   methods: {
     async validate(values: any) {
       const { resetForm, validate, errors } = useForm();
-      console.log('validate===>');
       // Validate all fields
       const isValid = await validate();
       if (isValid) {

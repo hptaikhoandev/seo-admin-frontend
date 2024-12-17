@@ -43,6 +43,8 @@ export default defineComponent({
       itemsPerPage: ref(5),
       totalItems: ref(110),
       loading: ref(false),
+      loadingAmountSites: ref(false),
+      totalSites: ref(0),
     };
   },
 
@@ -86,6 +88,25 @@ export default defineComponent({
       const ketqua = await store.fetchServerList(userRole);
       this.serverList = ketqua.map(item => item.server_ip);
     },
+    async onServerIPChange(newServerIP) {
+      const store = useClonesiteStore();
+      const storedUser = localStorage.getItem('user');
+      if (!storedUser) return [];
+      const parsedUser = JSON.parse(storedUser);
+      if (!(parsedUser && parsedUser.user && parsedUser.user.token)) return [];
+      const user = jwtDecode(parsedUser.user.token);
+      const userRole = (user as any).roleId;
+      if (!(user && userRole)) return [];
+
+      this.loadingAmountSites = true;
+      if (!newServerIP) return;
+      // Gọi hàm từ store với serverIP và team
+      const ketqua = await store.fetchDomainAmount({team: userRole, server_ip: newServerIP});
+      if (ketqua.status === 'success') {
+        this.totalSites = ketqua.result.success;
+      }
+      this.loadingAmountSites = false;
+    },
     validateIPAddress(value) {
       const ipPattern = /^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$/;
       return ipPattern.test(value) || 'Please enter a valid IP address (e.g., 54.243.100.131)';
@@ -114,8 +135,17 @@ export default defineComponent({
           placeholder="Select Server IP"
           class="mt-3"
           :rules="[validateIPAddress]"
+          @update:modelValue="onServerIPChange"
         />
-        </v-col>
+      </v-col>
+      <v-col cols="2" class="d-flex align-center" v-if="loadingAmountSites">
+        <v-progress-circular indeterminate color="primary" size="20"></v-progress-circular>
+      </v-col>
+      <v-col cols="2" class="d-flex align-center" v-else>
+        {{ "[ " + totalSites + " sites ]" }}
+      </v-col>
+    </v-row>
+    <v-row class="py-0">
       <v-col cols="3" class="py-0">
         <v-text-field v-model="domainNameSource" label="Domain name source" placeholder="Enter Domain source" class="mt-3"
           :rules="[validateDomain]" />

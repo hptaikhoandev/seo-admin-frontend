@@ -12,6 +12,11 @@ const MainRoutes = {
       component: () => import('@/views/dashboard/DefaultDashboard.vue')
     },
     {
+      name: 'HDSD',
+      path: '/huong-dan-su-dung',
+      component: () => import('@/views/hdsd/HdsdPage.vue')
+    },
+    {
       name: 'Dashboard',
       path: '/dashboard',
       component: () => import('@/views/dashboard/DefaultDashboard.vue')

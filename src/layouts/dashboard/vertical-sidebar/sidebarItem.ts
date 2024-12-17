@@ -1,14 +1,3 @@
-import {
-  DashboardOutlined,
-  LoginOutlined,
-  LogoutOutlined,
-  ProfileOutlined,
-  FontSizeOutlined,
-  BgColorsOutlined,
-  BarcodeOutlined,
-  CrownOutlined,
-  UserOutlined,
-} from '@ant-design/icons-vue';
 import { jwtDecode } from 'jwt-decode';
 
 export interface menu {
@@ -41,6 +30,7 @@ const sidebarItem = (() => {
     { title: '🌷 Clone WP Site', to: '/clone-site' },
     { title: '💐 Create WP Sites', to: '/tao-multi-wp-site' },
     { title: '🌺 Delete WP Sites', to: '/destroy-wp-site' },
+    { title: '🍯 Server Management', to: '/server-management' },
   ];
 })();
 
