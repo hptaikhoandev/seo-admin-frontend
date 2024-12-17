@@ -27,7 +27,6 @@ export const useServerStore = defineStore({
         for (const server of servers) {
           try {
             const res = await this.getStatusServer({ team: server.team, server_ip: server.server_ip });
-            console.log("bbbb===>", res);
             if (res.data?.instance_state === 'running') {
               server.iconStartDisable = true; // Không thể start
               server.iconStopDisable = false;  // Có thể stop

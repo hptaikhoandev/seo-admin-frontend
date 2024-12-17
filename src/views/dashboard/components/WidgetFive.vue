@@ -1,43 +1,116 @@
-<script setup lang="ts">
-import { shallowRef } from 'vue';
-
-// icons
+<script lang="ts">
+import { shallowRef, defineComponent, ref, type Ref } from 'vue';
+import { useDashboardStore } from '@/stores/modules/dashboard/dashboard';
 import { RiseOutlined, FallOutlined } from '@ant-design/icons-vue';
+import { jwtDecode } from 'jwt-decode';
 
-const fivecards = shallowRef([
-  {
-    name: 'Total Page Views',
-    earn: '4,42,236',
-    percent: '59.3%',
-    color: 'primary',
-    icon: RiseOutlined,
-    text: '35,000'
+export default defineComponent({
+  name: 'WidgetFive',
+  components: {
+    //
   },
-  {
-    name: 'Total Users',
-    earn: '78,250',
-    percent: '70.5%',
-    color: 'success',
-    icon: RiseOutlined,
-    text: '8,900'
+  data() {
+    return {
+      fivecards: shallowRef([
+        {
+          name: 'VPS của team SEO-1',
+          earn: '4,42,236',
+          percent: '59.3%',
+          color: 'primary',
+          icon: RiseOutlined,
+          text: 'Tổng vps của các team SEO: 7,500'
+        },
+        {
+          name: 'VPS của team SEO-2',
+          earn: '4,42,236',
+          percent: '59.3%',
+          color: 'primary',
+          icon: RiseOutlined,
+          text: 'Tổng vps của các team SEO: 7,500'
+        },
+        {
+          name: 'VPS của team SEO-3',
+          earn: '4,42,236',
+          percent: '59.3%',
+          color: 'primary',
+          icon: RiseOutlined,
+          text: 'Tổng vps của các team SEO: 7,500'
+        },
+        {
+          name: 'VPS của team SEO-4',
+          earn: '4,42,236',
+          percent: '59.3%',
+          color: 'primary',
+          icon: RiseOutlined,
+          text: 'Tổng vps của các team SEO: 7,500'
+        },
+        
+      ]),
+
+    };
   },
-  {
-    name: 'Total Order',
-    earn: '18,800',
-    percent: '27.4%',
-    color: 'warning',
-    icon: FallOutlined,
-    text: '1,943'
+
+  mounted() {
+    //
   },
-  {
-    name: 'Total Sales',
-    earn: '$35,078',
-    percent: '27.4%',
-    color: 'error',
-    icon: FallOutlined,
-    text: '$20,395'
+  created() {
+    this.getServerList();
+  },
+  computed: {
+    //
+  },
+  watch: {
+    //
+  },
+  methods: {
+    async getServerList() {
+      const store = useDashboardStore();
+      const ketqua = await store.fetchServerList();
+      const totalVPS = ketqua.length;
+      const totalVPSSeo1 = ketqua.filter(item => item.team === 'seo-1').length;
+      const totalVPSSeo2 = ketqua.filter(item => item.team === 'seo-2').length;
+      const totalVPSSeo3 = ketqua.filter(item => item.team === 'seo-3').length;
+      const totalVPSSeo4 = ketqua.filter(item => item.team === 'seo-4').length;
+      // Build data
+      this.fivecards = [
+        {
+          name: 'VPS của team SEO-1',
+          earn: totalVPSSeo1,
+          percent: `${((totalVPSSeo1 / totalVPS) * 100).toFixed(1)}%`,
+          color: 'primary',
+          icon: RiseOutlined,
+          text: `Tổng vps của các team SEO: ${totalVPS}`
+        },
+        {
+          name: 'VPS của team SEO-2',
+          earn: totalVPSSeo2,
+          percent: `${((totalVPSSeo2 / totalVPS) * 100).toFixed(1)}%`,
+          color: 'primary',
+          icon: RiseOutlined,
+          text: `Tổng vps của tất cả các team SEO: ${totalVPS}`
+        },
+        {
+          name: 'VPS của team SEO-3',
+          earn: totalVPSSeo3,
+          percent: `${((totalVPSSeo3 / totalVPS) * 100).toFixed(1)}%`,
+          color: 'primary',
+          icon: RiseOutlined,
+          text: `Tổng vps của tất cả các team SEO: ${totalVPS}`
+        },
+        {
+          name: 'VPS của team SEO-4',
+          earn: totalVPSSeo4,
+          percent: `${((totalVPSSeo4 / totalVPS) * 100).toFixed(1)}%`,
+          color: 'primary',
+          icon: RiseOutlined,
+          text: `Tổng vps của tất cả các team SEO: ${totalVPS}`
+        },
+      ];
+    },
+
   }
-]);
+});
+
 </script>
 <template>
   <v-row class="my-0">
@@ -50,16 +123,17 @@ const fivecards = shallowRef([
                 <h6 class="text-h6 text-lightText mb-1">{{ card5.name }}</h6>
                 <h4 class="text-h4 d-flex align-center mb-0">
                   {{ card5.earn }}
-                  <v-chip :color="card5.color" :border="`${card5.color} solid thin opacity-50`" class="ml-2" size="small" label>
+                  <v-chip :color="card5.color" :border="`${card5.color} solid thin opacity-50`" class="ml-2"
+                    size="small" label>
                     <template v-slot:prepend>
                       <component :is="card5.icon" :style="{ fontSize: '12px' }" :class="'mr-1 text-' + card5.color" />
                     </template>
                     {{ card5.percent }}
                   </v-chip>
                 </h4>
-                <span class="text-lightText text-caption pt-5 d-block"
-                  >You made an extra <span :class="'text-' + card5.color">{{ card5.text }}</span> this year</span
-                >
+                <span class="text-lightText text-caption pt-5 d-block"><span
+                    :class="'text-' + card5.color">{{
+                    card5.text }}</span></span>
               </div>
             </div>
           </v-card-text>
@@ -68,3 +142,9 @@ const fivecards = shallowRef([
     </v-col>
   </v-row>
 </template>
+
+<style>
+.v-field__input {
+  margin-top: 10px;
+}
+</style>

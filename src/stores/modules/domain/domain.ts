@@ -88,16 +88,20 @@ export const useDomainStore = defineStore({
         this.loading = false
       }
     },
-    async sendSMS(domainList: any, messageList: any) {
+    async fetchDomainAmount({team, server_ip}) {
       this.loading = true
-      let params = { domainList, messageList }
       try {
-        const response = await axios.post(`${baseUrl}/domains/send-sms`, params,{ 
+        let params = { 
+          team: team,
+          server_ip: server_ip,
+        }
+        const response = await axios.get(`${baseUrlScript}/count-domains`, {
+          params,
           headers: {
-            Authorization: bearerToken
-          }
-         });
-        // this.domain = response.data.data
+            Authorization: bearerToken,
+          },
+        });
+        return response.data;
       } catch (error: any) {
         this.error = error.message
       } finally {

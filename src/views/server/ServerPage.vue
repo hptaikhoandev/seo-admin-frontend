@@ -2,6 +2,7 @@
 import { defineComponent, ref, type Ref } from 'vue';
 import { useServerStore } from '@/stores/modules/server/server';
 import moment from 'moment';
+import {jwtDecode} from 'jwt-decode';
 import { PlayerPlayFilledIcon, RefreshDotIcon, PlayerStopFilledIcon } from 'vue-tabler-icons';
 
 export default defineComponent({
@@ -110,9 +111,27 @@ export default defineComponent({
     },
   },
   methods: {
+    showFunc() {
+      const storedUser = localStorage.getItem('user');
+      if (!storedUser) return false;
+      const parsedUser = JSON.parse(storedUser);
+      if (!(parsedUser && parsedUser.user && parsedUser.user.token)) return false;
+      const user = jwtDecode(parsedUser.user.token);
+      const userRole = (user as any).roleId;
+      if (!(user && userRole)) return false;
+      return userRole === 'admin';
+    },
     async fetchData() {
       this.loading = true;
       try {
+        const storedUser = localStorage.getItem('user');
+        if (!storedUser) return [];
+        const parsedUser = JSON.parse(storedUser);
+        if (!(parsedUser && parsedUser.user && parsedUser.user.token)) return [];
+        const user = jwtDecode(parsedUser.user.token);
+        const userRole = (user as any).roleId;
+        if (!(user && userRole)) return [];
+        if (userRole !== 'admin') this.search = userRole;
         const serverStore = useServerStore();
         await serverStore.fetchServer({
           page: this.page,
@@ -351,7 +370,7 @@ export default defineComponent({
         </v-text-field>
         <v-spacer></v-spacer>
         <v-dialog v-model="dialog" max-width="500px">
-          <template v-slot:activator="{ props }">
+          <template v-slot:activator="{ props }" v-if="showFunc()">
             <v-btn size="small" class="mb-2 ml-1 mr-2" :style="{ backgroundColor: '#CCAA4D', color: '#ffff' }" dark
               @click="openDialogImport">
               <UploadIcon size="15" color="white" />

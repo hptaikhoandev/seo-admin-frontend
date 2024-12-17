@@ -2,7 +2,7 @@
 import { defineComponent, ref, type Ref } from 'vue';
 import { useDomainStore } from '@/stores/modules/domain/domain';
 import moment from 'moment';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 export default defineComponent({
   name: 'DomainToCFStep1',
@@ -43,6 +43,8 @@ export default defineComponent({
       itemsPerPage: ref(5),
       totalItems: ref(110),
       loading: ref(false),
+      loadingAmountSites: ref(false),
+      totalSites: ref(0),
     };
   },
 
@@ -202,7 +204,7 @@ export default defineComponent({
               });
             }
           });
-        }        
+        }
         event.target.value = null;
       } catch (error) {
         console.error('Error reading file:', error);
@@ -236,6 +238,25 @@ export default defineComponent({
       const ketqua = await store.fetchServerList(userRole);
       this.serverList = ketqua.map(item => item.server_ip);
     },
+    async onServerIPChange(newServerIP) {
+      const store = useDomainStore();
+      const storedUser = localStorage.getItem('user');
+      if (!storedUser) return [];
+      const parsedUser = JSON.parse(storedUser);
+      if (!(parsedUser && parsedUser.user && parsedUser.user.token)) return [];
+      const user = jwtDecode(parsedUser.user.token);
+      const userRole = (user as any).roleId;
+      if (!(user && userRole)) return [];
+
+      this.loadingAmountSites = true;
+      if (!newServerIP) return;
+      // Gọi hàm từ store với serverIP và team
+      const ketqua = await store.fetchDomainAmount({team: userRole, server_ip: newServerIP});
+      if (ketqua.status === 'success') {
+        this.totalSites = ketqua.result.success;
+      }
+      this.loadingAmountSites = false;
+    },
     save() {
       const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
       this.editedItem.createdAt = currentTime;
@@ -264,16 +285,19 @@ export default defineComponent({
         Step 1: input domains to Cloudflare
       </v-col>
     </v-row>
-      <v-row class="py-0">
-        <v-col cols="3">
-        <v-select
-            v-model="serverIP"
-            :items="serverList"
-            label="Server IP"
-            placeholder="Enter Server IP"
-            :rules="[validateIPAddress]"
-          />
-        </v-col>
+    <v-row class="py-0">
+      <v-col cols="3">
+        <v-select v-model="serverIP" :items="serverList" label="Server IP" placeholder="Enter Server IP"
+          :rules="[validateIPAddress]" @update:modelValue="onServerIPChange"/>
+      </v-col>
+      <v-col cols="2" class="d-flex align-center" v-if="loadingAmountSites">
+        <v-progress-circular indeterminate color="primary" size="20"></v-progress-circular>
+      </v-col>
+      <v-col cols="2" class="d-flex align-center" v-else>
+        {{ "[ " + totalSites + " sites ]" }}
+      </v-col>
+    </v-row>
+    <v-row class="py-0">
       <v-col cols="2" class="py-0">
         <v-select v-model="isSSL" label="SSL Type" class="mt-3" :items="['flexible', 'full', 'strict']" />
       </v-col>
@@ -300,7 +324,8 @@ export default defineComponent({
       <v-col>
         <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ props }">
-            <v-btn class="ml-1 mr-2" size="small" :style="{ backgroundColor: '#7DA77D', color: '#ffff' }" dark v-bind="props">
+            <v-btn class="ml-1 mr-2" size="small" :style="{ backgroundColor: '#7DA77D', color: '#ffff' }" dark
+              v-bind="props">
               <SquarePlusIcon size="20" color="white" />
               New domain
             </v-btn>
@@ -357,17 +382,8 @@ export default defineComponent({
   </v-container>
 
 
-  <v-data-table-server 
-    :headers="headers" 
-    :items="items" item-value="id" 
-    :items-per-page="itemsPerPage"
-    :items-length="totalItems" 
-    :page.sync="page" 
-    height="200" 
-    hover 
-    hide-default-footer 
-    :loading="loading"
-    >
+  <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
+    :items-length="totalItems" :page.sync="page" height="200" hover hide-default-footer :loading="loading">
     <template v-slot:item.actions="{ item }" class="scrollable-table">
       <EditIcon size="18" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
       <TrashIcon size="18" color="#FF5252" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />

@@ -12,7 +12,7 @@ const chartOptions1 = computed(() => {
       toolbar: false
     },
     colors: [getPrimary.value, getdarkPrimary.value],
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    labels: ['5', '10', '15', '20', '25', '30'],
     dataLabels: {
       enabled: false
     },
@@ -57,7 +57,7 @@ const chartOptions2 = computed(() => {
       toolbar: false
     },
     colors: [getPrimary.value, getdarkPrimary.value],
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    labels: ['5', '10', '15', '20', '25', '30'],
     dataLabels: {
       enabled: false
     },
@@ -129,11 +129,11 @@ const tab = ref(1);
   <v-card class="title-card" variant="text">
     <v-card-item class="pb-2 px-0 pt-0">
       <div class="d-flex justify-space-between">
-        <v-card-title class="text-h5">Unique Visitor</v-card-title>
+        <v-card-title class="text-h5">Traffic Visitor</v-card-title>
         <div class="d-flex flex-wrap">
           <v-tabs v-model="tab" color="primary" class="tabBtn" density="compact" hide-slider>
-            <v-tab value="one" class="mr-1" variant="outlined" rounded="md"> Month </v-tab>
-            <v-tab value="two" variant="outlined" rounded="md"> Week </v-tab>
+            <!-- <v-tab value="one" class="mr-1" variant="outlined" rounded="md"> Month </v-tab>
+            <v-tab value="two" variant="outlined" rounded="md"> Week </v-tab> -->
           </v-tabs>
         </div>
       </div>
@@ -151,4 +151,4 @@ const tab = ref(1);
     </v-card-text>
   </v-card>
 </template>
-450
+

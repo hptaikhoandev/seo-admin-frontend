@@ -24,23 +24,20 @@ onMounted(() => {
     case ['admin'].includes(userRole):
       sidebarMenu = [
           { header: 'Quản lý chung' },
+          { title: '📒 Hướng dẫn sử dụng', to: '/huong-dan-su-dung' },
           { title: '🌸 Dashboard', to: '/dashboard' },
           { title: '🤵 User Management', to: '/user-management' },
           { title: '🍷 AccountID Management', to: '/account-id-management' },
           { title: '☕ Pem File Management', to: '/pem-management' },
           { title: '🍯 Server Management', to: '/server-management' },
-          // { header: 'Chức năng' },
-          // { title: '☘️ Add domains vào CF', to: '/them-domains-vao-cf' },
-          // { title: '🪵 Redirect Domain', to: '/redirect-domain' },
-          // { title: '🌷 Clone WP Site', to: '/clone-site' },
-          // { title: '💐 Create WP Sites', to: '/tao-multi-wp-site' },
-          // { title: '🌺 Delete WP Sites', to: '/destroy-wp-site' },
       ] as any;
       break;
     case ['seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6'].includes(userRole):
       sidebarMenu = [
         { header: 'Quản lý chung' },
+        { title: '📒 Hướng dẫn sử dụng', to: '/huong-dan-su-dung' },
         { title: '🌸 Dashboard', to: '/dashboard' },
+        { title: '🍯 Server Management', to: '/server-management' },
         { header: 'Chức năng' },
         { title: '☘️ Add domains vào CF', to: '/them-domains-vao-cf' },
         { title: '🪵 Redirect Domain', to: '/redirect-domain' },

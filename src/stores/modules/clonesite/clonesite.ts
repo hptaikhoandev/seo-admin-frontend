@@ -36,7 +36,28 @@ export const useClonesiteStore = defineStore({
             Authorization: bearerToken
           }
          })
+
         return response.data.data
+      } catch (error: any) {
+        this.error = error.message
+      } finally {
+        this.loading = false
+      }
+    },
+    async fetchDomainAmount({team, server_ip}) {
+      this.loading = true
+      try {
+        let params = { 
+          team: team,
+          server_ip: server_ip,
+        }
+        const response = await axios.get(`${baseUrlScript}/count-domains`, {
+          params,
+          headers: {
+            Authorization: bearerToken,
+          },
+        });
+        return response.data;
       } catch (error: any) {
         this.error = error.message
       } finally {

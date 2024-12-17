@@ -30,6 +30,7 @@ const sidebarItem = (() => {
     { title: '🌷 Clone WP Site', to: '/clone-site' },
     { title: '💐 Create WP Sites', to: '/tao-multi-wp-site' },
     { title: '🌺 Delete WP Sites', to: '/destroy-wp-site' },
+    { title: '🍯 Server Management', to: '/server-management' },
   ];
 })();
 
