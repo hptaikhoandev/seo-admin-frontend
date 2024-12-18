@@ -3,12 +3,22 @@
 # Get the current timestamp
 TIMESTAMP=$(date +%s)
 
-# Print the timestamp
-echo "Running Docker Compose with TIMESTAMP=$TIMESTAMP"
+echo "Starting deployment process with TIMESTAMP=$TIMESTAMP"
 
+# Export timestamp for use in Dockerfile if needed
 export TIMESTAMP
 
-# Run Docker Compose commands
+# Pull latest code
+git pull origin main
+
+# Stop and clean up old containers and images
 docker-compose down -v
 docker image prune -f
-docker-compose up -d --build
+
+# Build new images without cache
+docker-compose build --no-cache
+
+# Start containers
+docker-compose up -d
+
+echo "Deployment completed successfully!"

@@ -9,7 +9,7 @@ export default defineComponent({
   },
   data() {
     return {
-      pdfUrl: './src/assets/pdf/hdsd.pdf' + '#navpanes=0',
+      pdfUrl: './src/assets/pdf/hdsd.pdf' + '#view=FitH&navpanes=0',
       loading: ref(false),
     };
   },
