@@ -390,7 +390,7 @@ export default defineComponent({
               <v-container>
                 <v-row>
                   <v-col cols="12">
-                    <v-text-field :disabled="formTitle !== 'Edit Server'" v-model="editedItem.server_ip" :rules="[validateIPAddress]"
+                    <v-text-field :disabled="!(dialogType === 'edit' || dialogType === 'import')" v-model="editedItem.server_ip" :rules="[validateIPAddress]"
                       :label="dialogType !== 'import' ? 'Server IP sẽ được thêm vào sau khi server được tạo' : 'Thêm vào Server IP import tại đây'"
                       density="comfortable">
                     </v-text-field>
@@ -398,7 +398,7 @@ export default defineComponent({
                 </v-row>
                 <v-row>
                   <v-col cols="12">
-                    <v-textarea :disabled="formTitle !== 'Edit Server'" :rules="[validatePrivateKey]" class="custom-spacing" v-model="editedItem.private_key"
+                    <v-textarea :disabled="!(dialogType === 'edit' || dialogType === 'import')" :rules="[validatePrivateKey]" class="custom-spacing" v-model="editedItem.private_key"
                       :label="dialogType !== 'import' ? 'Private key sẽ được thêm vào sau khi server được tạo' : 'Private key'"
                       density="comfortable" row="5">
                     </v-textarea>
