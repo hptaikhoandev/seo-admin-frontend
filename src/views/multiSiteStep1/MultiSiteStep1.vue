@@ -191,13 +191,27 @@ export default defineComponent({
       })
     },
     downloadFile() {
-      const fileUrl = '/src/template/domains.txt';
-      const link = document.createElement('a');
-      link.href = fileUrl;
-      link.setAttribute('download', 'domains.txt');
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const fileUrl = 'https://seo-admin.s3.ap-southeast-2.amazonaws.com/domains.txt';
+      fetch(fileUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.blob();
+        })
+        .then(blob => {
+          const blobUrl = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.setAttribute('download', 'target_domains.txt');
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(blobUrl);
+        })
+        .catch(error => {
+          console.error('Error downloading file:', error);
+        });
     },
     async importDomains(event) {
       const file = event.target.files[0];

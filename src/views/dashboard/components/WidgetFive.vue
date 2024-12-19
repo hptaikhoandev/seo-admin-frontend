@@ -14,35 +14,35 @@ export default defineComponent({
       fivecards: shallowRef([
         {
           name: 'VPS của team SEO-1',
-          earn: '4,42,236',
-          percent: '59.3%',
+          earn: '0',
+          percent: '0%',
           color: 'primary',
           icon: RiseOutlined,
-          text: 'Tổng vps của các team SEO: 7,500'
+          text: 'Tổng vps của các team SEO: 0'
         },
         {
           name: 'VPS của team SEO-2',
-          earn: '4,42,236',
-          percent: '59.3%',
+          earn: '0',
+          percent: '0%',
           color: 'primary',
           icon: RiseOutlined,
-          text: 'Tổng vps của các team SEO: 7,500'
+          text: 'Tổng vps của các team SEO: 0'
         },
         {
           name: 'VPS của team SEO-3',
-          earn: '4,42,236',
-          percent: '59.3%',
+          earn: '0',
+          percent: '0%',
           color: 'primary',
           icon: RiseOutlined,
-          text: 'Tổng vps của các team SEO: 7,500'
+          text: 'Tổng vps của các team SEO: 0'
         },
         {
           name: 'VPS của team SEO-4',
-          earn: '4,42,236',
-          percent: '59.3%',
+          earn: '0',
+          percent: '0%',
           color: 'primary',
           icon: RiseOutlined,
-          text: 'Tổng vps của các team SEO: 7,500'
+          text: 'Tổng vps của các team SEO: 0'
         },
         
       ]),

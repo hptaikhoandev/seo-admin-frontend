@@ -166,13 +166,34 @@ export default defineComponent({
       })
     },
     downloadFile() {
-      const fileUrl = '/src/template/domains.txt';
-      const link = document.createElement('a');
-      link.href = fileUrl;
-      link.setAttribute('download', 'domains.txt');
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const fileUrl = 'https://seo-admin.s3.ap-southeast-2.amazonaws.com/domains.txt'; // URL S3
+
+      // Sử dụng Fetch API để tải file
+      fetch(fileUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.blob(); // Chuyển đổi nội dung file thành Blob
+        })
+        .then(blob => {
+          // Tạo URL từ Blob
+          const blobUrl = window.URL.createObjectURL(blob);
+
+          // Tạo thẻ <a> để tải file
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.setAttribute('download', 'domains.txt'); // Tên file tải xuống
+          document.body.appendChild(link);
+          link.click();
+
+          // Dọn dẹp URL và thẻ <a>
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(blobUrl); // Giải phóng bộ nhớ
+        })
+        .catch(error => {
+          console.error('Error downloading file:', error);
+        });
     },
     async importDomains(event) {
       const file = event.target.files[0];
