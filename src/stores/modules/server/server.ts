@@ -26,16 +26,20 @@ export const useServerStore = defineStore({
         const servers = response.data.data;
         for (const server of servers) {
           try {
-            const res = await this.getStatusServer({ team: server.team, server_ip: server.server_ip });
-            if (res.data?.instance_state === 'running') {
-              server.iconStartDisable = true; // Không thể start
-              server.iconStopDisable = false;  // Có thể stop
-              server.iconRestartDisable = false; // Không thể restart
-            } else {
-              server.iconStartDisable = false; // Có thể start
-              server.iconStopDisable = true;  // Không thể stop
-              server.iconRestartDisable = true; // Không thể restart
-            }  
+            server.iconStartDisable = true; // Không thể start
+            server.iconStopDisable = false;  // Có thể stop
+            server.iconRestartDisable = false; // Không thể restart
+
+            // const res = await this.getStatusServer({ team: server.team, server_ip: server.server_ip });
+            // if (res.data?.instance_state === 'running') {
+            //   server.iconStartDisable = true; // Không thể start
+            //   server.iconStopDisable = false;  // Có thể stop
+            //   server.iconRestartDisable = false; // Không thể restart
+            // } else {
+            //   server.iconStartDisable = false; // Có thể start
+            //   server.iconStopDisable = true;  // Không thể stop
+            //   server.iconRestartDisable = true; // Không thể restart
+            // }  
           } catch (error: any) {
             server.iconStartDisable = false; // Có thể start
             server.iconStopDisable = true;  // Không thể stop
