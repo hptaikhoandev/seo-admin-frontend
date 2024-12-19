@@ -30,9 +30,12 @@ export default defineComponent({
       headers: [
         { title: 'SERVER IP', key: 'server_ip' },
         { title: 'TEAM', key: 'team' },
+        { title: 'CPU(vCPU)', key: 'cpu', align: 'center', headerAlign: 'center' },
+        { title: 'RAM(GiB)', key: 'ram', align: 'center', headerAlign: 'center' },
+        { title: 'SITES', key: 'sites', align: 'center', headerAlign: 'center' },
         { title: 'KEY NAME', key: 'key_name' },
         // { title: 'CREATED AT', key: 'createdAt' },
-        { title: 'UPDATED AT', key: 'updatedAt' },
+        // { title: 'UPDATED AT', key: 'updatedAt' },
         { title: 'ACTIONS', key: 'actions', sortable: false },
       ],
       editedIndex: -1,
@@ -458,7 +461,6 @@ export default defineComponent({
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
-
       <div class="d-inline-flex align-center">
         <v-btn
           variant="text"
@@ -508,12 +510,14 @@ export default defineComponent({
           </v-progress-circular>
           <PlayerStopFilledIcon v-else :size="18" color="red" />
         </v-btn>
-        <div class="d-inline-flex align-center justify-center blue-darken-1--text" style="width: 20px; height: 40px;">|</div>
       </div>
-      <EditIcon title="Update link server" size="18" color="orange" class="ml-2" style="cursor: pointer;"
-        @click="editItem(item)" />
-      <TrashIcon title="Delete link server" size="18" color="#FF5252" class="ml-2" style="cursor: pointer;"
-        @click="deleteItem(item)" />
+      <div v-if="showFunc()" class="d-inline-flex align-center justify-center">
+        <div class="d-inline-flex align-center justify-center blue-darken-1--text" style="width: 20px; height: 40px;">|</div>
+        <EditIcon title="Update link server" size="18" color="orange" class="ml-2" style="cursor: pointer;"
+          @click="editItem(item)" />
+        <TrashIcon title="Delete link server" size="18" color="#FF5252" class="ml-2" style="cursor: pointer;"
+          @click="deleteItem(item)" />
+      </div>
     </template>
   </v-data-table-server>
   <!-- Hiển thị kết quả chỉ sau khi gọi API xong (khi loading là false) -->

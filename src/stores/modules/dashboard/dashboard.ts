@@ -65,10 +65,10 @@ export const useDashboardStore = defineStore({
          const itemsSeo3 = ketqua.filter(item => item.team === 'seo-3');
          const itemsSeo4 = ketqua.filter(item => item.team === 'seo-4');
         let totalSiteAll = 0;
-        let totalSiteSEO1 = Number(itemsSeo1[0].total_sites);
-        let totalSiteSEO2 = Number(itemsSeo2[0].total_sites);
-        let totalSiteSEO3 = Number(itemsSeo3[0].total_sites);
-        let totalSiteSEO4 = Number(itemsSeo4[0].total_sites);
+        let totalSiteSEO1 = itemsSeo1.reduce((sum, item) => sum + Number(item.sites), 0);
+        let totalSiteSEO2 = itemsSeo2.reduce((sum, item) => sum + Number(item.sites), 0);
+        let totalSiteSEO3 = itemsSeo3.reduce((sum, item) => sum + Number(item.sites), 0);
+        let totalSiteSEO4 = itemsSeo4.reduce((sum, item) => sum + Number(item.sites), 0);
         
         totalSiteAll = totalSiteSEO1 + totalSiteSEO2 + totalSiteSEO3 + totalSiteSEO4;  
 
@@ -99,6 +99,90 @@ export const useDashboardStore = defineStore({
           },
         });
         return response.data;
+      } catch (error: any) {
+        this.error = error.message
+      } finally {
+        this.loading = false
+      }
+    },
+    async fetchCPUsAmountParam() {
+      this.loading = true
+      let params = { 
+        page: 1, 
+        limit: 10000, 
+        search: '', 
+        sortBy : 'team', 
+        sortDesc: 'false' 
+      }
+      try {
+        const response = await axios.get(`${baseUrl}/servers`, { 
+          params,
+          headers: {
+            Authorization: bearerToken
+          }
+         })
+         const ketqua = response.data.data;
+         const itemsSeo1 = ketqua.filter(item => item.team === 'seo-1');
+         const itemsSeo2 = ketqua.filter(item => item.team === 'seo-2');
+         const itemsSeo3 = ketqua.filter(item => item.team === 'seo-3');
+         const itemsSeo4 = ketqua.filter(item => item.team === 'seo-4');
+        let totalCPUAll = 0;
+        let totalCPUSEO1 = itemsSeo1.reduce((sum, item) => sum + Number(item.cpu), 0);
+        let totalCPUSEO2 = itemsSeo2.reduce((sum, item) => sum + Number(item.cpu), 0);
+        let totalCPUSEO3 = itemsSeo3.reduce((sum, item) => sum + Number(item.cpu), 0);
+        let totalCPUSEO4 = itemsSeo4.reduce((sum, item) => sum + Number(item.cpu), 0);
+        
+        totalCPUAll = totalCPUSEO1 + totalCPUSEO2 + totalCPUSEO3 + totalCPUSEO4;  
+
+        return {
+          totalCPUAll,
+          totalCPUSEO1,
+          totalCPUSEO2,
+          totalCPUSEO3,
+          totalCPUSEO4,
+        }
+      } catch (error: any) {
+        this.error = error.message
+      } finally {
+        this.loading = false
+      }
+    },
+    async fetchRAMsAmountParam() {
+      this.loading = true
+      let params = { 
+        page: 1, 
+        limit: 10000, 
+        search: '', 
+        sortBy : 'team', 
+        sortDesc: 'false' 
+      }
+      try {
+        const response = await axios.get(`${baseUrl}/servers`, { 
+          params,
+          headers: {
+            Authorization: bearerToken
+          }
+         })
+         const ketqua = response.data.data;
+         const itemsSeo1 = ketqua.filter(item => item.team === 'seo-1');
+         const itemsSeo2 = ketqua.filter(item => item.team === 'seo-2');
+         const itemsSeo3 = ketqua.filter(item => item.team === 'seo-3');
+         const itemsSeo4 = ketqua.filter(item => item.team === 'seo-4');
+        let totalRamAll = 0;
+        let totalRamSEO1 = itemsSeo1.reduce((sum, item) => sum + Number(item.ram), 0);
+        let totalRamSEO2 = itemsSeo2.reduce((sum, item) => sum + Number(item.ram), 0);
+        let totalRamSEO3 = itemsSeo3.reduce((sum, item) => sum + Number(item.ram), 0);
+        let totalRamSEO4 = itemsSeo4.reduce((sum, item) => sum + Number(item.ram), 0);
+        
+        totalRamAll = totalRamSEO1 + totalRamSEO2 + totalRamSEO3 + totalRamSEO4;  
+
+        return {
+          totalRamAll,
+          totalRamSEO1,
+          totalRamSEO2,
+          totalRamSEO3,
+          totalRamSEO4,
+        }
       } catch (error: any) {
         this.error = error.message
       } finally {

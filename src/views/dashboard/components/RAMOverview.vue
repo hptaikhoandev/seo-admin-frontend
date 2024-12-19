@@ -5,17 +5,17 @@ import { useDashboardStore } from '@/stores/modules/dashboard/dashboard';
 import { ref } from 'vue';
 
 export default {
-  name: 'DomainOverview',
+  name: 'RAMOverview',
   components: {
     UiTitleCard
   },
   data() {
     const theme = useTheme();
-    const InfoColor = theme.current.value.colors.info;
+    const PrimaryColor = theme.current.value.colors.primary;
     return {
-      loadingAmountSites: ref(false),
-      totalDomains: ref(0),
-      InfoColor,
+      loadingAmountRams: ref(false),
+      totalRAMs: ref(0),
+      PrimaryColor,
       chartOptions1: {
         chart: {
           type: 'bar',
@@ -36,7 +36,7 @@ export default {
           }
         },
         labels: ['SEO-1', 'SEO-2', 'SEO-3', 'SEO-4'],
-        colors: InfoColor,
+        colors: PrimaryColor,
         stroke: {
           curve: 'smooth'
         },
@@ -77,7 +77,7 @@ export default {
     //
   },
   created() {
-    this.getDomainsAmountParam(); 
+    this.getRAMsAmountParam(); 
   },
   computed: {
     //
@@ -86,27 +86,27 @@ export default {
     //
   },
   methods: {
-    async getDomainsAmountParam() {
+    async getRAMsAmountParam() {
       const store = useDashboardStore();
-      this.loadingAmountSites = true;
-      const ketqua = await store.fetchDomainsAmountParam();
-      this.loadingAmountSites = false;
+      this.loadingAmountRams = true;
+      const ketqua = await store.fetchRAMsAmountParam();
+      this.loadingAmountRams = false;
       // Build data
-      this.totalDomains = ketqua.totalSiteAll;
-      this.barChart1.series[0].data = [ketqua.totalSiteSEO1, ketqua.totalSiteSEO2, ketqua.totalSiteSEO3, ketqua.totalSiteSEO4];
+      this.totalRAMs = ketqua.totalRamAll;
+      this.barChart1.series[0].data = [ketqua.totalRamSEO1, ketqua.totalRamSEO2, ketqua.totalRamSEO3, ketqua.totalRamSEO4];
     },
   }
 };
 </script>
 
 <template>
-  <UiTitleCard title="SITE" class-name="pt-5 px-0 rounded-md overflow-hidden">
+  <UiTitleCard title="RAM" class-name="pt-5 px-0 rounded-md overflow-hidden">
     <!-- Loading Indicator -->
-    <div v-if="loadingAmountSites" class="d-flex justify-center align-center mt-10">
+    <div v-if="loadingAmountRams" class="d-flex justify-center align-center mt-10">
         <v-progress-circular indeterminate color="primary" size="50"></v-progress-circular>
       </div>    
     <div class="px-5" v-else>
-      <h3 class="text-h3 mb-0">{{ 'Total: ' + totalDomains + ' sites'}}</h3>
+      <h3 class="text-h3 mb-0">{{ 'Total: ' + totalRAMs + ' GiB'}}</h3>
     </div>
     <apexchart type="bar" height="400" :options="chartOptions1" :series="barChart1.series"> </apexchart>
   </UiTitleCard>
