@@ -54,8 +54,8 @@ export const useDomainFromStore = defineStore({
         const response = await axios.post(`${baseUrlScript}/add-list-domains-to-cloudflare`, params,{ 
           headers: {
             Authorization: bearerToken,
-            KeepAlive: 'timeout=7200',
-          },
+            },
+          timeout: 7200000,
          });
         
         this.domainNS = response.data.results

@@ -78,8 +78,8 @@ export const useClonesiteStore = defineStore({
         const response = await axios.post(`${baseUrlScript}/clone-site`, params,{ 
           headers: {
             Authorization: bearerToken,
-            KeepAlive: 'timeout=7200',
-          },
+            },
+          timeout: 7200000,
          });
          return response.data;
       } catch (error: any) {

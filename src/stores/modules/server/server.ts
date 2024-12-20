@@ -131,8 +131,8 @@ export const useServerStore = defineStore({
         const response = await axios.post(`${baseUrlScript}/status-servers`, params, { 
           headers: {
             Authorization: bearerToken,
-            KeepAlive: 'timeout=7200',
-          },
+            },
+          timeout: 7200000,
          });
         
         return response.data;
@@ -149,8 +149,8 @@ export const useServerStore = defineStore({
         const response = await axios.post(`${baseUrlScript}/transitions-server`, params, { 
           headers: {
             Authorization: bearerToken,
-            KeepAlive: 'timeout=7200',
-          },
+            },
+          timeout: 7200000,
          });
         
         return response.data;

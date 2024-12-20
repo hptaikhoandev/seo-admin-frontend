@@ -34,8 +34,8 @@ export const useRedirectStore = defineStore({
         const response = await axios.post(`${baseUrlScript}/redirect-domains`, params,{ 
           headers: {
             Authorization: bearerToken,
-            KeepAlive: 'timeout=7200',
-          },
+            },
+          timeout: 7200000,
          });
          return response.data;
       } catch (error: any) {
