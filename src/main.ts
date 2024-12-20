@@ -31,7 +31,7 @@ const i18n = createI18n({
 });
 
 const app = createApp(App);
-fakeBackend();
+// fakeBackend();
 app.use(router);
 app.use(PerfectScrollbarPlugin);
 app.use(createPinia());
