@@ -304,7 +304,7 @@ export default defineComponent({
         </v-dialog>
       </v-col>
     </v-row>
-    <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
+  <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
     :items-length="totalItems" :page.sync="page"
     height="200" hover hide-default-footer :loading="loading">
     <template v-slot:item.actions="{ item }" class="scrollable-table">

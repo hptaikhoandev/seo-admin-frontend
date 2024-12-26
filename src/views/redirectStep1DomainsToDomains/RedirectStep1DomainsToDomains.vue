@@ -204,12 +204,10 @@ export default defineComponent({
 <template>
   <v-row>
     <v-col cols="6" class="pr-0">
-      <!-- <RedirectStep1DomainsToDomainsFrom v-if="showOptionDomainsToDomains" /> -->
       <RedirectStep1DomainsToDomainsFrom />
     </v-col>
 
     <v-col cols="6" class="pl-0">
-      <!-- <RedirectStep1DomainsToDomainsTo v-if="showOptionDomainsToDomains" /> -->
       <RedirectStep1DomainsToDomainsTo />
     </v-col>
   </v-row>

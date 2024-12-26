@@ -2,6 +2,7 @@
 import { defineComponent, ref, type Ref } from 'vue';
 import { useRedirectStore } from '@/stores/modules/redirect/redirect';
 import moment from 'moment';
+import { HistoryIcon } from 'vue-tabler-icons';
 
 export default defineComponent({
   name: 'RedirectStep1',
@@ -14,6 +15,7 @@ export default defineComponent({
       domainRedirectFrom:'',
       domainRedirectTo:'',
       redirectType: 'Wildcard Redirect',
+      showDialog: false,
       dialog: false,
       dialogDelete: false,
       search: ref(''),
@@ -88,6 +90,9 @@ export default defineComponent({
   methods: {
     reset() {
       this.items.splice(0, this.items.length);
+    },
+    openDialogHistory() {
+      console.log('===>openDialogHistory');
     },
     editItem(item) {
       this.editedIndex = this.items.indexOf(item)
@@ -229,6 +234,42 @@ export default defineComponent({
       <v-col class="pb-2" :style="{fontSize: '20px'}">
         Step 1: Choice redirect type
       </v-col>
+      <v-col cols="2" class="d-flex justify-end">
+        <v-btn size="small" :style="{ backgroundColor: '#E0B3FF' }" @click="showDialog = true">
+          <HistoryIcon size="15" color="white" />
+          History
+        </v-btn>
+        <!-- Dialog -->
+    <v-dialog v-model="showDialog" max-width="800px">
+      <v-card>
+        <!-- Dialog Title -->
+        <v-card-title>
+          <span class="text-h6">Server-Side Table</span>
+          <v-spacer></v-spacer>
+          <v-btn icon @click="showDialog = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+
+        <!-- Dialog Content -->
+        <v-card-text>
+          <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
+            :items-length="totalItems" :page.sync="page"
+            height="200" hover hide-default-footer :loading="loading">
+            <template v-slot:item.actions="{ item }" class="scrollable-table">
+              <EditIcon size="18" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
+              <TrashIcon size="18" color="#FF5252" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
+            </template>
+          </v-data-table-server>
+        </v-card-text>
+        <!-- Dialog Actions -->
+        <v-card-actions>
+          <v-btn text @click="showDialog = false">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+      </v-col>
+
     </v-row>
     <v-row class="py-0">
       <v-col cols="4" class="py-0">
@@ -249,7 +290,6 @@ export default defineComponent({
       </v-col>
     </v-row>
   </v-container>
-
 
 </template>
 
