@@ -106,9 +106,9 @@ export const useServerStore = defineStore({
         this.loading = false
       }
     },
-    async updateServer({id, server_ip, team }) {
+    async updateServer({id, server_ip, team, private_key }) {
       this.loading = true
-      const params = { id, server_ip, team }
+      const params = { id, server_ip, team, private_key }
       try {
         const response = await axios.put(`${baseUrl}/servers/` + params.id, params, { 
           headers: {

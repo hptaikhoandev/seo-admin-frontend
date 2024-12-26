@@ -322,8 +322,8 @@ export default defineComponent({
       this.editedItem.createdAt = currentTime;
       this.editedItem.updatedAt = currentTime;
       const serverStore = useServerStore();
-      if (this.editedIndex > -1) {
-        const ketqua = await serverStore.updateServer({ id: this.editedItem.id, server_ip: this.editedItem.server_ip, team: this.editedItem.team });
+      if (this.dialogType === 'edit') {
+        const ketqua = await serverStore.updateServer({ id: this.editedItem.id, server_ip: this.editedItem.server_ip, team: this.editedItem.team, private_key: this.editedItem.private_key });
         this.resultMessage = ketqua.result;
 
       } else {
