@@ -172,15 +172,21 @@ export default defineComponent({
         if (domainList.length > 0) {
           const currentTime = moment().format('DD-MM-YYYY:HH:mm:ss');
           domainList.forEach(domainName => {
-            const nameExists = this.items.some(item => item.name === domainName);
-            if (!nameExists) {
-              this.items.unshift({
+            // const nameExists = this.items.some(item => item.name === domainName);
+            // if (!nameExists) {
+            //   this.items.unshift({
+            //     id: 0,
+            //     name: domainName,
+            //     createdAt: currentTime.toString(),
+            //     updatedAt: currentTime.toString(),
+            //   });
+            // }
+            this.items.unshift({
                 id: 0,
                 name: domainName,
                 createdAt: currentTime.toString(),
                 updatedAt: currentTime.toString(),
               });
-            }
           });
         }        
         event.target.value = null;
@@ -208,10 +214,10 @@ export default defineComponent({
       this.editedItem.createdAt = currentTime;
       this.editedItem.updatedAt = currentTime;
       const nameExists = this.items.some(item => item.name === this.editedItem.name);
-      if (nameExists && this.editedIndex === -1) {
-        this.close();
-        return;
-      }
+      // if (nameExists && this.editedIndex === -1) {
+      //   this.close();
+      //   return;
+      // }
       if (this.editedIndex > -1) {
         Object.assign(this.items[this.editedIndex], this.editedItem)
       } else {

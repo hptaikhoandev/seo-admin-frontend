@@ -67,10 +67,6 @@ export default defineComponent({
     formTitle() {
       return this.editedIndex === -1 ? 'New Phone' : 'Edit Phone'
     },
-    // showStep2() {
-    //   const store = useMutilSiteStore();
-    //   return store.isValidServerIP && store.isDomainValid;
-    // },
     showStept2(): boolean {
       const store = useMutilSiteStore();
       console.log('ddddd', store.domain);
