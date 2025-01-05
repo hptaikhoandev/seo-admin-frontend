@@ -20,10 +20,13 @@ export default defineComponent({
       selected: ref([]),
       showResult: false,
       resultMessage: {
-        success: 0,
+        success: {
+          count: 0,
+          messages: [] as string[]
+        },
         fail: {
-          count:0,
-          messages: []
+          count: 0,
+          messages: [] as string[]
         },
       },
       headers: [
@@ -81,6 +84,10 @@ export default defineComponent({
     dialog(val) {
       val || this.close()
     },
+    resultMessage(newVal, oldVal) {
+      console.log(`resultMessage changed from ${oldVal} to ${newVal}`);
+      // Thực hiện các tác vụ khác khi giá trị thay đổi
+    },
   },
   methods: {
     async submitStep2() {
@@ -99,15 +106,39 @@ export default defineComponent({
         const userRole = (user as any).roleId;
         if (!(user && userRole)) return [];
 
-        const requestData = {
+        const requestData: { team: number; server_ip: string; domains: string[] } = {
           team: userRole,
           server_ip: serverIP,
-          domains: domains,
+          domains: [],
         };
 
-        const ketqua = await this.destroySiteStore.addListDomainsToDestroySites(requestData);
-        // Thực hiện logic phát một file audio sau khi hoàn thành công việc
-        this.resultMessage = ketqua.result;
+        // Thêm vòng lặp for...of đảm bảo thực thi tuần tự
+        for (const [index, domain] of domains.entries()) {
+          console.log(`Processing domain ${index + 1}: ${domain}`);
+          
+          // Chuẩn bị requestData cho từng domain
+          requestData.domains = [domain];
+          
+          try {
+            // Gọi API một cách tuần tự
+            const ketqua = await this.destroySiteStore.addListDomainsToDestroySites(requestData);
+            
+            // Hiển thị kết quả
+            this.showResult = true;
+            console.log(`====> ${index + 1}: ${ketqua.result.success}`);
+
+            if (ketqua.result.success.count !== 0) {
+              this.resultMessage.success.count += 1;
+              this.resultMessage.success.messages.push(ketqua.result.success.messages[0]);
+            }
+            if (ketqua.result.fail.count !== 0) {
+              this.resultMessage.fail.count += 1;
+              this.resultMessage.fail.messages.push(ketqua.result.fail.messages[0]);
+            }
+          } catch (error) {
+            console.error(`Error processing domain ${index + 1}: ${domain}`, error);
+          }
+        }
         this.playAudio();
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -156,10 +187,15 @@ export default defineComponent({
   </v-toolbar>
   <!-- Hiển thị kết quả chỉ sau khi gọi API xong (khi loading là false) -->
   <v-text v-if="showResult">
-    <span class="text-success font-bold">Success: {{ resultMessage.success }}</span>
+    <span class="text-success font-bold">Success: {{ resultMessage.success.count }}</span>
     <span v-if="resultMessage.fail.count !== 0" class="text-error font-bold">, Fail: {{ resultMessage.fail.count }}</span>
   </v-text>
-  <v-text v-if="showResult && resultMessage.fail.count !== 0">
+  <v-text v-if="showResult">
+    <ul>
+      <li v-for="(message, index) in resultMessage.success.messages" :key="index" class="text-success font-bold">
+        {{ message }}
+      </li>
+    </ul>
     <ul>
       <li v-for="(message, index) in resultMessage.fail.messages" :key="index" class="text-error font-bold">
         {{ message }}

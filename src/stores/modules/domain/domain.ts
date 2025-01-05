@@ -57,7 +57,9 @@ export const useDomainStore = defineStore({
           timeout: 7200000,
          });
         
-        this.domainNS = response.data.results
+        if (response.data?.resultMessage.success.count !== 0) {
+          this.domainNS.push(response.data.results[0]);
+        }
         return response.data;
       } catch (error: any) {
         this.error = error.message
