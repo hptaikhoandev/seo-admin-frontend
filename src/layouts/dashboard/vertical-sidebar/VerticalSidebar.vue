@@ -32,7 +32,7 @@ onMounted(() => {
           { title: '🍯 Server Management', to: '/server-management' },
       ] as any;
       break;
-    case ['seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6'].includes(userRole):
+    case ['seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6', 'digital'].includes(userRole):
       sidebarMenu = [
         { header: 'Quản lý chung' },
         { title: '📒 Hướng dẫn sử dụng', to: '/huong-dan-su-dung' },
