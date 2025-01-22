@@ -20,10 +20,13 @@ export default defineComponent({
       selected: ref([]),
       showResult: false,
       resultMessage: {
-        success: 0,
+        success: {
+          count: 0,
+          messages: [] as string[]
+        },
         fail: {
-          count:0,
-          messages: []
+          count: 0,
+          messages: [] as string[]
         },
       },
       headers: [
@@ -72,6 +75,10 @@ export default defineComponent({
     dialog(val) {
       val || this.close()
     },
+    resultMessage(newVal, oldVal) {
+      console.log(`resultMessage changed from ${oldVal} to ${newVal}`);
+      // Thực hiện các tác vụ khác khi giá trị thay đổi
+    },
   },
   methods: {
     async submitStep2() {
@@ -99,7 +106,16 @@ export default defineComponent({
         };
 
         const ketqua = await this.cloneStore.cloneSite(requestData);
-        this.resultMessage = ketqua.result;
+        // Hiển thị kết quả
+        this.showResult = true;
+        if (ketqua.result.success.count !== 0) {
+          this.resultMessage.success.count += 1;
+          this.resultMessage.success.messages.push(ketqua.result.success.messages[0]);
+        }
+        if (ketqua.result.fail.count !== 0) {
+          this.resultMessage.fail.count += 1;
+          this.resultMessage.fail.messages.push(ketqua.result.fail.messages[0]);
+        }
         // Loại trừ những trường hợp lỗi đặc biệt
         const exceptionText = this.resultMessage.fail.messages[0] as string;
         if (exceptionText.includes('mysql: Deprecated program name. It will be removed in a future release, use')) {
@@ -157,6 +173,23 @@ export default defineComponent({
     <span v-if="resultMessage.fail.count !== 0" class="text-error font-bold">, Fail: {{ resultMessage.fail.count }}</span>
   </v-text>
   <v-text v-if="showResult && resultMessage.fail.count !== 0">
+    <ul>
+      <li v-for="(message, index) in resultMessage.fail.messages" :key="index" class="text-error font-bold">
+        {{ message }}
+      </li>
+    </ul>
+  </v-text>
+  <!-- Hiển thị kết quả chỉ sau khi gọi API xong (khi loading là false) -->
+  <v-text v-if="showResult">
+    <span class="text-success font-bold">Success: {{ resultMessage.success.count }}</span>
+    <span v-if="resultMessage.fail.count !== 0" class="text-error font-bold">, Fail: {{ resultMessage.fail.count }}</span>
+  </v-text>
+  <v-text v-if="showResult">
+    <ul>
+      <li v-for="(message, index) in resultMessage.success.messages" :key="index" class="text-success font-bold">
+        {{ message }}
+      </li>
+    </ul>
     <ul>
       <li v-for="(message, index) in resultMessage.fail.messages" :key="index" class="text-error font-bold">
         {{ message }}
