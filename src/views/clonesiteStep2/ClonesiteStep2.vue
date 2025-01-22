@@ -169,18 +169,6 @@ export default defineComponent({
   </v-toolbar>
   <!-- Hiển thị kết quả chỉ sau khi gọi API xong (khi loading là false) -->
   <v-text v-if="showResult">
-    <span class="text-success font-bold">Success: {{ resultMessage.success }}</span>
-    <span v-if="resultMessage.fail.count !== 0" class="text-error font-bold">, Fail: {{ resultMessage.fail.count }}</span>
-  </v-text>
-  <v-text v-if="showResult && resultMessage.fail.count !== 0">
-    <ul>
-      <li v-for="(message, index) in resultMessage.fail.messages" :key="index" class="text-error font-bold">
-        {{ message }}
-      </li>
-    </ul>
-  </v-text>
-  <!-- Hiển thị kết quả chỉ sau khi gọi API xong (khi loading là false) -->
-  <v-text v-if="showResult">
     <span class="text-success font-bold">Success: {{ resultMessage.success.count }}</span>
     <span v-if="resultMessage.fail.count !== 0" class="text-error font-bold">, Fail: {{ resultMessage.fail.count }}</span>
   </v-text>
