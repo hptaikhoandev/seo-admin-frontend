@@ -229,7 +229,7 @@ export default defineComponent({
                   <v-col cols="12">
                       <v-select
                           v-model="editedItem.roleId"
-                          :items="['admin', 'seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6']"
+                          :items="['seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6', 'digital']"
                           label="Role Id"
                           density="comfortable"
                       ></v-select>

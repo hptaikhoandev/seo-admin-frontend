@@ -410,7 +410,7 @@ export default defineComponent({
                 <v-row>
                   <v-col cols="12">
                     <v-select v-model="editedItem.team"
-                      :items="['admin', 'seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6']" label="Team"
+                      :items="['seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6', 'digital']" label="Team"
                       density="comfortable" :rules="[validateTeam]"></v-select>
                   </v-col>
                 </v-row>
