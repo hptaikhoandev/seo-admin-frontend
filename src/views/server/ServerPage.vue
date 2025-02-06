@@ -53,6 +53,8 @@ export default defineComponent({
         iconStartDisable: true,
         iconRestartDisable: false,
         iconStopDisable: false,
+        authMethod: "Token",
+        username: '',
       },
       defaultItem: {
         id: 0,
@@ -68,6 +70,8 @@ export default defineComponent({
         iconStartDisable: true,
         iconRestartDisable: false,
         iconStopDisable: false,
+        authMethod: "Token",
+        username: '',
       },
       items: ref([]) as Ref<any[]>,
       page: ref(1),
@@ -328,7 +332,8 @@ export default defineComponent({
 
       } else {
         if (this.dialogType === 'import') {
-          const ketqua = await serverStore.createServerImport({ server_ip: this.editedItem.server_ip, team: this.editedItem.team, private_key: this.editedItem.private_key });
+          console.log("this.editedItem.authMethod: ", this.editedItem.authMethod);
+          const ketqua = await serverStore.createServerImport({ server_ip: this.editedItem.server_ip, team: this.editedItem.team, private_key: this.editedItem.private_key, username: this.editedItem.username, authMethod: this.editedItem.authMethod });
           this.resultMessage = await ketqua.result;
           if (this.resultMessage.fail.count === 0) {
             this.showResult = false;
@@ -391,6 +396,25 @@ export default defineComponent({
             </v-card-title>
             <v-card-text>
               <v-container>
+                <v-row>
+                  <v-col cols="12" v-if="(dialogType === 'edit' || dialogType === 'import')">
+                    <v-select
+                      :disabled="!(dialogType === 'import')"
+                      v-model="editedItem.authMethod"
+                      :items="['Token', 'SSH']"
+                      label="Chọn Phương Thức Kết Nối"
+                      density="comfortable"
+                    ></v-select>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col cols="12" v-if="editedItem.authMethod === 'SSH' && (dialogType === 'edit' || dialogType === 'import')">
+                    <v-text-field :disabled="!(dialogType === 'edit' || dialogType === 'import')" v-model="editedItem.username"
+                      :label="'Username'"
+                      density="comfortable">
+                    </v-text-field>
+                  </v-col>
+                </v-row>
                 <v-row>
                   <v-col cols="12">
                     <v-text-field :disabled="!(dialogType === 'edit' || dialogType === 'import')" v-model="editedItem.server_ip" :rules="[validateIPAddress]"
