@@ -88,9 +88,9 @@ export const useServerStore = defineStore({
         this.loading = false
       }
     },
-    async createServerImport({server_ip, team, private_key}) {
+    async createServerImport({server_ip, team, private_key, username, authMethod}) {
       this.loading = true
-      const params = { server_ip, team, private_key }
+      const params = { server_ip, team, private_key, username, authMethod }
       try {
         const response = await axios.post(`${baseUrl}/servers/import-servers`, params, { 
           headers: {
