@@ -93,7 +93,50 @@ export default {
       this.loadingAmountSites = false;
       // Build data
       this.totalDomains = ketqua.totalSiteAll;
-      this.barChart1.series[0].data = [ketqua.totalSiteSEO1, ketqua.totalSiteSEO2, ketqua.totalSiteSEO3, ketqua.totalSiteSEO4];
+      const userData = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).user : null;
+      const userRole = userData ? userData.roleId : 'unknown'; // ✅ Default to 'unknown' if missing
+
+
+      // ✅ Update total domains
+      this.totalDomains = ketqua.totalSiteAll;
+
+      // ✅ If user is "seo-admin", show all teams data
+      if (userRole === 'admin') {
+        this.barChart1.series[0].data = [
+          ketqua.totalSiteSEO1,
+          ketqua.totalSiteSEO2,
+          ketqua.totalSiteSEO3,
+          ketqua.totalSiteSEO4
+        ];
+      } 
+      // ✅ If user belongs to a specific team, only show their data
+      else {
+        let userData = 0;
+        switch (userRole) {
+          case 'seo-1':
+            this.totalDomains = userData = ketqua.totalSiteSEO1;
+            this.barChart1.series[0].data = [userData, 0, 0, 0];
+            break;
+          case 'seo-2':
+            this.totalDomains = userData = ketqua.totalSiteSEO2;
+            this.barChart1.series[0].data = [0, userData, 0, 0];
+            break;
+          case 'seo-3':
+            this.totalDomains =  userData = ketqua.totalSiteSEO3;
+            this.barChart1.series[0].data = [0, 0, userData, 0];
+            break;
+          case 'seo-4':
+            this.totalDomains = userData = ketqua.totalSiteSEO4;
+            this.barChart1.series[0].data = [0, 0, 0, userData];
+            break;
+          default:
+            console.warn("User role not recognized:", userRole);
+            userData = 0; // Default to zero if role is unrecognized
+        }
+        
+        // ✅ Set chart data to only include the user's data
+        
+      }
     },
   }
 };

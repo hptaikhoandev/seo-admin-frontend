@@ -66,6 +66,11 @@ const MainRoutes = {
       path: '/destroy-wp-site',
       component: () => import('@/views/destroySite/DestroySite.vue')
     },
+    {
+      name: 'User Profile',
+      path: '/user-profile',
+      component: () => import('@/views/profile/Profile.vue')
+    },
   ]
 };
 

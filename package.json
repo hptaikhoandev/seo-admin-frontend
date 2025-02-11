@@ -22,6 +22,7 @@
     "@fontsource/poppins": "5.0.14",
     "@fontsource/public-sans": "5.0.18",
     "@fontsource/roboto": "5.0.13",
+    "@mdi/font": "^7.4.47",
     "@mdi/js": "^7.4.47",
     "@tabler/icons-vue": "^3.24.0",
     "@tiptap/starter-kit": "2.3.2",

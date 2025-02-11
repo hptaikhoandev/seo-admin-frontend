@@ -10,11 +10,11 @@ const AuthRoutes = {
       path: '/auth/login',
       component: () => import('@/views/authentication/auth/LoginPage.vue')
     },
-    {
-      name: 'Register',
-      path: '/auth/register',
-      component: () => import('@/views/authentication/auth/RegisterPage.vue')
-    },
+    // {
+    //   name: 'Register',
+    //   path: '/auth/register',
+    //   component: () => import('@/views/authentication/auth/RegisterPage.vue')
+    // },
     {
       name: 'Error 404',
       path: '/pages/error',
