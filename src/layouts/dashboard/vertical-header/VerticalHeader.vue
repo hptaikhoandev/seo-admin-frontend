@@ -99,7 +99,7 @@ const userName = getUserName();
 
     <!-- Notification -->
     <!-- ---------------------------------------------- -->
-    <NotificationDD />
+    <!-- <NotificationDD /> -->
 
     <!-- ---------------------------------------------- -->
     <!-- User Profile -->
