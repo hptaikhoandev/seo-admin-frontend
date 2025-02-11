@@ -12,38 +12,6 @@ export default defineComponent({
   data() {
     return {
       fivecards: shallowRef([
-        {
-          name: 'VPS của team SEO-1',
-          earn: '0',
-          percent: '0%',
-          color: 'primary',
-          icon: RiseOutlined,
-          text: 'Tổng vps của các team SEO: 0'
-        },
-        {
-          name: 'VPS của team SEO-2',
-          earn: '0',
-          percent: '0%',
-          color: 'primary',
-          icon: RiseOutlined,
-          text: 'Tổng vps của các team SEO: 0'
-        },
-        {
-          name: 'VPS của team SEO-3',
-          earn: '0',
-          percent: '0%',
-          color: 'primary',
-          icon: RiseOutlined,
-          text: 'Tổng vps của các team SEO: 0'
-        },
-        {
-          name: 'VPS của team SEO-4',
-          earn: '0',
-          percent: '0%',
-          color: 'primary',
-          icon: RiseOutlined,
-          text: 'Tổng vps của các team SEO: 0'
-        },
         
       ]),
 
@@ -71,41 +39,57 @@ export default defineComponent({
       const totalVPSSeo2 = ketqua.filter(item => item.team === 'seo-2').length;
       const totalVPSSeo3 = ketqua.filter(item => item.team === 'seo-3').length;
       const totalVPSSeo4 = ketqua.filter(item => item.team === 'seo-4').length;
+
+      const userData = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).user : null;
+      const userRole = userData ? userData.roleId : 'unknown';
+
+      
+      console.log("User role:", userRole); // ✅ Debugging
       // Build data
-      this.fivecards = [
-        {
-          name: 'VPS của team SEO-1',
-          earn: totalVPSSeo1,
-          percent: `${((totalVPSSeo1 / totalVPS) * 100).toFixed(1)}%`,
-          color: 'primary',
-          icon: RiseOutlined,
-          text: `Tổng vps của các team SEO: ${totalVPS}`
-        },
-        {
-          name: 'VPS của team SEO-2',
-          earn: totalVPSSeo2,
-          percent: `${((totalVPSSeo2 / totalVPS) * 100).toFixed(1)}%`,
-          color: 'primary',
-          icon: RiseOutlined,
-          text: `Tổng vps của tất cả các team SEO: ${totalVPS}`
-        },
-        {
-          name: 'VPS của team SEO-3',
-          earn: totalVPSSeo3,
-          percent: `${((totalVPSSeo3 / totalVPS) * 100).toFixed(1)}%`,
-          color: 'primary',
-          icon: RiseOutlined,
-          text: `Tổng vps của tất cả các team SEO: ${totalVPS}`
-        },
-        {
-          name: 'VPS của team SEO-4',
-          earn: totalVPSSeo4,
-          percent: `${((totalVPSSeo4 / totalVPS) * 100).toFixed(1)}%`,
-          color: 'primary',
-          icon: RiseOutlined,
-          text: `Tổng vps của tất cả các team SEO: ${totalVPS}`
-        },
-      ];
+      if (userRole === 'admin') {
+        this.fivecards = [
+          {
+            name: 'VPS của team SEO-1',
+            earn: totalVPSSeo1,
+            percent: `${((totalVPSSeo1 / totalVPS) * 100).toFixed(1)}%`,
+            color: 'primary',
+            icon: RiseOutlined,
+          },
+          {
+            name: 'VPS của team SEO-2',
+            earn: totalVPSSeo2,
+            percent: `${((totalVPSSeo2 / totalVPS) * 100).toFixed(1)}%`,
+            color: 'primary',
+            icon: RiseOutlined,
+          },
+          {
+            name: 'VPS của team SEO-3',
+            earn: totalVPSSeo3,
+            percent: `${((totalVPSSeo3 / totalVPS) * 100).toFixed(1)}%`,
+            color: 'primary',
+            icon: RiseOutlined,
+          },
+          {
+            name: 'VPS của team SEO-4',
+            earn: totalVPSSeo4,
+            percent: `${((totalVPSSeo4 / totalVPS) * 100).toFixed(1)}%`,
+            color: 'primary',
+            icon: RiseOutlined,
+          },
+        ];
+      } else {
+        // ✅ If user is not "seo-admin", only show their team data
+        const userTeamVPS = ketqua.filter(item => item.team === userRole).length;
+        this.fivecards = [
+          {
+            name: `VPS của team ${userRole.toUpperCase()}`,
+            earn: userTeamVPS,
+            percent: `${((userTeamVPS / totalVPS) * 100).toFixed(1)}%`,
+            color: 'primary',
+            icon: RiseOutlined
+          }
+        ];
+      }
     },
 
   }

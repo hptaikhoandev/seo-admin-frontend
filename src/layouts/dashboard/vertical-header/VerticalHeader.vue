@@ -84,9 +84,9 @@ const userName = getUserName();
     <!-- ---------------------------------------------- -->
     <!-- Search part -->
     <!-- ---------------------------------------------- -->
-    <v-sheet class="d-none d-lg-block" width="250">
+    <!-- <v-sheet class="d-none d-lg-block" width="250">
       <Searchbar />
-    </v-sheet>
+    </v-sheet> -->
 
     <!---/Search part -->
 
