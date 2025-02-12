@@ -8,9 +8,13 @@ import { storeToRefs } from 'pinia';
 
 const authStore = useAuthStore();
 const usersStore = useUsersStore();
-const { user } = storeToRefs(authStore);
-const emailUser = user?._object?.user?.user?.email;
-const roleUser = user?._object?.user?.user?.roleId;
+
+const userData = JSON.parse(localStorage.getItem('user') ?? '{}').user ?? null;
+
+const roleUser: string = userData?.roleId ?? 'unknown';
+const emailUser: string = userData?.email ?? '';
+
+
 
 export default defineComponent({
   name: 'Profile',
@@ -38,7 +42,7 @@ export default defineComponent({
       showPassword: ref(false),
       showNewPassword: ref(false),
 
-      resultMessage: ref(''),
+      resultMessage: ref<any>(),
       showResult: ref(false),
 
     };
@@ -70,7 +74,7 @@ export default defineComponent({
         const result = await usersStore.updateUserInfo(this.email, this.password, this.newPassword);
        
         this.showResult = true;
-        this.resultMessage = result;  
+        this.resultMessage = result; 
         
       } catch (error) {
         console.error('Update failed:', error);

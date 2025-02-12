@@ -36,8 +36,7 @@ export const useUsersStore = defineStore({
         }
       } catch (error) {
         // Extract error message safely
-        const errorMessage =
-          error.response?.data?.error || error.message || 'An unknown error occurred';
+        const errorMessage = (error as any)?.response?.data?.error || (error as Error)?.message || 'An unknown error occurred';
         return { success: false, error: errorMessage };
       }
       // redirect to previous url or default to home page

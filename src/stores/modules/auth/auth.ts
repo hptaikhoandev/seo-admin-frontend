@@ -40,6 +40,7 @@ export const useAuthStore = defineStore({
       this.user = null;
       localStorage.removeItem('user');
       // Điều hướng đến trang login
+      window.location.reload();
       router.push('/auth/login');   
       // // Xóa toàn bộ dữ liệu trong localStorage
       // localStorage.clear();
