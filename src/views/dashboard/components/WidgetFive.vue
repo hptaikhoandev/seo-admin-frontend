@@ -1,5 +1,6 @@
 <script lang="ts">
-import { shallowRef, defineComponent, ref, type Ref } from 'vue';
+import { defineComponent, ref, type Ref } from 'vue';
+import { shallowRef, type ShallowRef } from 'vue';
 import { useDashboardStore } from '@/stores/modules/dashboard/dashboard';
 import { RiseOutlined, FallOutlined } from '@ant-design/icons-vue';
 import { jwtDecode } from 'jwt-decode';
@@ -11,8 +12,7 @@ export default defineComponent({
   },
   data() {
     return {
-      fivecards: shallowRef([
-        
+      fivecards: shallowRef<any>([
       ]),
 
     };
@@ -40,8 +40,11 @@ export default defineComponent({
       const totalVPSSeo3 = ketqua.filter(item => item.team === 'seo-3').length;
       const totalVPSSeo4 = ketqua.filter(item => item.team === 'seo-4').length;
 
-      const userData = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).user : null;
-      const userRole = userData ? userData.roleId : 'unknown';
+
+      const userData = JSON.parse(localStorage.getItem('user') ?? '{}').user ?? null;
+
+      const userRole: string = userData?.roleId ?? 'unknown';
+
 
       
       console.log("User role:", userRole); // ✅ Debugging

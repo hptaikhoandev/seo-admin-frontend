@@ -18,9 +18,10 @@ import { useAuthStore } from '@/stores/modules/auth/auth';
 
 const tab = ref(null);
 const authStore = useAuthStore();
-const { user } = storeToRefs(authStore);
-const emailUser = user?._object?.user?.user?.email;
-const roleUser = user?._object?.user?.user?.roleId;
+const userData = JSON.parse(localStorage.getItem('user') ?? '{}').user ?? null;
+
+const roleUser: string = userData?.roleId ?? 'unknown';
+const emailUser: string = userData?.email ?? '';
 
 </script>
 
