@@ -50,6 +50,10 @@ export default defineComponent({
 
   mounted() {
     // this.fetchData();
+    const store = useRedirectStore();
+  
+    // Ensure the value is set correctly
+    this.redirectType = store.redirectType;
   },
   created() {
     //
@@ -277,7 +281,7 @@ export default defineComponent({
           v-model="redirectType"
           label="Redirect Type"
           class="mt-3" 
-          :items="['Wildcard Redirect', 'Homepage Redirect']"
+          :items="['Wildcard Redirect', 'Homepage Redirect', 'Delete Redirect']"
         />
       </v-col>
       <v-col cols="2" class="py-1">

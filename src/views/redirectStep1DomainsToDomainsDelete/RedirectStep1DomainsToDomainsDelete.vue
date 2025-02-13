@@ -4,7 +4,7 @@ import { useRedirectStore } from '@/stores/modules/redirect/redirect';
 import moment from 'moment';
 
 export default defineComponent({
-  name: 'RedirectStep1DomainsToDomainsFrom',
+  name: 'RedirectStep1DomainsToDomainsDelete',
   components: {
     //
   },
@@ -46,6 +46,8 @@ export default defineComponent({
 
   mounted() {
     // this.fetchData();
+    const store = useRedirectStore();
+    store.domainRedirectDelete = [];
   },
   created() {
     //
@@ -62,8 +64,9 @@ export default defineComponent({
     items: {
       handler(newItems) {
         const store = useRedirectStore();
-        store.domainRedirectFrom = newItems;
-        store.domainRedirectDelete = [];
+        store.domainRedirectDelete = newItems;
+        store.domainRedirectFrom = [];
+        store.domainRedirectTo = [];
       },
       deep: true
     },

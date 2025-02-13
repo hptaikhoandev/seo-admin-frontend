@@ -63,6 +63,7 @@ export default defineComponent({
       handler(newItems) {
         const store = useRedirectStore();
         store.domainRedirectTo = newItems;
+        store.domainRedirectDelete = [];
       },
       deep: true
     },
