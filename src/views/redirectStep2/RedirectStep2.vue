@@ -71,6 +71,10 @@ export default defineComponent({
       const storeRedirect = useRedirectStore();
       return (store.domainRedirectFrom.length > 0 && store.domainRedirectTo.length > 0 && store.domainRedirectFrom.length === store.domainRedirectTo.length);
     },
+    isDeleteRedirect(): boolean {
+      const store = useRedirectStore();
+      return store.redirectType === 'Delete Redirect' && store.domainRedirectDelete.length > 0;
+    },
 
   },
   watch: {
@@ -88,6 +92,7 @@ export default defineComponent({
         const redirectType = this.redirectStore.redirectType;
         const domainRedirectFrom = this.redirectStore.domainRedirectFrom.map(domain => domain.name);
         const domainRedirectTo = this.redirectStore.domainRedirectTo.map(domain => domain.name);
+        const domainRedirectDelete = this.redirectStore.domainRedirectDelete.map(domain => domain.name);
 
 
         const storedUser = localStorage.getItem('user');
@@ -103,6 +108,7 @@ export default defineComponent({
           redirect_type: redirectType,
           source_domains: domainRedirectFrom,
           target_domains: domainRedirectTo,
+          delete_domains: domainRedirectDelete,
         };
 
         const ketqua = await this.redirectStore.redirectListDomainsToCloudflare(requestData);
@@ -134,6 +140,22 @@ export default defineComponent({
 </script>
 <template>
   <v-toolbar flat v-if="showStept2">
+    <v-toolbar-title>
+      Step 2: Submit to CloudFlare
+      <v-btn class="text-white mx-2" :style="{ backgroundColor: '#6A8DBA' }" @click="submitStep2" :disabled="loading">
+        <v-progress-circular
+          v-if="loading"
+          indeterminate
+          color="white"
+          size="20"
+          class="mr-2"
+        >
+        </v-progress-circular>
+        Submit
+      </v-btn>
+    </v-toolbar-title>
+  </v-toolbar>
+  <v-toolbar flat v-if="isDeleteRedirect">
     <v-toolbar-title>
       Step 2: Submit to CloudFlare
       <v-btn class="text-white mx-2" :style="{ backgroundColor: '#6A8DBA' }" @click="submitStep2" :disabled="loading">

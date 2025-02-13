@@ -4,6 +4,7 @@ import { useRedirectStore } from '@/stores/modules/redirect/redirect';
 import moment from 'moment';
 import RedirectStep1DomainsToDomainsFrom from './../redirectStep1DomainsToDomainsFrom/RedirectStep1DomainsToDomainsFrom.vue';
 import RedirectStep1DomainsToDomainsTo from './../redirectStep1DomainsToDomainsTo/RedirectStep1DomainsToDomainsTo.vue';
+import RedirectStep1DomainsToDomainsDelete from './../redirectStep1DomainsToDomainsDelete/RedirectStep1DomainsToDomainsDelete.vue';
 
 
 export default defineComponent({
@@ -11,6 +12,7 @@ export default defineComponent({
   components: {
     RedirectStep1DomainsToDomainsFrom,
     RedirectStep1DomainsToDomainsTo,
+    RedirectStep1DomainsToDomainsDelete,
   },
   data() {
     return {
@@ -66,7 +68,10 @@ export default defineComponent({
       const store = useRedirectStore();
       return store.redirectType === 'Domains to domains Redirect';
     },
-
+    isDeleteRedirect(): boolean {
+      const store = useRedirectStore();
+      return store.redirectType === 'Delete Redirect';
+    },
   },
   watch: {
     dialog(val) {
@@ -202,13 +207,18 @@ export default defineComponent({
 
 </script>
 <template>
-  <v-row>
+  <v-row v-if="!isDeleteRedirect">
     <v-col cols="6" class="pr-0">
       <RedirectStep1DomainsToDomainsFrom />
     </v-col>
 
     <v-col cols="6" class="pl-0">
       <RedirectStep1DomainsToDomainsTo />
+    </v-col>
+  </v-row>
+  <v-row v-if="isDeleteRedirect">
+    <v-col cols="12" class="pr-0">
+      <RedirectStep1DomainsToDomainsDelete />
     </v-col>
   </v-row>
 </template>

@@ -16,6 +16,7 @@ export const useRedirectStore = defineStore({
     isValidServerIP: false,
     domainRedirectFrom: [] as Array<Record<string, any>>,
     domainRedirectTo: [] as Array<Record<string, any>>,
+    domainRedirectDelete: [] as Array<Record<string, any>>,
     total: 0,
     loading: false,
     error: null,
@@ -27,17 +28,29 @@ export const useRedirectStore = defineStore({
         team: requestData.team,
         redirect_type: requestData.redirect_type,
         source_domains: requestData.source_domains,
-        target_domains: requestData.target_domains
+        target_domains: requestData.target_domains,
+        delete_domains: requestData.delete_domains,
        }
 
       try {
-        const response = await axios.post(`${baseUrlScript}/redirect-domains`, params,{ 
-          headers: {
-            Authorization: bearerToken,
+        const isDeleteRedirect = requestData.redirect_type === 'Delete Redirect';
+        const url = `${baseUrlScript}/redirect-domains`;
+
+        const options = { 
+            headers: {
+                Authorization: bearerToken,
+                'Content-Type': 'application/json'
             },
-          timeout: 7200000,
-         });
-         return response.data;
+            timeout: 7200000
+        };
+
+        console.log("--isDeleteRedirect: ", isDeleteRedirect)
+
+        const response = isDeleteRedirect
+        ? await axios.delete(url, {headers: options.headers, data: params})
+        : await axios.post(url, params, options);
+
+        return response?.data;
       } catch (error: any) {
         this.error = error.message
       } finally {
