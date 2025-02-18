@@ -22,6 +22,7 @@ import { fakeBackend } from '@/utils/helpers/fake-backend';
 //i18
 import { createI18n } from 'vue-i18n';
 import messages from '@/utils/locales/messages';
+import { createTerminal } from 'vue-web-terminal';
 
 const i18n = createI18n({
   locale: 'en',
@@ -39,4 +40,5 @@ app.use(VueTablerIcons);
 app.use(Antd);
 app.use(i18n);
 app.use(VueApexCharts);
+app.use(createTerminal());
 app.use(vuetify).mount('#app');

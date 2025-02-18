@@ -71,6 +71,11 @@ const MainRoutes = {
       path: '/user-profile',
       component: () => import('@/views/profile/Profile.vue')
     },
+    {
+      name: 'Terminal Command',
+      path: '/command-domain',
+      component: () => import('@/views/terminal/Terminal.vue')
+    },
   ]
 };
 
