@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, reactive } from 'vue';
+import { defineComponent, reactive, ref } from 'vue';
 import { Terminal } from 'vue-web-terminal';
 import type { DragConfig, FailedFunc, SuccessFunc, TerminalMessageClass } from 'vue-web-terminal';
 import TerminalHeader from './terminalHeader/TerminalHeader.vue';
@@ -13,7 +13,7 @@ export default defineComponent({
   name: 'TerminalComponent',
   data() {
     return {
-      roleUser: roleUser
+      roleUser: roleUser,
     };
   },
   components: {
@@ -21,6 +21,7 @@ export default defineComponent({
     Terminal
   },
   setup() {
+    const isLoading = ref(false);
     const dragConf = reactive<DragConfig>({
       width: "50%",
       height: "100%",
@@ -33,52 +34,60 @@ export default defineComponent({
     });
 
     const onExecCmd = async(key: string, command: string, success: SuccessFunc, failed: FailedFunc) => {
-      const store = useTerminalStore();
-      // Get the list of chosen servers
-      const choicedServers = store.choicedServers;
-      
-      if (!choicedServers || choicedServers.length === 0) {
-        failed('Không có server được chọn.');
-        return;
-      }
-      
-      try {
-        let allClass = ['success', 'error', 'system', 'info', 'warning'];
-        let clazz = allClass[3];
-        success({
-               type: 'normal',
-               class: clazz as TerminalMessageClass,
-               tag: clazz,
-               content: "Hãy đợi, scripts đang chạy..."
-             });
-        // Loop through all selected servers
-        for (const server of choicedServers) {
-          // Call the execCommands function from useTerminalStore
-          const result = await store.execCommands({server, command});
-          if (result.status) {
-            // If the command execution is successful, call the success callback
-            clazz = allClass[0];
-            
-            success({
-              type: 'normal',
-              class: clazz as TerminalMessageClass,
-              tag: clazz,
-              content: result.messages
-            });
-          } else {
-            // If the command fails on a particular server, call the failed callback
-            failed(result.messages);
-          }
+      if(!isLoading.value) {
+        isLoading.value = true;
+        const store = useTerminalStore();
+        // Get the list of chosen servers
+        const choicedServers = store.choicedServers;
+        
+        if (!choicedServers || choicedServers.length === 0) {
+          failed('Không có server được chọn.');
+          isLoading.value = false;
+          return;
         }
-      } catch (error) {
-        // Catch any unexpected errors
-        failed(`Unexpected error: ${error}`);
+        
+        try {
+          let allClass = ['success', 'error', 'system', 'info', 'warning'];
+          let clazz = allClass[3];
+          success({
+                type: 'normal',
+                class: clazz as TerminalMessageClass,
+                tag: clazz,
+                content: "Hãy đợi, scripts đang chạy..."
+              });
+          // Loop through all selected servers
+          for (const server of choicedServers) {
+            // Call the execCommands function from useTerminalStore
+            const result = await store.execCommands({server, command});
+            if (result.status) {
+              // If the command execution is successful, call the success callback
+              clazz = allClass[0];
+              
+              success({
+                type: 'normal',
+                class: clazz as TerminalMessageClass,
+                tag: clazz,
+                content: result.messages
+              });
+            } else {
+              // If the command fails on a particular server, call the failed callback
+              failed(result.messages);
+            }
+          }
+        } catch (error) {
+          // Catch any unexpected errors
+          failed(`Unexpected error: ${error}`);
+        } finally {
+          // Set loading to false when the command execution is complete
+          isLoading.value = false;
+        }
       }
     };
 
     return {
       dragConf,
-      onExecCmd
+      onExecCmd,
+      isLoading
     };
   }
 });
@@ -92,6 +101,7 @@ export default defineComponent({
               title="SEO Admin Terminal"
               @exec-cmd="onExecCmd"
               :context="roleUser"
+              :disabled="true"
               style="height: 500px;"
     />
   </div>
