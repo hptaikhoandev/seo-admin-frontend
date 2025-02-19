@@ -45,12 +45,12 @@ export default defineComponent({
       try {
         let allClass = ['success', 'error', 'system', 'info', 'warning'];
         let clazz = allClass[3];
-        // success({
-        //       type: 'normal',
-        //       class: clazz as TerminalMessageClass,
-        //       tag: clazz,
-        //       content: "Script đang chạy..."
-        //     });
+        success({
+               type: 'normal',
+               class: clazz as TerminalMessageClass,
+               tag: clazz,
+               content: "Hãy đợi, scripts đang chạy..."
+             });
         // Loop through all selected servers
         for (const server of choicedServers) {
           // Call the execCommands function from useTerminalStore
