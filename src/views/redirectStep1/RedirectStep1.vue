@@ -85,6 +85,9 @@ export default defineComponent({
     showDomainRedirect(): boolean {
       return this.redirectType !== 'Domains to domains Redirect';
     },
+    isListDomainValid() {
+      return this.isValidListDomain;
+    }
   },
   watch: {
     domainRedirectFrom(newDomainRedirectFrom) {
@@ -107,15 +110,6 @@ export default defineComponent({
     dialogDelete(val) {
       val || this.closeDelete()
     },
-    listDomain(value) {
-      // Trigger validation on model change
-      const isValid = (this.$refs.listDomainField as any).validate();
-      if (isValid) {
-        this.isValidListDomain = true;
-      } else {
-        this.isValidListDomain = false;
-      }
-    }
   },
   methods: {
     reset() {
@@ -140,9 +134,10 @@ export default defineComponent({
     validateDomainList(value) {
       // Biểu thức chính quy để kiểm tra nhiều tên miền hợp lệ, phân cách bởi dấu phẩy
       const domainRegex = /^([a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?)(,\s*[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?)*$/;
-
+      const isValid = domainRegex.test(value);
+      this.isValidListDomain = isValid;
       // Kiểm tra giá trị có khớp với regex không
-      return domainRegex.test(value) || 'Please enter valid domain names, e.g., a.com, b.net';
+      return isValid || 'Please enter valid domain names, e.g., a.com, b.net';
     },
     deleteItem(item) {
       this.editedIndex = this.ruleItems.indexOf(item);
@@ -150,25 +145,26 @@ export default defineComponent({
       this.dialogDelete = true;
     },
     async searchDomain() {
-      const user = localStorage.getItem('user');
-      const userObj = user ? JSON.parse(user) : null;
-      const store = useRedirectStore();
-      let data = await store.getListRulesFromDomain({team: userObj.user.roleId, domains: this.listDomain});
-     
-      if(data && data.status === "success") {
-        this.ruleItems = data.result.data;
-      } else {
-        this.ruleItems = [];
+      try {
+        this.loading = true;
+        const user = localStorage.getItem('user');
+        const userObj = user ? JSON.parse(user) : null;
+        const store = useRedirectStore();
+        let data = await store.getListRulesFromDomain({team: userObj.user.roleId, domains: this.listDomain});
+      
+        if(data && data.status === "success") {
+          this.ruleItems = data.result.data;
+        } else {
+          this.ruleItems = [];
+        }
+      } catch (error) {
+          console.error("Error fetching data:", error);
+      } finally {
+        this.loading = false;
+        this.showResult = true;
       }
       
-    },
-    checkValidity() {
-      const isValid = (this.$refs.listDomainField as any).validate();
-      if (isValid) {
-        this.isValidListDomain = true;
-      } else {
-        this.isValidListDomain = false;
-      }
+      
     },
     deleteItemConfirm() {
       this.items.splice(this.editedIndex, 1)
@@ -334,7 +330,7 @@ export default defineComponent({
                   </v-text-field>
                   </v-col>
                   <v-col cols="4">
-                    <v-btn text @click="searchDomain()" style="height: 56px; display: flex; align-items: center; justify-content: center;">Search</v-btn>
+                    <v-btn text @click="searchDomain()" :disabled="!isListDomainValid" style="height: 56px; display: flex; align-items: center; justify-content: center;">Search</v-btn>
                   </v-col>
                 </v-row>
                 <v-row>
