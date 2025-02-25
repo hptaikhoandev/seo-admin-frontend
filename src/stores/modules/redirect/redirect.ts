@@ -44,8 +44,6 @@ export const useRedirectStore = defineStore({
             timeout: 7200000
         };
 
-        console.log("--isDeleteRedirect: ", isDeleteRedirect)
-
         const response = isDeleteRedirect
         ? await axios.delete(url, {headers: options.headers, data: params})
         : await axios.post(url, params, options);
@@ -55,6 +53,63 @@ export const useRedirectStore = defineStore({
         this.error = error.message
       } finally {
         this.loading = false
+      }
+    },
+    async getListRulesFromDomain(requestData: any) {
+      this.loading = true;
+      let params = { 
+        team: requestData.team,
+        domains: requestData.domains.trim().replace(/\s+/g, '')
+      }
+
+      try {
+        const url = `${baseUrlScript}/get-rules-from-domains`;
+
+        const options = { 
+            headers: {
+                Authorization: bearerToken,
+                'Content-Type': 'application/json'
+            },
+            timeout: 7200000
+        };
+
+        const response = await axios.get(url, { headers: options.headers, params: params });
+       
+
+        return response?.data;
+      } catch (error: any) {
+        this.error = error.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async deleteRuleItem(requestData: any) {
+      this.loading = true;
+      let params = { 
+        team: requestData.team,
+        rule_id: requestData.rule_id,
+        zone_id: requestData.zone_id
+      }
+      console.log("--params: ", params)
+
+      try {
+        const url = `${baseUrlScript}/delete-redirect-history`;
+
+        const options = { 
+            headers: {
+                Authorization: bearerToken,
+                'Content-Type': 'application/json'
+            },
+            timeout: 7200000
+        };
+
+        const response = await axios.delete(url, { headers: options.headers, data: params });
+       
+        return response?.data;
+      } catch (error: any) {
+        this.error = error.message;
+      } finally {
+        this.loading = false;
       }
     },
   }

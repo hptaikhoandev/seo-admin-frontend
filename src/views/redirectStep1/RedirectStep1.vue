@@ -23,20 +23,26 @@ export default defineComponent({
       sortDesc: ref(false),
       headers: [
         { title: 'NAME', key: 'name' },
-        { title: 'CREATED AT', key: 'createdAt' },
-        { title: 'UPDATED AT', key: 'updatedAt' },
+        { title: 'VALUE', key: 'value' },
+  
         { title: 'ACTIONS', key: 'actions', sortable: false },
       ],
       editedIndex: -1,
       editedItem: {
         id: 0,
         name: '',
+        value: '',
+        zone_id: '',
+        rule_id: '',
         createdAt: '',
         updatedAt: '',
       },
       defaultItem: {
         id: 0,
         name: '',
+        value: '',
+        zone_id: '',
+        rule_id: '',
         createdAt: '',
         updatedAt: '',
       },
@@ -45,6 +51,17 @@ export default defineComponent({
       itemsPerPage: ref(5),
       totalItems: ref(110),
       loading: ref(false),
+      listDomain: '',
+      ruleItems: ref([]) as Ref<any[]>,
+      isValidListDomain: false,
+      resultMessage: {
+        success: 0,
+        fail: {
+          count:0,
+          messages: []
+        },
+      },
+      showResult: false,
     };
   },
 
@@ -90,6 +107,15 @@ export default defineComponent({
     dialogDelete(val) {
       val || this.closeDelete()
     },
+    listDomain(value) {
+      // Trigger validation on model change
+      const isValid = (this.$refs.listDomainField as any).validate();
+      if (isValid) {
+        this.isValidListDomain = true;
+      } else {
+        this.isValidListDomain = false;
+      }
+    }
   },
   methods: {
     reset() {
@@ -111,14 +137,62 @@ export default defineComponent({
       const domainRegex = /^(?!:\/\/)([a-zA-Z0-9-_]*\.)?[a-zA-Z0-9][a-zA-Z0-9-_]*\.[a-zA-Z]{2,11}?$/;
       return domainRegex.test(value) || 'Please enter a valid domain name';
     },
-    deleteItem(item) {
-      this.editedIndex = this.items.indexOf(item)
-      this.editedItem = Object.assign({}, item)
-      this.dialogDelete = true
-    },
+    validateDomainList(value) {
+      // Biểu thức chính quy để kiểm tra nhiều tên miền hợp lệ, phân cách bởi dấu phẩy
+      const domainRegex = /^([a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?)(,\s*[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?)*$/;
 
+      // Kiểm tra giá trị có khớp với regex không
+      return domainRegex.test(value) || 'Please enter valid domain names, e.g., a.com, b.net';
+    },
+    deleteItem(item) {
+      this.editedIndex = this.ruleItems.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialogDelete = true;
+    },
+    async searchDomain() {
+      const user = localStorage.getItem('user');
+      const userObj = user ? JSON.parse(user) : null;
+      const store = useRedirectStore();
+      let data = await store.getListRulesFromDomain({team: userObj.user.roleId, domains: this.listDomain});
+     
+      if(data && data.status === "success") {
+        this.ruleItems = data.result.data;
+      } else {
+        this.ruleItems = [];
+      }
+      
+    },
+    checkValidity() {
+      const isValid = (this.$refs.listDomainField as any).validate();
+      if (isValid) {
+        this.isValidListDomain = true;
+      } else {
+        this.isValidListDomain = false;
+      }
+    },
     deleteItemConfirm() {
       this.items.splice(this.editedIndex, 1)
+      this.closeDelete()
+    },
+    async deleteRuleItemConfirm() {
+      this.showResult = false;
+      this.loading = true;
+      try {
+        const user = localStorage.getItem('user');
+        const userObj = user ? JSON.parse(user) : null;
+        const store = useRedirectStore();
+        let data = await store.deleteRuleItem({team: userObj.user.roleId, rule_id: this.editedItem.id, zone_id: this.editedItem.zone_id});
+        if(data && data.status === "success") {
+          this.searchDomain();
+        } 
+        this.resultMessage = data.result;
+        
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        this.loading = false;
+        this.showResult = true;
+      }
       this.closeDelete()
     },
 
@@ -239,39 +313,63 @@ export default defineComponent({
         Step 1: Choice redirect type
       </v-col>
       <v-col cols="2" class="d-flex justify-end">
-        <v-btn size="small" :style="{ backgroundColor: '#E0B3FF' }" @click="showDialog = true">
+        <v-btn size="small" :style="{ backgroundColor: '#E0B3FF' }" @click="showDialog=true">
           <HistoryIcon size="15" color="white" />
           History
         </v-btn>
         <!-- Dialog -->
-    <v-dialog v-model="showDialog" max-width="800px">
-      <v-card>
-        <!-- Dialog Title -->
-        <v-card-title>
-          <span class="text-h6">Server-Side Table</span>
-          <v-spacer></v-spacer>
-          <v-btn icon @click="showDialog = false">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-card-title>
+        <v-dialog v-model="showDialog" max-width="800px">
+          <v-card>
+            <!-- Dialog Title -->
+            <v-card-title>
+              <span class="text-h6">History Table</span>
+              <v-spacer></v-spacer>
+              <v-container>
+                <v-row>
+                  <v-col cols="8">
+                    <v-text-field v-model="listDomain" label="Name" density="comfortable"
+                    :rules="[validateDomainList]" placeholder="Please enter valid domain names, e.g., a.com, b.net"
+                    ref="listDomainField"
+                    >
+                  </v-text-field>
+                  </v-col>
+                  <v-col cols="4">
+                    <v-btn text @click="searchDomain()" style="height: 56px; display: flex; align-items: center; justify-content: center;">Search</v-btn>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-text v-if="showResult">
+                    <span class="text-success font-bold">Success: {{ resultMessage.success }}</span>
+                    <span v-if="resultMessage.fail.count !== 0" class="text-error font-bold">, Fail: {{ resultMessage.fail.count }}</span>
+                  </v-text>
+                  <v-text v-if="showResult && resultMessage.fail.count !== 0">
+                    <ul>
+                      <li v-for="(message, index) in resultMessage.fail.messages" :key="index" class="text-error font-bold">
+                        {{ message }}
+                      </li>
+                    </ul>
+                  </v-text>
+                </v-row>
+              </v-container>
+            </v-card-title>
 
-        <!-- Dialog Content -->
-        <v-card-text>
-          <v-data-table-server :headers="headers" :items="items" item-value="id" :items-per-page="itemsPerPage"
-            :items-length="totalItems" :page.sync="page"
-            height="200" hover hide-default-footer :loading="loading">
-            <template v-slot:item.actions="{ item }" class="scrollable-table">
-              <EditIcon size="18" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" />
-              <TrashIcon size="18" color="#FF5252" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
-            </template>
-          </v-data-table-server>
-        </v-card-text>
-        <!-- Dialog Actions -->
-        <v-card-actions>
-          <v-btn text @click="showDialog = false">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+            <!-- Dialog Content -->
+            <v-card-text>
+              <v-data-table-server :headers="headers" :items="ruleItems" item-value="id" :items-per-page="itemsPerPage"
+                :items-length="totalItems" :page.sync="page"
+                height="200" hover hide-default-footer :loading="loading">
+                <template v-slot:item.actions="{ item }" class="scrollable-table">
+                  <!-- <EditIcon size="18" color="orange" class="mr-2" style="cursor: pointer;" @click="editItem(item)" /> -->
+                  <TrashIcon size="18" color="#FF5252" class="ml-2" style="cursor: pointer;" @click="deleteItem(item)" />
+                </template>
+              </v-data-table-server>
+            </v-card-text>
+            <!-- Dialog Actions -->
+            <v-card-actions>
+              <v-btn text @click="showDialog=false">Close</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-col>
 
     </v-row>
@@ -294,7 +392,17 @@ export default defineComponent({
       </v-col>
     </v-row>
   </v-container>
-
+  <v-dialog v-model="dialogDelete" max-width="500px">
+    <v-card>
+      <v-card-title class="text-h5">Are you sure you want to delete this item?</v-card-title>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="blue-darken-1" variant="text" @click="closeDelete">Cancel</v-btn>
+        <v-btn color="blue-darken-1" variant="text" @click="deleteRuleItemConfirm">OK</v-btn>
+        <v-spacer></v-spacer>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <style>
