@@ -42,6 +42,11 @@ const MainRoutes = {
       component: () => import('@/views/server/ServerPage.vue')
     },
     {
+      name: 'Sub Domain History',
+      path: '/sub-domain-management',
+      component: () => import('@/views/subdomain/SubDomainPage.vue')
+    },
+    {
       name: 'Thêm domains vào CF',
       path: '/them-domains-vao-cf',
       component: () => import('@/views/domainToCF/DomainToCF.vue')
