@@ -30,6 +30,7 @@ onMounted(() => {
           { title: '🍷 AccountID Management', to: '/account-id-management' },
           { title: '☕ Pem File Management', to: '/pem-management' },
           { title: '🍯 Server Management', to: '/server-management' },
+          { title: '🙊 Sub-Domain History', to: '/sub-domain-management' },
       ] as any;
       break;
     case ['seo-1', 'seo-2', 'seo-3', 'seo-4', 'seo-5', 'seo-6', 'digital'].includes(userRole):
