@@ -266,8 +266,11 @@ export default defineComponent({
         <v-toolbar-title>Sub-Domain History</v-toolbar-title>
         <v-divider class="mx-4" inset vertical></v-divider>
         <v-text-field v-model="search" label="Search" variant="outlined" hide-details single-line clearable
-          @click:clear="handleClearSearch" @input="handleOnSearch">
+          @click:clear="handleClearSearch"
+        >
         </v-text-field>
+        <v-btn text @click="handleOnSearch()" :disabled="loading" style="height: 42px; margin-left: 1em; display: flex; align-items: center; justify-content: center; background-color: rgb(204, 170, 77);">Search</v-btn>
+      
         <v-spacer></v-spacer>
       </v-toolbar>
     </template>
