@@ -3,7 +3,7 @@ import { defineComponent, ref, type Ref } from 'vue';
 import { useSubDomainStore } from '@/stores/modules/subDomain/subDomain';
 import moment from 'moment';
 import {jwtDecode} from 'jwt-decode';
-import { PlayerPlayFilledIcon, RefreshDotIcon, PlayerStopFilledIcon } from 'vue-tabler-icons';
+
 
 export default defineComponent({
   name: 'SubDomainPage',
@@ -31,11 +31,11 @@ export default defineComponent({
         { title: 'Acount ID', key: 'account_id' },
         { title: 'TEAM', key: 'team' },
         { title: 'Name', key: 'name', align: 'center', headerAlign: 'center' },
-        { title: 'Old Content', key: 'old_content', align: 'center', headerAlign: 'center' },
         { title: 'Content', key: 'content', align: 'center', headerAlign: 'center' },
         { title: 'Type', key: 'type' },
         { title: 'Created At', key: 'created_on' },
         { title: 'Updated At', key: 'modified_on' },
+        { title: 'History', key: 'actions', sortable: false },
       ],
       editedIndex: -1,
       editedItem: {
@@ -75,8 +75,21 @@ export default defineComponent({
       items: ref([]) as Ref<any[]>,
       page: ref(1),
       itemsPerPage: ref(10),
-      totalItems: ref(110),
+      totalItems: ref(100),
       loading: ref(false),
+      subItems: ref([]) as Ref<any[]>,
+      subPage: ref(1),
+      subItemsPerPage: ref(10),
+      totalSubItems: ref(100),
+      subSortBy: ref('created_on'),
+      subSortDesc: ref(false),
+      subHeaders: [
+        { title: 'Name', key: 'name', align: 'center', headerAlign: 'center' },
+        { title: 'Content', key: 'content', align: 'center', headerAlign: 'center' },
+        { title: 'Type', key: 'type' },
+        { title: 'Created At', key: 'created_on' },
+        { title: 'Updated At', key: 'modified_on' },
+      ],
     };
   },
 
@@ -97,12 +110,7 @@ export default defineComponent({
           return 'New Server';
       }
     },
-    isFormValid() {
-      const teamValid = this.validateTeam(this.editedItem.team) === true;
-      const privateKeyValid = this.validateTeam(this.editedItem.private_key) === true;
-      const serverIPValid = this.validateTeam(this.editedItem.server_ip) === true;
-      return (this.dialogType === 'import') ? teamValid && privateKeyValid && serverIPValid : teamValid;
-    },
+   
     formattedDateTime() {
       // Mỗi khi currentDateTime thay đổi, hàm này sẽ tự động chạy lại
       return moment(this.currentDateTime, "DD:MM:YY HH:mm:ss").format("DD:MM:YY HH:mm:ss");
@@ -111,9 +119,6 @@ export default defineComponent({
   watch: {
     dialog(val) {
       val || this.close()
-    },
-    dialogDelete(val) {
-      val || this.closeDelete()
     },
   },
   methods: {
@@ -154,17 +159,7 @@ export default defineComponent({
         this.loading = false;
       }
     },
-    openDialogImport() {
-      this.dialogType = 'import';
-      this.dialog = true;
-    },
-
-    editItem(item) {
-      this.dialogType = 'edit';
-      this.editedIndex = this.items.indexOf(item)
-      this.editedItem = Object.assign({}, item)
-      this.dialog = true
-    },
+   
     handlePageChange(newPage) {
       this.page = newPage;
       this.fetchData();
@@ -189,13 +184,16 @@ export default defineComponent({
       this.page = 1;
       this.fetchData();
     },
-
-    deleteItem(item) {
-      this.editedIndex = this.items.indexOf(item)
-      this.editedItem = Object.assign({}, item)
-      this.dialogDelete = true
+    showSubDomainHistory(item) {
+      this.subItems = [];
+      this.dialog = true;
+      this.loading = true;
+      this.fetchSubData(item);
+      this.loading = false;
     },
-
+    closeSubDomainHistory(item) {
+      this.dialog = false;
+    },
     close() {
       this.dialog = false
       this.$nextTick(() => {
@@ -204,19 +202,56 @@ export default defineComponent({
       })
       this.dialogType = "";
     },
-
-    closeDelete() {
-      this.dialogDelete = false
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem)
-        this.editedIndex = -1
-      })
+    async fetchSubData(item) {
+      this.loading = true;
+      try {
+        const storedUser = localStorage.getItem('user');
+        if (!storedUser) return [];
+        const parsedUser = JSON.parse(storedUser);
+        if (!(parsedUser && parsedUser.user && parsedUser.user.token)) return [];
+        const user = jwtDecode(parsedUser.user.token);
+        const userRole = (user as any).roleId;
+        if (!(user && userRole)) return [];
+        if (userRole !== 'admin') this.search = userRole;
+        const serverStore = useSubDomainStore();
+        await serverStore.fetchSubDomainsHistory({
+          page: this.page,
+          limit: this.itemsPerPage,
+          search: this.search,
+          sortBy: this.sortBy,
+          sortDesc: this.sortDesc,
+          name: item.name,
+          account_id: item.account_id,
+          current_id: item.id,
+          zone_id: item.zone_id
+        });
+        this.subItems = await serverStore.server;
+        this.totalSubItems = await serverStore.total;
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        this.loading = false;
+      }
     },
-    validateTeam(value) {
-      return !!value || "Team is required";
+    handleSubPageChange(newPage, item) {
+      this.subPage = newPage;
+      this.fetchSubData(item);
     },
-    validatePrivateKey(value) {
-      return !!value || "Key Name is required";
+    handleSubItemsPerPageChange(newItemsPerPage, item) {
+      this.subItemsPerPage = newItemsPerPage;
+      this.subPage = 1;
+      this.fetchSubData(item);
+    },
+    handleSubOnSearch(item) {
+      this.subPage = 1;
+      this.fetchSubData(item);
+    },
+    handleSubSortBy({ page, itemsPerPage, sortBy, item }) {
+      if (sortBy.length === 0) return;
+      this.subSortBy = sortBy[0].key;
+      this.subSortDesc = (sortBy[0].order === 'desc') ? true : false;
+      this.subPage = 1;
+      this.fetchSubData(item);
     },
   }
 });
@@ -236,7 +271,45 @@ export default defineComponent({
         <v-spacer></v-spacer>
       </v-toolbar>
     </template>
-    
+    <template v-slot:item.actions="{ item }">
+      <div class="d-inline-flex align-center">
+        <v-btn 
+          variant="text"
+          class="d-inline-flex align-center justify-center"
+          @click="showSubDomainHistory(item)"
+          :class="{ 'opacity-30 pointer-events-none': item.iconRestartDisable }" 
+          style="min-width:30px; width: 30px; height: 40px; cursor: pointer;"
+          :disabled="item.iconRestartDisable"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="orange" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </v-btn>
+      </div>
+      <template>
+        <v-dialog v-model="dialog" max-width="824px" scrim="rgba(0, 0, 0, 0.2)">
+          <v-card elevation="0">
+            <v-card-title class="text-h5">Sub-Domain {{item.name}}</v-card-title>
+            <v-card-text>
+              <v-container>
+                <v-data-table-server :headers="subHeaders" :items="subItems" item-value="id-sub" :items-per-page="subItemsPerPage"
+                  :items-length="totalSubItems" :page.sync="subPage" @update:page="handleSubPageChange"
+                  @update:items-per-page="handleSubItemsPerPageChange" hover :loading="loading" @update:options="handleSubSortBy"
+                >
+                </v-data-table-server>
+              </v-container>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+                <v-btn color="blue-darken-1" variant="text" @click="closeSubDomainHistory">OK</v-btn>
+              <v-spacer></v-spacer>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </template>
+    </template>
+   
   </v-data-table-server>
   <!-- Hiển thị kết quả chỉ sau khi gọi API xong (khi loading là false) -->
   <v-text v-if="showResult">
@@ -258,6 +331,7 @@ export default defineComponent({
     </ul>
   </v-text>
 </template>
+
 
 <style>
 .custom-spacing .v-label {
