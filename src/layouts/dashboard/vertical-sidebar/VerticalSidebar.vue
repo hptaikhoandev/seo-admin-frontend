@@ -46,6 +46,7 @@ onMounted(() => {
         { title: '💐 Create WP Sites', to: '/tao-multi-wp-site' },
         { title: '🌺 Delete WP Sites', to: '/destroy-wp-site' },
         { title: '🍔 Terminal', to: '/command-domain' },
+        { title: '🙊 Sub-Domain History', to: '/sub-domain-management' },
       ] as any;
       break;
   }
