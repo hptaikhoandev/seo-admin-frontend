@@ -75,12 +75,12 @@ export default defineComponent({
       items: ref([]) as Ref<any[]>,
       page: ref(1),
       itemsPerPage: ref(10),
-      totalItems: ref(100),
+      totalItems: ref(0),
       loading: ref(false),
       subItems: ref([]) as Ref<any[]>,
       subPage: ref(1),
       subItemsPerPage: ref(10),
-      totalSubItems: ref(100),
+      totalSubItems: ref(0),
       subSortBy: ref('created_on'),
       subSortDesc: ref(false),
       subHeaders: [
@@ -97,7 +97,7 @@ export default defineComponent({
     //
   },
   async created() {
-    await this.fetchData();
+    // await this.fetchData();
   },
   computed: {
     formTitle() {
@@ -142,7 +142,8 @@ export default defineComponent({
         const user = jwtDecode(parsedUser.user.token);
         const userRole = (user as any).roleId;
         if (!(user && userRole)) return [];
-        if (userRole !== 'admin') this.search = userRole;
+        // if (userRole !== 'admin') this.search = userRole;
+        
         const serverStore = useSubDomainStore();
         await serverStore.fetchSubDomains({
           page: this.page,
@@ -150,6 +151,7 @@ export default defineComponent({
           search: this.search,
           sortBy: this.sortBy,
           sortDesc: this.sortDesc,
+          team: userRole
         });
         this.items = await serverStore.server;
         this.totalItems = await serverStore.total;
@@ -266,8 +268,11 @@ export default defineComponent({
         <v-toolbar-title>Sub-Domain History</v-toolbar-title>
         <v-divider class="mx-4" inset vertical></v-divider>
         <v-text-field v-model="search" label="Search" variant="outlined" hide-details single-line clearable
-          @click:clear="handleClearSearch" @input="handleOnSearch">
+          @click:clear="handleClearSearch"
+        >
         </v-text-field>
+        <v-btn text @click="handleOnSearch()" :disabled="loading" style="height: 42px; margin-left: 1em; display: flex; align-items: center; justify-content: center; background-color: rgb(204, 170, 77);">Search</v-btn>
+      
         <v-spacer></v-spacer>
       </v-toolbar>
     </template>

@@ -13,9 +13,9 @@ export const useSubDomainStore = defineStore({
     error: null,
   }),
   actions: {
-    async fetchSubDomains({page, limit, search, sortBy, sortDesc}) {
+    async fetchSubDomains({page, limit, search, sortBy, sortDesc, team}) {
       this.loading = true
-      let params = { page, limit, search, sortBy, sortDesc }
+      let params = { page, limit, search, sortBy, sortDesc, team }
       try {
         const response = await axios.get(`${baseUrl}/subdomains`, { 
           params,
