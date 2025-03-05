@@ -214,7 +214,6 @@ export default defineComponent({
         const user = jwtDecode(parsedUser.user.token);
         const userRole = (user as any).roleId;
         if (!(user && userRole)) return [];
-        if (userRole !== 'admin') this.search = userRole;
         const serverStore = useSubDomainStore();
         await serverStore.fetchSubDomainsHistory({
           page: this.page,
