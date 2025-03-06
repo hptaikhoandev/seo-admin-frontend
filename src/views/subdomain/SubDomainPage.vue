@@ -17,6 +17,7 @@ export default defineComponent({
       dialogDelete: false,
       dialogType: "",
       search: ref(''),
+      typeSearch: ref('A'),
       sortBy: ref('account_id'),
       sortDesc: ref(false),
       showResult: false,
@@ -30,6 +31,7 @@ export default defineComponent({
       headers: [
         { title: 'Acount ID', key: 'account_id' },
         { title: 'TEAM', key: 'team' },
+        { title: 'Domain', key: 'domain', align: 'center', headerAlign: 'center' },
         { title: 'Name', key: 'name', align: 'center', headerAlign: 'center' },
         { title: 'Content', key: 'content', align: 'center', headerAlign: 'center' },
         { title: 'Type', key: 'type' },
@@ -145,14 +147,26 @@ export default defineComponent({
         // if (userRole !== 'admin') this.search = userRole;
         
         const serverStore = useSubDomainStore();
-        await serverStore.fetchSubDomains({
-          page: this.page,
-          limit: this.itemsPerPage,
-          search: this.search,
-          sortBy: this.sortBy,
-          sortDesc: this.sortDesc,
-          team: userRole
-        });
+        if(this.typeSearch  == 'NS') {
+          await serverStore.fetchNSSubDomains({
+            page: this.page,
+            limit: this.itemsPerPage,
+            search: this.search,
+            sortBy: this.sortBy,
+            sortDesc: this.sortDesc,
+            team: userRole
+          });
+        } else {
+          await serverStore.fetchSubDomains({
+            page: this.page,
+            limit: this.itemsPerPage,
+            search: this.search,
+            sortBy: this.sortBy,
+            sortDesc: this.sortDesc,
+            team: userRole
+          });
+        }
+        
         this.items = await serverStore.server;
         this.totalItems = await serverStore.total;
       } catch (error) {
@@ -264,12 +278,28 @@ export default defineComponent({
     @update:items-per-page="handleItemsPerPageChange" hover :loading="loading" @update:options="handleSortBy">
     <template v-slot:top>
       <v-toolbar flat>
-        <v-toolbar-title>Sub-Domain History</v-toolbar-title>
+        <v-col cols="3">  
+          <v-toolbar-title>Sub-Domain History</v-toolbar-title>
+        </v-col>
         <v-divider class="mx-4" inset vertical></v-divider>
-        <v-text-field v-model="search" label="Search" variant="outlined" hide-details single-line clearable
-          @click:clear="handleClearSearch"
-        >
-        </v-text-field>
+        <v-col cols="5">  
+          <v-text-field v-model="search" label="Search as format domain1.com, domain2.com,..." variant="outlined" hide-details single-line clearable
+            @click:clear="handleClearSearch"
+          >
+          </v-text-field>
+        </v-col>
+        <v-col cols="2">  
+          <v-select
+            v-model="typeSearch"
+            :items="['A', 'CNAME', 'NS']"
+            label="Loại"
+            hide-details 
+            single-line
+            variant="outlined"
+            @update:modelValue="(val: any) => typeSearch = val"
+          ></v-select>
+        </v-col>
+       
         <v-btn text @click="handleOnSearch()" :disabled="loading" style="height: 42px; margin-left: 1em; display: flex; align-items: center; justify-content: center; background-color: rgb(204, 170, 77);">Search</v-btn>
       
         <v-spacer></v-spacer>

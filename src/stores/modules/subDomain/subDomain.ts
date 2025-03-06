@@ -32,6 +32,25 @@ export const useSubDomainStore = defineStore({
         this.loading = false
       }
     },
+    async fetchNSSubDomains({page, limit, search, sortBy, sortDesc, team}) {
+      this.loading = true
+      let params = { page, limit, search, sortBy, sortDesc, team }
+      try {
+        const response = await axios.get(`${baseUrlScript}/get-ns-dns-records`, { 
+          params,
+          headers: {
+            Authorization: bearerToken
+          }
+         })
+        const servers = response.data.data;
+        this.server = await servers;
+        this.total = response.data.total;
+      } catch (error: any) {
+        this.error = error.message
+      } finally {
+        this.loading = false
+      }
+    },
     async fetchSubDomainsHistory({page, limit, search, sortBy, sortDesc, name, account_id, current_id, zone_id}) {
       this.loading = true
       let params = { page, limit, search, sortBy, sortDesc, name, account_id, current_id, zone_id }
