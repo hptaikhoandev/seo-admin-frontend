@@ -92,6 +92,8 @@ export default defineComponent({
         { title: 'Created At', key: 'created_on' },
         { title: 'Updated At', key: 'modified_on' },
       ],
+      showExportToExcel: ref(false),
+      isSortData: false,
     };
   },
 
@@ -268,6 +270,59 @@ export default defineComponent({
       this.subPage = 1;
       this.fetchSubData(item);
     },
+    updateSortData(newValue) {
+      this.isSortData = newValue;
+    },
+    exportToExcel() {
+      let dataExport = this.items;
+      dataExport = dataExport.sort((a, b) => {
+        const nsA = a.content.toLowerCase();
+        const nsB = b.content.toLowerCase();
+        return nsA.localeCompare(nsB); // Sắp xếp từ A-Z
+      });
+      let csvData = "";
+      if (this.isSortData) {
+         // Tổ chức dữ liệu theo nhóm `ns`
+        const groupedData = new Map();
+        dataExport.forEach(item => {
+          const ns = item.content; // Lấy Name Servers
+          if (!groupedData.has(ns)) {
+            groupedData.set(ns, []); // Nếu chưa có nhóm, tạo mới
+          }
+          groupedData.get(ns).push(item.domain); // Thêm domain vào nhóm
+        });
+  
+        // Tạo nội dung CSV
+        const csvContentSort = Array.from(groupedData.entries())
+          .map(([ns, domains]) => {
+            const domainsFormatted = domains.join("\n"); // Danh sách domain
+            const nsFormatted = ns.replace(" ", "").split(",").join("\n"); // Định dạng Name Servers
+            return `${domainsFormatted}\nNS:\n${nsFormatted}`;
+          })
+          .join("\n\n"); // Thêm khoảng trắng giữa các cụm
+
+        csvData = csvContentSort;
+      } else {
+        // Create CSV content from dataExport
+        const csvHeaders = "Domain,Name Servers\n"; // Header row
+        const csvContent = dataExport?.map(item => `${item.domain},"${item.content}"`).join("\n");
+        csvData = csvHeaders + csvContent;
+
+      }
+      // Create a Blob from the CSV data
+      const blob = new Blob([csvData], { type: "text/csv" });
+      // Create a download link for the Blob
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "ns_list.csv";
+      // Trigger the download
+      document.body.appendChild(link);
+      link.click();
+      // Clean up the URL object and the link element
+      URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    },
   }
 });
 
@@ -296,7 +351,10 @@ export default defineComponent({
             hide-details 
             single-line
             variant="outlined"
-            @update:modelValue="(val: any) => typeSearch = val"
+            @update:modelValue="(val: any) => { 
+              typeSearch = val; 
+              showExportToExcel = val === 'NS'; 
+            }" 
           ></v-select>
         </v-col>
        
@@ -345,6 +403,22 @@ export default defineComponent({
     </template>
    
   </v-data-table-server>
+  <v-toolbar flat v-if="showExportToExcel">
+    <v-toolbar-title>
+      <div class="d-flex align-center">
+        <span>Export to Excel</span>
+        <v-btn class="text-white mx-2" :style="{ backgroundColor: '#7DA77D' }" @click="exportToExcel">
+          Export
+        </v-btn>
+        <v-checkbox
+          v-model="isSortData"
+          label="Sort data"
+          class="mt-5"
+          @update:modelValue="updateSortData"
+        />
+      </div>
+    </v-toolbar-title>
+  </v-toolbar>
   <!-- Hiển thị kết quả chỉ sau khi gọi API xong (khi loading là false) -->
   <v-text v-if="showResult">
     <ul>
@@ -365,7 +439,6 @@ export default defineComponent({
     </ul>
   </v-text>
 </template>
-
 
 <style>
 .custom-spacing .v-label {
