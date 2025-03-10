@@ -26,6 +26,7 @@ export default defineComponent({
           count: 0,
           messages: []
         },
+        messages: []
       },
       headers: [
         { title: 'SERVER IP', key: 'server_ip' },
@@ -346,7 +347,7 @@ export default defineComponent({
           this.resultMessage = await ketqua.result;
           this.playAudio();
           if (this.resultMessage.fail.count === 0) {
-            this.showResult = false;
+            this.showResult = true;
             this.items.push(this.editedItem)
           } else {
             this.showResult = true;
@@ -551,6 +552,13 @@ export default defineComponent({
     </ul>
     <ul>
       <span class="text-success font-bold">Success: {{ resultMessage.success }}</span>
+      <v-text v-if="showResult && resultMessage.success !== 0">
+        <ul>
+          <li v-for="(message, index) in resultMessage?.messages" :key="index" class="text-success font-bold">
+            {{ message }}
+          </li>
+        </ul>
+      </v-text>
     </ul>
     <ul>
       <span v-if="resultMessage.fail.count !== 0" class="text-error font-bold">Fail: {{ resultMessage.fail.count}}</span>
