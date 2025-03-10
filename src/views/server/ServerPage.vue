@@ -224,24 +224,31 @@ export default defineComponent({
 
     async updateInfoItem(item) {
       // Đặt trạng thái Restart
-      item.loadingUpdateInfo = true;
-      item.iconUpdateDisable = false;
-
-      const serverStore = useServerStore();
-      const ketqua = await serverStore.updateServerInfo({team: item.team, server_ip: item.server_ip});
-      this.resultMessage = ketqua.result;        
-      if (this.resultMessage.fail.count === 0) {
-        this.showResult = true;
-        // Giữ trạng thái khi restart hoàn tất
-        item.loadingUpdateInfo = false;
+      this.loading = true;
+      try {
+        item.loadingUpdateInfo = true;
         item.iconUpdateDisable = false;
-        this.currentDateTime = moment().format("DD:MM:YY HH:mm:ss");
-        await this.fetchData();
-      } else {
-        this.showResult = true;
-        item.loadingUpdateInfo = false;
-        this.currentDateTime = moment().format("DD:MM:YY HH:mm:ss");
-      }        
+
+        const serverStore = useServerStore();
+        const ketqua = await serverStore.updateServerInfo({team: item.team, server_ip: item.server_ip});
+        this.resultMessage = ketqua.result;        
+        if (this.resultMessage.fail.count === 0) {
+          this.showResult = true;
+          // Giữ trạng thái khi restart hoàn tất
+          item.loadingUpdateInfo = false;
+          item.iconUpdateDisable = false;
+          this.currentDateTime = moment().format("DD:MM:YY HH:mm:ss");
+          await this.fetchData();
+        } else {
+          this.showResult = true;
+          item.loadingUpdateInfo = false;
+          this.currentDateTime = moment().format("DD:MM:YY HH:mm:ss");
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        this.loading = false;
+      }
     },
 
     async stopItem(item) {
