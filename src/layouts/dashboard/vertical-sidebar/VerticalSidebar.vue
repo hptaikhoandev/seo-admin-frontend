@@ -30,6 +30,7 @@ onMounted(() => {
           { title: '🍷 AccountID Management', to: '/account-id-management' },
           { title: '☕ Pem File Management', to: '/pem-management' },
           { title: '🍯 Server Management', to: '/server-management' },
+          { title: '🍔 Terminal', to: '/command-domain' },
           { title: '🙊 Sub-Domain History', to: '/sub-domain-management' },
       ] as any;
       break;
@@ -45,7 +46,6 @@ onMounted(() => {
         { title: '🌷 Clone WP Site', to: '/clone-site' },
         { title: '💐 Create WP Sites', to: '/tao-multi-wp-site' },
         { title: '🌺 Delete WP Sites', to: '/destroy-wp-site' },
-        { title: '🍔 Terminal', to: '/command-domain' },
         { title: '🙊 Sub-Domain History', to: '/sub-domain-management' },
       ] as any;
       break;

@@ -160,5 +160,23 @@ export const useServerStore = defineStore({
         this.loading = false;
       }
     },
+    async updateServerInfo({team, server_ip}) {
+      this.loading = true
+      const params = { team, server_ip }
+      try {
+        const response = await axios.post(`${baseUrl}/servers/update-server-info`, params, { 
+          headers: {
+            Authorization: bearerToken,
+            },
+          timeout: 7200000,
+         });
+        
+        return response.data;
+      } catch (error: any) {
+        this.error = error.message;
+      } finally {
+        this.loading = false;
+      }
+    },
   }
 });

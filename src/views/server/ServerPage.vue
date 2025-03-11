@@ -38,6 +38,7 @@ export default defineComponent({
         // { title: 'CREATED AT', key: 'createdAt' },
         // { title: 'UPDATED AT', key: 'updatedAt' },
         { title: 'ACTIONS', key: 'actions', sortable: false },
+        { title: 'UPDATE INFO', key: 'update_info', sortable: false },
       ],
       editedIndex: -1,
       editedItem: {
@@ -50,9 +51,11 @@ export default defineComponent({
         updatedAt: '',
         loadingStart: false,
         loadingRestart: false,
+        loadingUpdateInfo: false,
         loadingStop: false,
         iconStartDisable: true,
         iconRestartDisable: false,
+        iconUpdateDisable: false,
         iconStopDisable: false,
         authMethod: "Token",
         username: '',
@@ -67,9 +70,11 @@ export default defineComponent({
         updatedAt: '',
         loadingStart: false,
         loadingRestart: false,
+        loadingUpdateInfo: false,
         loadingStop: false,
         iconStartDisable: true,
         iconRestartDisable: false,
+        iconUpdateDisable: false,
         iconStopDisable: false,
         authMethod: "Token",
         username: '',
@@ -215,6 +220,35 @@ export default defineComponent({
         item.loadingRestart = false;
         this.currentDateTime = moment().format("DD:MM:YY HH:mm:ss");
       }        
+    },
+
+    async updateInfoItem(item) {
+      // Đặt trạng thái Restart
+      this.loading = true;
+      try {
+        item.loadingUpdateInfo = true;
+        item.iconUpdateDisable = false;
+
+        const serverStore = useServerStore();
+        const ketqua = await serverStore.updateServerInfo({team: item.team, server_ip: item.server_ip});
+        this.resultMessage = ketqua.result;        
+        if (this.resultMessage.fail.count === 0) {
+          this.showResult = true;
+          // Giữ trạng thái khi restart hoàn tất
+          item.loadingUpdateInfo = false;
+          item.iconUpdateDisable = false;
+          this.currentDateTime = moment().format("DD:MM:YY HH:mm:ss");
+          await this.fetchData();
+        } else {
+          this.showResult = true;
+          item.loadingUpdateInfo = false;
+          this.currentDateTime = moment().format("DD:MM:YY HH:mm:ss");
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        this.loading = false;
+      }
     },
 
     async stopItem(item) {
@@ -542,6 +576,25 @@ export default defineComponent({
           @click="editItem(item)" />
         <TrashIcon title="Delete link server" size="18" color="#FF5252" class="ml-2" style="cursor: pointer;"
           @click="deleteItem(item)" />
+      </div>
+    </template>
+    <template v-slot:item.update_info="{ item }">
+      <div class="d-inline-flex align-center">
+        <v-btn 
+          variant="text"
+          class="d-inline-flex align-center justify-center"
+          @click="updateInfoItem(item)" 
+          :class="{ 'opacity-30 pointer-events-none': item.iconRestartDisable }" 
+          style="min-width:30px; width: 30px; height: 40px; cursor: pointer;"
+          :disabled="item.iconRestartDisable"
+        >
+          <v-progress-circular 
+            v-if="item.loadingRestart" 
+            indeterminate 
+            size="18">
+          </v-progress-circular>
+          <RefreshDotIcon v-else :size="18" color="green" />
+        </v-btn>
       </div>
     </template>
   </v-data-table-server>
