@@ -90,7 +90,7 @@ export default defineComponent({
       </v-col>
     </v-row>
     <v-row class="py-0">
-      <v-col cols="3" class="py-0">
+      <v-col cols="4" class="py-0">
         <v-combobox
           v-model="choicedServers"
           :items="serverList"
