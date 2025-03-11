@@ -58,7 +58,7 @@ export default defineComponent({
           // Loop through all selected servers
           for (const server of choicedServers) {
             // Call the execCommands function from useTerminalStore
-            const result = await store.execCommands({server, command});
+            const result = await store.execCommands({server: server.value, command, team: server.team});
             if (result.status) {
               // If the command execution is successful, call the success callback
               clazz = allClass[0];

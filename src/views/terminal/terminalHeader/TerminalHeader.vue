@@ -69,7 +69,7 @@ export default defineComponent({
       const userRole = (user as any).roleId;
       if (!(user && userRole)) return [];
       const ketqua = await store.fetchServerList(userRole);
-      this.serverList = ketqua.map((item: any) => item.server_ip);
+      this.serverList = ketqua.map((item: any) => ({ team: item.team, id: item.id, value: item.server_ip }));
     },
     updateSelectedServers(newServerIPs: any[]) {
       if (newServerIPs.length <= this.maxSelection) {
@@ -91,15 +91,21 @@ export default defineComponent({
     </v-row>
     <v-row class="py-0">
       <v-col cols="3" class="py-0">
-        <v-select
+        <v-combobox
           v-model="choicedServers"
           :items="serverList"
           label="Server IP"
-          placeholder="Select Server IP"
+          placeholder="Select or Search Server IP"
           class="mt-3"
           @update:modelValue="updateSelectedServers"
           multiple
-        />
+          clearable
+          chips
+          deletable-chips
+          return-object
+          item-title="value"
+          item-value="value"
+        ></v-combobox>
       </v-col>
       <v-col cols="2" class="d-flex align-center" v-if="loadingAmountSites">
         <v-progress-circular indeterminate color="primary" size="20"></v-progress-circular>

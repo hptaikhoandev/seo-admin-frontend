@@ -21,7 +21,7 @@ export const useTerminalStore = defineStore({
     async execCommands(requestData: any) {
       this.loading = true
       let params = { 
-        team: userObj.user.roleId,
+        team: requestData.team,
         server_ip: requestData.server,
         command: requestData.command,
        }
@@ -51,7 +51,7 @@ export const useTerminalStore = defineStore({
       let params = { 
         page: 1, 
         limit: 10000, 
-        search: team, 
+        search: '', 
         sortBy : 'team', 
         sortDesc: 'false' 
       }
