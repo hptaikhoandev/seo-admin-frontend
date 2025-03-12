@@ -17,7 +17,7 @@ export default defineComponent({
       dialogDelete: false,
       dialogType: "",
       search: ref(''),
-      typeSearch: ref('A'),
+      typeSearch: ref('A & CNAME'),
       sortBy: ref('account_id'),
       sortDesc: ref(false),
       showResult: false,
@@ -29,7 +29,6 @@ export default defineComponent({
         },
       },
       headers: [
-        { title: 'Acount ID', key: 'account_id' },
         { title: 'TEAM', key: 'team' },
         { title: 'Domain', key: 'domain', align: 'center', headerAlign: 'center' },
         { title: 'Name', key: 'name', align: 'center', headerAlign: 'center' },
@@ -37,42 +36,47 @@ export default defineComponent({
         { title: 'Type', key: 'type' },
         { title: 'Created At', key: 'created_on' },
         { title: 'Updated At', key: 'modified_on' },
-        { title: 'History', key: 'actions', sortable: false },
+        { title: 'History', key: 'history', sortable: false },
+        { title: 'Update Cloudflare', key: 'actions', sortable: false },
       ],
       editedIndex: -1,
       editedItem: {
         id: 0,
-        server_ip: '',
         team: '',
-        key_name: '',
-        private_key: '',
-        createdAt: '',
-        updatedAt: '',
+        name: '',
+        content: '',
+        domain: '',
+        created_on: '',
+        modified_on: '',
         loadingStart: false,
         loadingRestart: false,
         loadingStop: false,
         iconStartDisable: true,
         iconRestartDisable: false,
         iconStopDisable: false,
-        authMethod: "Token",
-        username: '',
+        type: '',
+        zone_id: '',
+        account_id: '',
+        dns_id: '',
       },
       defaultItem: {
         id: 0,
-        server_ip: '',
         team: '',
-        key_name: '',
-        private_key: '',
-        createdAt: '',
-        updatedAt: '',
+        name: '',
+        content: '',
+        domain: '',
+        created_on: '',
+        modified_on: '',
         loadingStart: false,
         loadingRestart: false,
         loadingStop: false,
         iconStartDisable: true,
         iconRestartDisable: false,
         iconStopDisable: false,
-        authMethod: "Token",
-        username: '',
+        type: '',
+        zone_id: '',
+        account_id: '',
+        dns_id: '',
       },
       items: ref([]) as Ref<any[]>,
       page: ref(1),
@@ -107,11 +111,11 @@ export default defineComponent({
     formTitle() {
       switch (this.dialogType) {
         case 'import':
-          return 'Import Server';
+          return 'Import Cloudflare';
         case 'edit':
-          return 'Edit Server';
+          return 'Update Cloudflare';
         default:
-          return 'New Server';
+          return 'Add New Cloudflare';
       }
     },
    
@@ -202,21 +206,19 @@ export default defineComponent({
       this.page = 1;
       this.fetchData();
     },
-    showSubDomainHistory(item) {
+    async showSubDomainHistory(item) {
       this.subItems = [];
       this.dialog = true;
-      this.loading = true;
-      this.fetchSubData(item);
-      this.loading = false;
+      await this.fetchSubData(item);
     },
     closeSubDomainHistory(item) {
       this.dialog = false;
     },
     close() {
-      this.dialog = false
+      this.dialogDelete = false
       this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem)
-        this.editedIndex = -1
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
       })
       this.dialogType = "";
     },
@@ -323,6 +325,25 @@ export default defineComponent({
       URL.revokeObjectURL(url);
       document.body.removeChild(link);
     },
+    editItem(item) {
+      this.dialogType = 'edit';
+      this.editedIndex = this.items.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialogDelete = true;
+    },
+    async save() {
+      this.loading = true;
+      const subDomainStore = useSubDomainStore();
+      if (this.dialogType === 'edit') {
+        const ketqua = await subDomainStore.updateServer({ id: this.editedItem.id, zone_id: this.editedItem.zone_id, content: this.editedItem.content, name: this.editedItem.name, account_id: this.editedItem.account_id, dns_id: this.editedItem.dns_id });
+        this.resultMessage = ketqua.result;
+        this.showResult = true;
+
+      } 
+      this.fetchData();
+      this.close()
+      this.loading = false;
+    },
   }
 });
 
@@ -346,7 +367,7 @@ export default defineComponent({
         <v-col cols="2">  
           <v-select
             v-model="typeSearch"
-            :items="['A', 'CNAME', 'NS']"
+            :items="['A & CNAME', 'NS']"
             label="Loại"
             hide-details 
             single-line
@@ -363,7 +384,7 @@ export default defineComponent({
         <v-spacer></v-spacer>
       </v-toolbar>
     </template>
-    <template v-slot:item.actions="{ item }">
+    <template v-slot:item.history="{ item }">
       <div class="d-inline-flex align-center">
         <v-btn 
           variant="text"
@@ -400,6 +421,51 @@ export default defineComponent({
           </v-card>
         </v-dialog>
       </template>
+      <v-dialog v-model="dialogDelete" max-width="500px" scrim="rgba(0, 0, 0, 0.2)">
+          <v-card elevation="0">
+            <v-card-title>
+              <span class="text-h5">{{ formTitle }}</span>
+            </v-card-title>
+            <v-card-text>
+              <v-container>
+                <v-row>
+                  <v-col cols="12">
+                    <v-text-field :disabled="true" v-model="editedItem.name"
+                      :label="'Name'"
+                      density="comfortable">
+                    </v-text-field>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col cols="12">
+                    <v-text-field :disabled="!(dialogType === 'edit' || dialogType === 'import')" v-model="editedItem.content"
+                      :label="'Content'"
+                      density="comfortable">
+                    </v-text-field>
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue-darken-1" variant="text" @click="close">
+                Cancel
+              </v-btn>
+              <v-btn color="blue-darken-1" variant="text" @click="save" :disabled="false">
+                <v-progress-circular v-if="loading" indeterminate color="green" size="20" class="mr-2">
+                </v-progress-circular>
+                Save
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+    </template>
+  
+    <template v-slot:item.actions="{ item }">
+      <div class="d-inline-flex align-center">
+        <EditIcon title="Update link server" size="18" color="orange" class="ml-2" style="cursor: pointer;"
+          @click="editItem(item)" />
+      </div>
     </template>
    
   </v-data-table-server>
