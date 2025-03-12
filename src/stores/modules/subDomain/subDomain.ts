@@ -70,6 +70,23 @@ export const useSubDomainStore = defineStore({
         this.loading = false
       }
     },
-   
+    async updateServer({id, zone_id, content, name, account_id, dns_id }) {
+      this.loading = true
+      const params = {id, zone_id, content, name, account_id, dns_id}
+      try {
+        const response = await axios.patch(`${baseUrl}/subdomains/` + dns_id, params, { 
+          headers: {
+            Authorization: bearerToken
+          }
+        })
+        this.server = response.data.data
+        this.total = response.data.total
+        return response.data;
+      } catch (error: any) {
+        this.error = error.message
+      } finally {
+        this.loading = false
+      }
+    },
   }
 });
