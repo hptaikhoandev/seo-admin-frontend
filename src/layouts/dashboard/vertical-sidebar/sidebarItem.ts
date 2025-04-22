@@ -1,4 +1,5 @@
 import { jwtDecode } from 'jwt-decode';
+import { title } from 'process';
 
 export interface menu {
   header?: string;
@@ -28,6 +29,7 @@ const sidebarItem = (() => {
     { title: '☘️ Add domains vào CF', to: '/them-domains-vao-cf' },
     { title: '🪵 Redirect Domain', to: '/redirect-domain' },
     { title: '🌷 Clone WP Site', to: '/clone-site' },
+    { title: '🌼 Migrate Site', to: '/migrate-site'},
     { title: '💐 Create WP Sites', to: '/tao-multi-wp-site' },
     { title: '🌺 Delete WP Sites', to: '/destroy-wp-site' },
     { title: '🍯 Server Management', to: '/server-management' },

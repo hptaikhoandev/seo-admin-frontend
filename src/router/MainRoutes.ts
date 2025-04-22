@@ -62,6 +62,11 @@ const MainRoutes = {
       component: () => import('@/views/clonesite/Clonesite.vue')
     },
     {
+      name: 'Migrate Site',
+      path: '/migrate-site',
+      component: () => import('@/views/migratesite/Migratesite.vue')
+    },
+    {
       name: 'Create WP Sites',
       path: '/tao-multi-wp-site',
       component: () => import('@/views/multiSite/MultiSite.vue')
