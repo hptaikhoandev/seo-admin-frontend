@@ -61,23 +61,25 @@ export const useDashboardStore = defineStore({
          })
          const ketqua = response.data.data;
          const itemsSeo1 = ketqua.filter(item => item.team === 'seo-1');
-         const itemsSeo2 = ketqua.filter(item => item.team === 'seo-2');
+        //  const itemsSeo2 = ketqua.filter(item => item.team === 'seo-2');
          const itemsSeo3 = ketqua.filter(item => item.team === 'seo-3');
          const itemsSeo4 = ketqua.filter(item => item.team === 'seo-4');
+         const itemsDigital = ketqua.filter(item => item.team === 'digital');
         let totalSiteAll = 0;
         let totalSiteSEO1 = itemsSeo1.reduce((sum, item) => sum + Number(item.sites), 0);
-        let totalSiteSEO2 = itemsSeo2.reduce((sum, item) => sum + Number(item.sites), 0);
+        // let totalSiteSEO2 = itemsSeo2.reduce((sum, item) => sum + Number(item.sites), 0);
         let totalSiteSEO3 = itemsSeo3.reduce((sum, item) => sum + Number(item.sites), 0);
         let totalSiteSEO4 = itemsSeo4.reduce((sum, item) => sum + Number(item.sites), 0);
-        
-        totalSiteAll = totalSiteSEO1 + totalSiteSEO2 + totalSiteSEO3 + totalSiteSEO4;  
+        let totalSiteDigital = itemsDigital.reduce((sum, item) => sum + Number(item.sites), 0);
+        totalSiteAll = totalSiteSEO1 + totalSiteSEO3 + totalSiteSEO4 + totalSiteDigital;  
 
         return {
           totalSiteAll,
           totalSiteSEO1,
-          totalSiteSEO2,
+          // totalSiteSEO2,
           totalSiteSEO3,
           totalSiteSEO4,
+          totalSiteDigital
         }
       } catch (error: any) {
         this.error = error.message
@@ -123,23 +125,26 @@ export const useDashboardStore = defineStore({
          })
          const ketqua = response.data.data;
          const itemsSeo1 = ketqua.filter(item => item.team === 'seo-1');
-         const itemsSeo2 = ketqua.filter(item => item.team === 'seo-2');
+        //  const itemsSeo2 = ketqua.filter(item => item.team === 'seo-2');
          const itemsSeo3 = ketqua.filter(item => item.team === 'seo-3');
          const itemsSeo4 = ketqua.filter(item => item.team === 'seo-4');
+          const itemsDigital = ketqua.filter(item => item.team === 'digital');
         let totalCPUAll = 0;
         let totalCPUSEO1 = itemsSeo1.reduce((sum, item) => sum + Number(item.cpu), 0);
-        let totalCPUSEO2 = itemsSeo2.reduce((sum, item) => sum + Number(item.cpu), 0);
+        // let totalCPUSEO2 = itemsSeo2.reduce((sum, item) => sum + Number(item.cpu), 0);
         let totalCPUSEO3 = itemsSeo3.reduce((sum, item) => sum + Number(item.cpu), 0);
         let totalCPUSEO4 = itemsSeo4.reduce((sum, item) => sum + Number(item.cpu), 0);
+        let totalCPUDigital = itemsDigital.reduce((sum, item) => sum + Number(item.cpu), 0);
         
-        totalCPUAll = totalCPUSEO1 + totalCPUSEO2 + totalCPUSEO3 + totalCPUSEO4;  
+        totalCPUAll = totalCPUSEO1 + totalCPUDigital + totalCPUSEO3 + totalCPUSEO4;  
 
         return {
           totalCPUAll,
           totalCPUSEO1,
-          totalCPUSEO2,
+          // totalCPUSEO2,
           totalCPUSEO3,
           totalCPUSEO4,
+          totalCPUDigital
         }
       } catch (error: any) {
         this.error = error.message
@@ -165,23 +170,26 @@ export const useDashboardStore = defineStore({
          })
          const ketqua = response.data.data;
          const itemsSeo1 = ketqua.filter(item => item.team === 'seo-1');
-         const itemsSeo2 = ketqua.filter(item => item.team === 'seo-2');
+        //  const itemsSeo2 = ketqua.filter(item => item.team === 'seo-2');
          const itemsSeo3 = ketqua.filter(item => item.team === 'seo-3');
          const itemsSeo4 = ketqua.filter(item => item.team === 'seo-4');
+          const itemsDigital = ketqua.filter(item => item.team === 'digital');
         let totalRamAll = 0;
         let totalRamSEO1 = itemsSeo1.reduce((sum, item) => sum + Number(item.ram), 0);
-        let totalRamSEO2 = itemsSeo2.reduce((sum, item) => sum + Number(item.ram), 0);
+        // let totalRamSEO2 = itemsSeo2.reduce((sum, item) => sum + Number(item.ram), 0);
         let totalRamSEO3 = itemsSeo3.reduce((sum, item) => sum + Number(item.ram), 0);
         let totalRamSEO4 = itemsSeo4.reduce((sum, item) => sum + Number(item.ram), 0);
+        let totalRamDigital = itemsDigital.reduce((sum, item) => sum + Number(item.ram), 0);
         
-        totalRamAll = totalRamSEO1 + totalRamSEO2 + totalRamSEO3 + totalRamSEO4;  
+        totalRamAll = totalRamSEO1 + totalRamDigital + totalRamSEO3 + totalRamSEO4;  
 
         return {
           totalRamAll,
           totalRamSEO1,
-          totalRamSEO2,
+          // totalRamSEO2,
           totalRamSEO3,
           totalRamSEO4,
+          totalRamDigital
         }
       } catch (error: any) {
         this.error = error.message

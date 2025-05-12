@@ -35,7 +35,7 @@ export default {
             borderRadius: 4
           }
         },
-        labels: ['SEO-1', 'SEO-2', 'SEO-3', 'SEO-4'],
+        labels: ['SEO-1', 'SEO-3', 'SEO-4', 'Digital'],
         colors: PrimaryColor,
         stroke: {
           curve: 'smooth'
@@ -93,7 +93,7 @@ export default {
       this.loadingAmountRams = false;
       // Build data
       this.totalRAMs = ketqua.totalRamAll;
-      this.barChart1.series[0].data = [ketqua.totalRamSEO1, ketqua.totalRamSEO2, ketqua.totalRamSEO3, ketqua.totalRamSEO4];
+      this.barChart1.series[0].data = [ketqua.totalRamSEO1, ketqua.totalRamSEO3, ketqua.totalRamSEO4, ketqua.totalRamDigital];
     },
   }
 };

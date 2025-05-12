@@ -36,17 +36,15 @@ export default defineComponent({
       const ketqua = await store.fetchServerList();
       const totalVPS = ketqua.length;
       const totalVPSSeo1 = ketqua.filter(item => item.team === 'seo-1').length;
-      const totalVPSSeo2 = ketqua.filter(item => item.team === 'seo-2').length;
+      // const totalVPSSeo2 = ketqua.filter(item => item.team === 'seo-2').length;
       const totalVPSSeo3 = ketqua.filter(item => item.team === 'seo-3').length;
       const totalVPSSeo4 = ketqua.filter(item => item.team === 'seo-4').length;
-
+      const totalVPSDigital = ketqua.filter(item => item.team === 'digital').length;
 
       const userData = JSON.parse(localStorage.getItem('user') ?? '{}').user ?? null;
 
       const userRole: string = userData?.roleId ?? 'unknown';
 
-
-      
       console.log("User role:", userRole); // ✅ Debugging
       // Build data
       if (userRole === 'admin') {
@@ -58,13 +56,13 @@ export default defineComponent({
             color: 'primary',
             icon: RiseOutlined,
           },
-          {
-            name: 'VPS của team SEO-2',
-            earn: totalVPSSeo2,
-            percent: `${((totalVPSSeo2 / totalVPS) * 100).toFixed(1)}%`,
-            color: 'primary',
-            icon: RiseOutlined,
-          },
+          // {
+          //   name: 'VPS của team SEO-2',
+          //   earn: totalVPSSeo2,
+          //   percent: `${((totalVPSSeo2 / totalVPS) * 100).toFixed(1)}%`,
+          //   color: 'primary',
+          //   icon: RiseOutlined,
+          // },
           {
             name: 'VPS của team SEO-3',
             earn: totalVPSSeo3,
@@ -79,6 +77,13 @@ export default defineComponent({
             color: 'primary',
             icon: RiseOutlined,
           },
+          {
+            name: 'VPS của team Digital',
+            earn: totalVPSDigital,
+            percent: `${((totalVPSDigital / totalVPS) * 100).toFixed(1)}%`,
+            color: 'primary',
+            icon: RiseOutlined,
+          }
         ];
       } else {
         // ✅ If user is not "seo-admin", only show their team data

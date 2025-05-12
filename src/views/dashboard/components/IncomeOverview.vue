@@ -35,7 +35,7 @@ export default {
             borderRadius: 4
           }
         },
-        labels: ['SEO-1', 'SEO-2', 'SEO-3', 'SEO-4'],
+        labels: ['SEO-1', 'SEO-3', 'SEO-4', 'Digital'],
         colors: InfoColor,
         stroke: {
           curve: 'smooth'
@@ -92,7 +92,7 @@ export default {
       const ketqua = await store.fetchDomainsAmountParam();
       this.loadingAmountSites = false;
       // Build data
-      this.totalDomains = ketqua.totalSiteAll;
+      // this.totalDomains = ketqua.totalSiteAll;
       const userData = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).user : null;
       const userRole = userData ? userData.roleId : 'unknown'; // ✅ Default to 'unknown' if missing
 
@@ -102,11 +102,13 @@ export default {
 
       // ✅ If user is "seo-admin", show all teams data
       if (userRole === 'admin') {
+        console.log("ketqua:", ketqua); // ✅ Debugging
         this.barChart1.series[0].data = [
           ketqua.totalSiteSEO1,
-          ketqua.totalSiteSEO2,
+          // ketqua.totalSiteSEO2,
           ketqua.totalSiteSEO3,
-          ketqua.totalSiteSEO4
+          ketqua.totalSiteSEO4,
+          ketqua.totalSiteDigital
         ];
       } 
       // ✅ If user belongs to a specific team, only show their data
@@ -117,16 +119,20 @@ export default {
             this.totalDomains = userData = ketqua.totalSiteSEO1;
             this.barChart1.series[0].data = [userData, 0, 0, 0];
             break;
-          case 'seo-2':
-            this.totalDomains = userData = ketqua.totalSiteSEO2;
-            this.barChart1.series[0].data = [0, userData, 0, 0];
-            break;
+          // case 'seo-2':
+          //   this.totalDomains = userData = ketqua.totalSiteSEO2;
+          //   this.barChart1.series[0].data = [0, userData, 0, 0];
+          //   break;
           case 'seo-3':
             this.totalDomains =  userData = ketqua.totalSiteSEO3;
-            this.barChart1.series[0].data = [0, 0, userData, 0];
+            this.barChart1.series[0].data = [0, userData, 0, 0];
             break;
           case 'seo-4':
             this.totalDomains = userData = ketqua.totalSiteSEO4;
+            this.barChart1.series[0].data = [0, 0, userData, 0];
+            break;
+          case 'digital':
+            this.totalDomains = userData = ketqua.totalSiteDigital;
             this.barChart1.series[0].data = [0, 0, 0, userData];
             break;
           default:
