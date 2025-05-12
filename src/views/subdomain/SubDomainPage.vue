@@ -241,8 +241,9 @@ export default defineComponent({
           sortDesc: this.sortDesc,
           name: item.name,
           account_id: item.account_id,
-          current_id: item.id,
-          zone_id: item.zone_id
+          // current_id: item.id,
+          zone_id: item.zone_id,
+          team: userRole
         });
         this.subItems = await serverStore.server;
         this.totalSubItems = await serverStore.total;
@@ -335,10 +336,11 @@ export default defineComponent({
       this.loading = true;
       const subDomainStore = useSubDomainStore();
       if (this.dialogType === 'edit') {
-        const ketqua = await subDomainStore.updateServer({ id: this.editedItem.id, zone_id: this.editedItem.zone_id, content: this.editedItem.content, name: this.editedItem.name, account_id: this.editedItem.account_id, dns_id: this.editedItem.dns_id });
+        const ketqua = await subDomainStore.updateServer({ id: this.editedItem.id, zone_id: this.editedItem.zone_id, content: this.editedItem.content, name: this.editedItem.name, account_id: this.editedItem.account_id, dns_id: this.editedItem.dns_id, type: this.editedItem.type });
         this.resultMessage = ketqua.result;
+        
         this.showResult = true;
-
+        
       } 
       this.fetchData();
       this.close()
@@ -355,7 +357,7 @@ export default defineComponent({
     <template v-slot:top>
       <v-toolbar flat>
         <v-col cols="3">  
-          <v-toolbar-title>Sub-Domain History</v-toolbar-title>
+          <v-toolbar-title>Sub-Domain</v-toolbar-title>
         </v-col>
         <v-divider class="mx-4" inset vertical></v-divider>
         <v-col cols="5">  
@@ -403,7 +405,7 @@ export default defineComponent({
       <template>
         <v-dialog v-model="dialog" max-width="824px" scrim="rgba(0, 0, 0, 0.2)">
           <v-card elevation="0">
-            <v-card-title class="text-h5">Sub-Domain {{item.name}}</v-card-title>
+            <v-card-title class="text-h5">Sub-Domain History {{item.name}}</v-card-title>
             <v-card-text>
               <v-container>
                 <v-data-table-server :headers="subHeaders" :items="subItems" item-value="id-sub" :items-per-page="subItemsPerPage"

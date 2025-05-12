@@ -15,14 +15,24 @@ export const useSubDomainStore = defineStore({
   actions: {
     async fetchSubDomains({page, limit, search, sortBy, sortDesc, team}) {
       this.loading = true
-      let params = { page, limit, search, sortBy, sortDesc, team }
+      // let params = { page, limit, search, sortBy, sortDesc, team }
+      let params = { search, team}
       try {
-        const response = await axios.get(`${baseUrl}/subdomains`, { 
+        // const response = await axios.get(`${baseUrl}/subdomains`, { 
+        //   params,
+        //   headers: {
+        //     Authorization: bearerToken
+        //   }
+        //  })
+        // const servers = response.data.data;
+        // this.server = await servers;
+        // this.total = response.data.total;
+        const response = await axios.get(`${baseUrlScript}/get-dns-records-by-name`, { 
           params,
           headers: {
             Authorization: bearerToken
           }
-         })
+        })
         const servers = response.data.data;
         this.server = await servers;
         this.total = response.data.total;
@@ -51,11 +61,11 @@ export const useSubDomainStore = defineStore({
         this.loading = false
       }
     },
-    async fetchSubDomainsHistory({page, limit, search, sortBy, sortDesc, name, account_id, current_id, zone_id}) {
+    async fetchSubDomainsHistory({page, limit, search, sortBy, sortDesc, name, account_id, zone_id, team}) {
       this.loading = true
-      let params = { page, limit, search, sortBy, sortDesc, name, account_id, current_id, zone_id }
+      let params = { page, limit, search, sortBy, sortDesc, name, account_id, zone_id, team }
       try {
-        const response = await axios.get(`${baseUrl}/subdomains/find-list-subdomain-history`, { 
+        const response = await axios.get(`${baseUrl}/subdomain-history`, { 
           params,
           headers: {
             Authorization: bearerToken
@@ -70,11 +80,11 @@ export const useSubDomainStore = defineStore({
         this.loading = false
       }
     },
-    async updateServer({id, zone_id, content, name, account_id, dns_id }) {
+    async updateServer({id, zone_id, content, name, account_id, dns_id, type }) {
       this.loading = true
-      const params = {id, zone_id, content, name, account_id, dns_id}
+      const params = {id, zone_id, content, name, account_id, dns_id, type}
       try {
-        const response = await axios.patch(`${baseUrl}/subdomains/` + dns_id, params, { 
+        const response = await axios.patch(`${baseUrl}/subdomains/` + dns_id, params, {
           headers: {
             Authorization: bearerToken
           }
